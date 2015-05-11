@@ -3,6 +3,7 @@
 \usepackage{amsmath}
 \usepackage{amsfonts}
 \usepackage{amssymb}
+\usepackage{booktabs}
 \title{%
 	Syntactic language extensions for Javascript: \\
 	\large Transforming Ecmascript 6 to 5}
@@ -11,31 +12,77 @@
 
 \begin{document}
 	\maketitle
-	
+	\tableofcontents
 \section{Taxonomy of language features}
-Part of my research is the creation of a taxonomy of language features introduced in the ECMAScript 6 specification document. The taxonomy is created in regards to the transformations needed to transform the code to ECMAScript 5 compliant code (with identical semantics).
+Part of my research is the creation of a taxonomy of language features introduced in the ECMAScript 6 specification document. The taxonomy is created in regards to the transformations needed to transform the code to ECMAScript 5 compliant code with identical semantics.
 
-The taxonomy is created with the help of several dimensions.
+\subsection{Dimensions}
+The following dimensions are identified for all language extensions.
 
-\subsection{Transformation level}
-At what level is the transformation performed, in other words what information is needed for this transformation.
+\paragraph{Transformation level}
+At what level is the transformation performed, in other words what information is needed for this transformation. Possible only lexical information is needed for the transformation, however in most cases we expect to need information of the context-free syntax.
 
-\subsection{Purely semantic}
+\paragraph{Purely semantic}
+Is the extension purely in semantics, or are there differences in the syntax after transformation.
 
-\subsection{Introduction of bindings}
+\paragraph{Scope}
+What is the scope of a language extensions transformation rule(s). This can be one of the following: local-to-local, local-to-global, global-to-global, or global-to-local.
 
-\subsection{Depending on bindings (i.e. run-time code)}
+\paragraph{Syntactically type preserving}
+Is the type of the transformed syntax element the same as it is before transformation (e.g. is an expression transformed to an expression, or to a list of statements)
 
-\subsection{Compositional}
+\paragraph{Introduction of bindings}
+Are new bindings introduced in the transformed code as opposed to the original code.
 
-\subsection{Analysis of sub-terms}
+\paragraph{Depending on bindings (i.e. run-time code)}
+Will the transformed code rely on function calls not introduced by the transformation itself but provided separately from the transformation suite.
 
-\subsection{Dependency on other transformations}
+\paragraph{Compositional}
+...
 
-\subsection{Backwards compatible}
+\paragraph{Preconditions}
+What are the preconditions that have to be met before execution of a transformation rule, to ensure validness of our transformation (e.g. all sub-terms have to be analyzed and transformed)
 
-\subsection{Dividable}
+\paragraph{Restrictions on sub-terms}
+Does the language extensions impose restrictions on the sub-terms used inside of the language extension. (e.g. are certain expressions not allowed in the nesting of a certain extension)
 
+\paragraph{Analysis of sub-terms}
+Are the non-terminals of our language extension analyzed and possibly transformed by the transformation rule.
+
+\paragraph{Dependency on other extensions}
+Can the language extensions be performed stand-alone or is there a dependency on one of the other extensions.
+
+\paragraph{Backwards compatible}
+Is the language extension backwards compatible with older versions of the ECMAScript standard.
+
+\paragraph{Dividable}
+Is it possible to identify smaller transformation rules inside this language extension, that can be performed independently from one another.
+
+\subsection{Taxonomy}
+
+\subsubsection{Arrow Functions}
+The first extension to be discussed is the arrow function\footnote{ECMAScript 6 specification Rev 38 p. 249-253}
+\begin{table}[h]
+\centering
+\caption{Extension transformation dimensions}
+\label{arrow-function-table}
+\begin{tabular}{@{}rc@{}}
+\toprule
+                                       & \multicolumn{1}{l}{\textbf{Arrow Functions}} \\ \midrule
+\textbf{Transformation level}          & Context-free syntax                          \\
+\textbf{Scope}                         & Local-to-local                               \\
+\textbf{Syntactically type preserving} & Yes                                          \\
+\textbf{Introducing bindings}          & Yes                                          \\
+\textbf{Depending on bindings}         & No                                           \\
+\textbf{Compositional}                 & Yes                                          \\
+\textbf{Analysis of subterms}          & Yes                                          \\
+\textbf{Constraints on subterms}       & No                                           \\
+\textbf{Preconditions}                 & Yes                                          \\
+\textbf{Dependencies}                  & No                                           \\
+\textbf{Backwards compatible}          & Yes                                          \\
+\textbf{Dividable}                     & No                                           \\ \bottomrule
+\end{tabular}
+\end{table}
 
 \bibliography{thesis}{}
 \bibliographystyle{plain}
