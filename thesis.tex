@@ -1,9 +1,47 @@
-\documentclass[10pt,a4paper,draft]{article}
+\documentclass[10pt,a4paper]{article}
 \usepackage[utf8]{inputenc}
 \usepackage{amsmath}
 \usepackage{amsfonts}
 \usepackage{amssymb}
 \usepackage{booktabs}
+\usepackage{csquotes}
+\usepackage[final]{listings}
+\usepackage{color}
+\definecolor{lightgray}{rgb}{.9,.9,.9}
+\definecolor{darkgray}{rgb}{.4,.4,.4}
+\definecolor{purple}{rgb}{0.65, 0.12, 0.82}
+
+\lstdefinelanguage{JavaScript}{
+  keywords={break, case, catch, continue, debugger, default, delete, do, else, false, finally, for, function, if, in, instanceof, new, null, return, switch, this, throw, true, try, typeof, var, void, while, with},
+  morecomment=[l]{//},
+  morecomment=[s]{/*}{*/},
+  morestring=[b]',
+  morestring=[b]",
+  ndkeywords={class, export, boolean, throw, implements, import, this},
+  keywordstyle=\color{blue}\bfseries,
+  ndkeywordstyle=\color{darkgray}\bfseries,
+  identifierstyle=\color{black},
+  commentstyle=\color{purple}\ttfamily,
+  stringstyle=\color{red}\ttfamily,
+  sensitive=true
+}
+
+\lstset{
+   language=JavaScript,
+   backgroundcolor=\color{lightgray},
+   extendedchars=true,
+   basicstyle=\footnotesize\ttfamily,
+   showstringspaces=false,
+   showspaces=false,
+   numbers=left,
+   numberstyle=\footnotesize,
+   numbersep=9pt,
+   tabsize=2,
+   breaklines=true,
+   showtabs=false,
+   captionpos=b
+}
+
 \title{%
 	Syntactic language extensions for Javascript: \\
 	\large Transforming Ecmascript 6 to 5}
@@ -11,6 +49,7 @@
 \author{Matthisk Heimensen}
 
 \begin{document}
+\lstset{language=Pascal}
 	\maketitle
 	\tableofcontents
 \section{Taxonomy of language features}
@@ -53,7 +92,7 @@ Are the non-terminals of our language extension analyzed and possibly transforme
 Can the language extensions be performed stand-alone or is there a dependency on one of the other extensions.
 
 \paragraph{Backwards compatible}
-Is the language extension backwards compatible with older versions of the ECMAScript standard.
+Is the transformed code backwards compatible with ECMAScript 6 standard.
 
 \paragraph{Dividable}
 Is it possible to identify smaller transformation rules inside this language extension, that can be performed independently from one another.
@@ -61,7 +100,8 @@ Is it possible to identify smaller transformation rules inside this language ext
 \subsection{Taxonomy}
 
 \subsubsection{Arrow Functions}
-The first extension to be discussed is the arrow function\footnote{ECMAScript 6 specification Rev 38 p. 249-253}
+Arrow functions\cite[14.2]{SpecJS} are the new lambda-like function definitions inspired by Coffeescript and C\# notation. The functions body knows no lexical this binding but instead uses the binding of its parent lexical scope.
+
 \begin{table}[h]
 \centering
 \caption{Extension transformation dimensions}
@@ -72,17 +112,140 @@ The first extension to be discussed is the arrow function\footnote{ECMAScript 6 
 \textbf{Transformation level}          & Context-free syntax                          \\
 \textbf{Scope}                         & Local-to-local                               \\
 \textbf{Syntactically type preserving} & Yes                                          \\
-\textbf{Introducing bindings}          & Yes                                          \\
+\textbf{Introducing bindings}          & Yes                                          \\%
 \textbf{Depending on bindings}         & No                                           \\
 \textbf{Compositional}                 & Yes                                          \\
-\textbf{Analysis of subterms}          & Yes                                          \\
-\textbf{Constraints on subterms}       & No                                           \\
+\textbf{Analysis of sub-terms}          & Yes                                          \\
+\textbf{Constraints on sub-terms}       & Yes                                           \\
 \textbf{Preconditions}                 & Yes                                          \\
 \textbf{Dependencies}                  & No                                           \\
 \textbf{Backwards compatible}          & Yes                                          \\
 \textbf{Dividable}                     & No                                           \\ \bottomrule
 \end{tabular}
 \end{table}
+
+\paragraph{Analysis of sub-terms}
+References to the arguments, sup
+er and this keyword have to be identified in the ConciseBody of an ArrowFunction and renamed.
+\\
+\\
+\blockquote[{\cite[14.2.16]{SpecJS}}]{An ArrowFunction does not define local bindings for \textbf{arguments}, \textbf{super}, \textbf{this}, or new.target. Any reference to arguments, super, or this within an ArrowFunction must resolve to a binding in a lexically enclosing environment.}
+\\\\
+An arrow function is transformed to an ES5 function which is wrapped in a self-calling function which receives its lexical enclosing scopes \textbf{super}, \textbf{this}, and \textbf{arguments} variables. The enclosing lexical scope is not polluted with new variable declarations. Keywords references are prepended with an underscore, only references in the current scope (i.e. no deeper scope) are renamed.
+
+\begin{lstlisting}
+var f = <Arrow Function>;
+\end{lstlisting}
+
+\begin{lstlisting}
+var f = (function(_super,_arguments,_this) {
+	return <Desugared Arrow Function>
+})(super,arguments,this);
+\end{lstlisting}
+
+\paragraph{Constraints on sub-terms}
+Use of the \textbf{yield} keyword is not allowed in an arrow functions ConciseBody. Arrow functions can not be generators and deep continuations are avoided.
+
+\paragraph{Preconditions}
+Before an arrow function can be transformed its ConciseBody should have been transformed. This to prevent the incorrect renaming of sub-terms (\textbf{super},\textbf{arguments},\textbf{this}), because they still fall in the same scope depth.
+
+\begin{lstlisting}
+var f = () => {
+	() => this;
+};
+\end{lstlisting}
+
+\begin{lstlisting}
+var f = (function(_super,_arguments,_this) {
+	return function() {	
+		() => _this;
+	};
+})(super,arguments,this);
+\end{lstlisting}
+
+\subsubsection{Classes}
+Class definitions\cite[14.5]{SpecJS} are introduced in ECMAScript 6 as a new feature to standardize inheritance model. Underneath the prototypal inheritance model is still used to create class declarations.
+\begin{table}[h]
+\centering
+\caption{Extension transformation dimensions}
+\label{classes-table}
+\begin{tabular}{@{}rc@{}}
+\toprule
+                                       & \multicolumn{1}{l}{\textbf{Classes}} \\ \midrule
+\textbf{Transformation level}          & Context-free syntax                          \\
+\textbf{Scope}                         & Local-to-local                               \\
+\textbf{Syntactically type preserving} & Yes                                          \\
+\textbf{Introducing bindings}          & No                                          \\%
+\textbf{Depending on bindings}         & Yes                                           \\
+\textbf{Compositional}                 & Yes                                          \\
+\textbf{Analysis of sub-terms}          & Yes                                          \\
+\textbf{Constraints on sub-terms}       & Yes                                           \\
+\textbf{Preconditions}                 & Yes                                          \\
+\textbf{Dependencies}                  & No                                           \\
+\textbf{Backwards compatible}          & Yes                                          \\
+\textbf{Dividable}                     & No                                           \\ \bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Syntactically type preserving}
+There are two types of class declarations, a direct declaration as a Statement, or an Expression declaration. They are both transformed to a construct of the same syntactical type.
+
+\paragraph{Depending on bindings}
+Several features of the class declaration as described in the specification demand some runtime. (e.g. the class methods being non enumerable)
+
+\paragraph{Analysis of sub-terms}
+References of \textbf{super} and a \textbf{super} call have to identified inside constructor or class methods. These are transformed to preserve the correct \textbf{this} binding.
+
+\paragraph{Constraints on sub-terms}
+The sub-terms of a class declaration are always executed in strict mode
+
+\blockquote[{\cite[14.5]{SpecJS}}]{A ClassBody is always strict code.}
+
+\paragraph{Preconditions}
+Bodies of constructor and class methods should have been transformed before the class declaration itself is transformed. This to prevent incorrect transformation of the sub-term \textbf{super}.
+
+\subsection{Destructuring}
+Destructuring\cite[12.14.5]{SpecJS} is a new language construct to extract values from object or arrays with a single assignment. It can be used in multiple places among which parameters, variable declaration, and expression assignment.
+
+\begin{table}[h]
+\centering
+\caption{Extension transformation dimensions}
+\label{destructuring-table}
+\begin{tabular}{@{}rc@{}}
+\toprule
+                                       & \multicolumn{1}{l}{\textbf{Classes}} \\ \midrule
+\textbf{Transformation level}          & Context-free syntax                          \\
+\textbf{Scope}                         & Local-to-local                               \\
+\textbf{Syntactically type preserving} & No                                          \\
+\textbf{Introducing bindings}          & Yes                                          \\%
+\textbf{Depending on bindings}         & Yes                                           \\
+\textbf{Compositional}                 & Yes                                          \\
+\textbf{Analysis of sub-terms}          & Yes                                          \\
+\textbf{Constraints on sub-terms}       & No                                           \\
+\textbf{Preconditions}                 & No                                          \\
+\textbf{Dependencies}                  & Yes                                           \\
+\textbf{Backwards compatible}          & Yes                                          \\
+\textbf{Dividable}                     & Yes                                           \\ \bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Syntactically type preserving}
+The transformation is not syntactically type preserving in every situation. If the destructuring is used in a variable declaration the syntactic type is converted from $<Statement>$ to $<Statement*>$, because new bindings are introduced.
+
+\paragraph{Dependencies}
+Object destructuring supports the computed property notation of extended object literals (as discussed in section: \ref{object-literals}): 
+
+\begin{lstlisting}
+var qux = "key";
+var { [qux] : a } = obj;
+\end{lstlisting}
+
+Destructuring thus has a dependency on extended object literal notation for this feature to work properly.
+
+\paragraph{Dividable}
+This language features consists of two types of destructuring, object destructurings, and array destructurings. These two different features can be transformed separately. 
+
+\subsection{Extended object literals} \label{object-literals}
 
 \bibliography{thesis}{}
 \bibliographystyle{plain}
