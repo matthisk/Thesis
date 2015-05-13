@@ -6,10 +6,24 @@
 \usepackage{booktabs}
 \usepackage{csquotes}
 \usepackage[final]{listings}
-\usepackage{color}
+\usepackage{ifthen}
+\usepackage{xcolor}
+\usepackage{float}
 \definecolor{lightgray}{rgb}{.9,.9,.9}
 \definecolor{darkgray}{rgb}{.4,.4,.4}
 \definecolor{purple}{rgb}{0.65, 0.12, 0.82}
+
+\definecolor{keyword}{HTML}{7F0055}
+\definecolor{constant}{HTML}{2A00FF}
+
+\newcommand{\CAT}[2]{
+	\ifthenelse{ \equal{#1}{Keyword} }
+	{ \textcolor{keyword}{#2} }	
+	{\ifthenelse{ \equal{#1}{Constant}}
+	{ \textcolor{constant}{#2} }
+	{ #2 }
+	}
+}
 
 \lstdefinelanguage{JavaScript}{
   keywords={break, case, catch, continue, debugger, default, delete, do, else, false, finally, for, function, if, in, instanceof, new, null, return, switch, this, throw, true, try, typeof, var, void, while, with},
@@ -49,7 +63,6 @@
 \author{Matthisk Heimensen}
 
 \begin{document}
-\lstset{language=Pascal}
 	\maketitle
 	\tableofcontents
 \section{Taxonomy of language features}
@@ -62,7 +75,7 @@ The following dimensions are identified for all language extensions.
 At what level is the transformation performed, in other words what information is needed for this transformation. Possible only lexical information is needed for the transformation, however in most cases we expect to need information of the context-free syntax.
 
 \paragraph{Purely semantic}
-Is the extension purely in semantics, or are there differences in the syntax after transformation.
+Is the extension purely in semantic, or does the extension introduce new syntax.
 
 \paragraph{Scope}
 What is the scope of a language extensions transformation rule(s). This can be one of the following: local-to-local, local-to-global, global-to-global, or global-to-local.
@@ -155,7 +168,7 @@ var f = () => {
 };
 \end{lstlisting}
 
-\begin{lstlisting}
+\begin{lstlisting}[caption={Incorrect renaming of this in nested arrow function}]
 var f = (function(_super,_arguments,_this) {
 	return function() {	
 		() => _this;
@@ -191,7 +204,7 @@ Class definitions\cite[14.5]{SpecJS} are introduced in ECMAScript 6 as a new fea
 There are two types of class declarations, a direct declaration as a Statement, or an Expression declaration. They are both transformed to a construct of the same syntactical type.
 
 \paragraph{Depending on bindings}
-Several features of the class declaration as described in the specification demand some runtime. (e.g. the class methods being non enumerable)
+Several features of the class declaration as described in the specification demand some run-time. (e.g. the class methods being non enumerable)
 
 \paragraph{Analysis of sub-terms}
 References of \textbf{super} and a \textbf{super} call have to identified inside constructor or class methods. These are transformed to preserve the correct \textbf{this} binding.
@@ -204,16 +217,16 @@ The sub-terms of a class declaration are always executed in strict mode
 \paragraph{Preconditions}
 Bodies of constructor and class methods should have been transformed before the class declaration itself is transformed. This to prevent incorrect transformation of the sub-term \textbf{super}.
 
-\subsection{Destructuring}
+\subsubsection{Destructuring}
 Destructuring\cite[12.14.5]{SpecJS} is a new language construct to extract values from object or arrays with a single assignment. It can be used in multiple places among which parameters, variable declaration, and expression assignment.
 
-\begin{table}[h]
+\begin{table}[H]
 \centering
 \caption{Extension transformation dimensions}
 \label{destructuring-table}
 \begin{tabular}{@{}rc@{}}
 \toprule
-                                       & \multicolumn{1}{l}{\textbf{Classes}} \\ \midrule
+                                       & \multicolumn{1}{l}{\textbf{Destructuring}} \\ \midrule
 \textbf{Transformation level}          & Context-free syntax                          \\
 \textbf{Scope}                         & Local-to-local                               \\
 \textbf{Syntactically type preserving} & No                                          \\
@@ -245,7 +258,307 @@ Destructuring thus has a dependency on extended object literal notation for this
 \paragraph{Dividable}
 This language features consists of two types of destructuring, object destructurings, and array destructurings. These two different features can be transformed separately. 
 
-\subsection{Extended object literals} \label{object-literals}
+\subsubsection{Extended object literals} \label{object-literals}
+Literal object notation receives three new features in the ECMAScript 6 standard\cite[12.2.5]{SpecJS}. Shorthand property notation, shorthand method notation, and computed property names.
+
+\begin{table}[H]
+\centering
+\caption{Extension transformation dimensions}
+\label{object-literals-table}
+\begin{tabular}{@{}rc@{}}
+\toprule
+                                       & \multicolumn{1}{l}{\textbf{Object literals}} \\ \midrule
+\textbf{Transformation level}          & Context-free syntax                          \\
+\textbf{Scope}                         & Local-to-local                               \\
+\textbf{Syntactically type preserving} & Yes                                          \\
+\textbf{Introducing bindings}          & No                                          \\%
+\textbf{Depending on bindings}         & No                                           \\
+\textbf{Compositional}                 & Yes                                          \\
+\textbf{Analysis of sub-terms}          & No                                          \\
+\textbf{Constraints on sub-terms}       & No                                           \\
+\textbf{Preconditions}                 & No                                          \\
+\textbf{Dependencies}                  & No                                           \\
+\textbf{Backwards compatible}          & Yes                                          \\
+\textbf{Dividable}                     & Yes                                           \\ \bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Introducing bindings}
+For full spec compliance run-time code has to be introduced to set computed property keys. However this can also be done through the member notation:
+
+\begin{lstlisting}
+var obj = { [qux] : 0; }
+\end{lstlisting}
+
+\begin{lstlisting}
+var _obj;
+var obj = ( _obj = {}, _obj[qux] = 0, _obj );
+\end{lstlisting}  
+
+\paragraph{Dividable}
+All three extensions of the object literal can be transformed separately. 
+
+\subsubsection{For of loop}
+The ECMAScript 6 standard introduces iterators, and a shorthand for notation to loop over these iterators in the form of for of\cite[13.6.4]{SpecJS}. Previous versions of the ECMAScript standard had default for loops, and for in loops (which iterate over all enumerable properties of an object).
+
+\begin{table}[H]
+\centering
+\caption{Extension transformation dimensions}
+\label{for-of-table}
+\begin{tabular}{@{}rc@{}}
+\toprule
+                                       & \multicolumn{1}{l}{\textbf{For of loop}} \\ \midrule
+\textbf{Transformation level}          & Context-free syntax                          \\
+\textbf{Scope}                         & Local-to-local                               \\
+\textbf{Syntactically type preserving} & Yes                                          \\
+\textbf{Introducing bindings}          & No                                          \\%
+\textbf{Depending on bindings}         & No                                           \\
+\textbf{Compositional}                 & Yes                                          \\
+\textbf{Analysis of sub-terms}          & No                                          \\
+\textbf{Constraints on sub-terms}       & No                                           \\
+\textbf{Preconditions}                 & No                                          \\
+\textbf{Dependencies}                  & Yes                                           \\
+\textbf{Backwards compatible}          & Yes                                          \\
+\textbf{Dividable}                     & Yes                                           \\ \bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Constraints on sub-terms}
+No constraints any $<Statement>$ can be used within the body of a for-of loop.
+
+\begin{lstlisting}{language=Java}
+syntax Statement 
+	= "for" "(" Declarator ForBinding "of" Expression ")" Statement;
+\end{lstlisting}
+    
+\paragraph{Dependencies}
+The for-of loop binding can be declared with the let declarator\ref{let-const}.
+
+\begin{lstlisting}
+for( let x of arr ) <Statement>
+\end{lstlisting}
+
+
+\subsubsection{Spread operator}
+ECMAScript 6 introduces a new unary operator named spread\cite[12.3.6.1]{SpecJS}. This operator is used to expand an expression in places where multiple arguments (i.e. function calls) or multiple elements (i.e. array literals) are expected.
+
+\begin{table}[H]
+\centering
+\caption{Extension transformation dimensions}
+\label{spread-oeprator-table}
+\begin{tabular}{@{}rc@{}}
+\toprule
+                                       & \multicolumn{1}{l}{\textbf{Spread operator}} \\ \midrule
+\textbf{Transformation level}          & Context-free syntax                          \\
+\textbf{Scope}                         & Local-to-local                               \\
+\textbf{Syntactically type preserving} & Yes                                          \\
+\textbf{Introducing bindings}          & Yes                                          \\%
+\textbf{Depending on bindings}         & Yes                                           \\
+\textbf{Compositional}                 & Yes                                          \\
+\textbf{Analysis of sub-terms}          & Yes                                          \\
+\textbf{Constraints on sub-terms}       & No                                           \\
+\textbf{Preconditions}                 & No                                          \\
+\textbf{Dependencies}                  & No                                           \\
+\textbf{Backwards compatible}          & Yes                                          \\
+\textbf{Dividable}                     & Yes                                           \\ \bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Introducing bindings}
+A binding has to be introduced to save the scope in which a function is applied, when the function call happens on an object\ref{spread-analysis-sub-terms}
+
+\begin{lstlisting}
+a.b.f(...args);
+\end{lstlisting}
+\begin{lstlisting}
+var _a$b;
+(_a$b = a.b).f.apply(_a$b, args);
+\end{lstlisting}
+
+\paragraph{Depending on bindings}
+For correct specification compliance the argument of the spread operator has to be transformed to a consumable array. This behavior can be simulated through a run-time function.
+
+\paragraph{Analysis of sub-terms} \label{spread-analysis-sub-terms}
+If there exists a function call of function $f$ on object $a$ where spread operator is used in arguments list. This function call has to be transformed to a call to function $apply$ on function $f$ on object $a$. Where the first parameter of $apply$ is $a$ and second is the argument of spread. The sub-terms of function calls on objects with spread operators thus have to be analyzed to determine the call scope of the called function.
+
+\begin{lstlisting}
+a.f(...args);
+\end{lstlisting}
+\begin{lstlisting}[caption={apply function with correct $this$ scope}]
+a.f.apply(a,args);
+\end{lstlisting}
+
+\paragraph{Dividable}
+The operator can be used in two places (places of multiple arguments, and multiple elements), which can be transformed separately.
+
+\subsubsection{Default parameter}
+The ECMAScript 6 spec defines a way to give parameters default values\cite[9.2.12]{SpecJS}. These values are used if the caller does not supply any value on the position of this argument. Any default value is evaluated in the scope of the function (i.e. $this$ will resolve to the run-time context of the function the default parameter value is defined on).
+
+\begin{table}[H]
+\centering
+\caption{Extension transformation dimensions}
+\label{default-parameter-table}
+\begin{tabular}{@{}rc@{}}
+\toprule
+                                       & \multicolumn{1}{l}{\textbf{Default parameters}} \\ \midrule
+\textbf{Transformation level}          & Context-free syntax                          \\
+\textbf{Scope}                         & Local-to-local                               \\
+\textbf{Syntactically type preserving} & Yes                                          \\
+\textbf{Introducing bindings}          & No                                          \\%
+\textbf{Depending on bindings}         & No                                           \\
+\textbf{Compositional}                 & Yes                                          \\
+\textbf{Analysis of sub-terms}          & No                                          \\
+\textbf{Constraints on sub-terms}       & No                                           \\
+\textbf{Preconditions}                 & No                                          \\
+\textbf{Dependencies}                  & No                                           \\
+\textbf{Backwards compatible}          & Yes                                          \\
+\textbf{Dividable}                     & No                                           \\ \bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Introducing bindings}
+This transformation does not introduce any bindings because the bindings already exist as formal parameters.
+
+\subsubsection{Rest parameter}
+The \textit{BindingRestElement} defines a special parameter which binds to the remainder of the arguments supplied by the caller of the function.\cite[14.1]{SpecJS}
+
+\begin{table}[H]
+\centering
+\caption{Extension transformation dimensions}
+\label{rest-parameter-table}
+\begin{tabular}{@{}rc@{}}
+\toprule
+                                       & \multicolumn{1}{l}{\textbf{Rest Parameter}} \\ \midrule
+\textbf{Transformation level}          & Context-free syntax                          \\
+\textbf{Scope}                         & Local-to-local                               \\
+\textbf{Syntactically type preserving} & Yes                                          \\
+\textbf{Introducing bindings}          & No                                          \\%
+\textbf{Depending on bindings}         & No                                           \\
+\textbf{Compositional}                 & Yes                                          \\
+\textbf{Analysis of sub-terms}          & No                                          \\
+\textbf{Constraints on sub-terms}       & No                                           \\
+\textbf{Preconditions}                 & No                                          \\
+\textbf{Dependencies}                  & No                                           \\
+\textbf{Backwards compatible}          & Yes                                          \\
+\textbf{Dividable}                     & No                                           \\ \bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Syntactically type preserving}
+$<Function>$ to $<Function>$
+
+\subsubsection{Template strings}
+Standard string literals in JavaScript have some limitations. The ECMAScript 6 specification introduces a template string literal to overcome some of these\cite[12.2.8]{SpecJS}. Template string literals are delimited by the $`$ quotation mark, can span multiple lines and be interpolated by expressions: $\$\{<Expression>\}$
+
+\begin{table}[H]
+\centering
+\caption{Extension transformation dimensions}
+\label{template-strings-table}
+\begin{tabular}{@{}rc@{}}
+\toprule
+                                       & \multicolumn{1}{l}{\textbf{Template Strings}} \\ \midrule
+\textbf{Transformation level}          & Context-free syntax                          \\
+\textbf{Scope}                         & Local-to-local                               \\
+\textbf{Syntactically type preserving} & Yes                                          \\
+\textbf{Introducing bindings}          & No                                          \\%
+\textbf{Depending on bindings}         & No                                           \\
+\textbf{Compositional}                 & Yes                                          \\
+\textbf{Analysis of sub-terms}          & No                                          \\
+\textbf{Constraints on sub-terms}       & No                                           \\
+\textbf{Preconditions}                 & No                                          \\
+\textbf{Dependencies}                  & No                                           \\
+\textbf{Backwards compatible}          & Yes                                          \\
+\textbf{Dividable}                     & No                                           \\ \bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Syntactically type preserving}
+$<TemplateLiteral>$ to $<StringLiteral>$
+
+\subsubsection{Tail call optimization}
+JavaScript knows no optimization for recursive calls in the tail of a function, this results in the stack increasing with each new recursive call overflowing the stack as a result.  The ECMAScript 6 specification introduces tail call optimization to overcome this problem\cite[14.6]{SpecJS}
+
+\paragraph{Pure semantics}
+This extension is purely semantic, no new syntax is introduced. To transform this extension to work in older JavaScript interpreters the tail call has to be removed and replaced by a $while$ loop, to prevent the call stack from overflowing.
+
+\begin{lstlisting}[caption={Function with tail recursion},label={lst:tail-call}]
+function fib(n,nn,res) {
+	if( nn > 100 ) return res;
+	return fib(nn,n + nn,res + [n,nn]);
+}
+\end{lstlisting}
+
+\begin{lstlisting}[caption={Semantically identical function, without tail recursion},label={lst:transformed-tail-call}]
+function fib(arg0,arg1,arg2) {
+	while (true) {
+		var n = arg0, nn = arg1, res = arg2;
+
+		if(nn > 100) return res;
+		arg0 = nn;
+		arg1 = n + nn;
+		arg2 = res + [n,nn];
+	}
+}
+\end{lstlisting}
+
+Figure \ref{lst:transformed-tail-call} illustrates how a function with tail recursion can be transformed to a function with an infinite loop. Not filling the call stack with new return positions and thus executing correctly even when our upper limit (100) is increased.
+
+\subsubsection{Let and Const declarators}
+JavaScript's scoping happens according to the lexical scope of functions. Variable declarations are accessible in the entire scope of the executing function, this means no block scoping. The $let$ and $const$ declarator of the ECMAScript 6 specification change this. Variables declared with either one of these is lexically scoped to its block and not its executing function. The variables are also not hoisted to the top of their block, they can only be used after they are declared.
+
+\begin{table}[H]
+\centering
+\caption{Extension transformation dimensions}
+\label{let-const-table}
+\begin{tabular}{@{}rc@{}}
+\toprule
+                                       & \multicolumn{1}{l}{\textbf{Let Const}} \\ \midrule
+\textbf{Transformation level}          & Context-free syntax                          \\
+\textbf{Scope}                         & Global-to-global                               \\
+\textbf{Syntactically type preserving} & Yes                                          \\
+\textbf{Introducing bindings}          & No                                          \\%
+\textbf{Depending on bindings}         & No                                           \\
+\textbf{Compositional}                 & No                                          \\
+\textbf{Analysis of sub-terms}          & Yes                                          \\
+\textbf{Constraints on sub-terms}       & No                                           \\
+\textbf{Preconditions}                 & Yes                                          \\
+\textbf{Dependencies}                  & No                                           \\
+\textbf{Backwards compatible}          & No                                          \\
+\textbf{Dividable}                     & Yes                                           \\ \bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Scope}
+The transformation needs to analyse the entire program (global) and make transformations to its entirety (global). Thus the scope of the transformation is global-to-global.
+
+\paragraph{Compositional}
+The transformation of $let$ (or $const$) bindings is not compositional because bindings of these types can not be captured by names in sibling scopes
+
+\begin{lstlisting}
+{
+	let x = 0;
+}
+{
+	let x = 1;
+}
+\end{lstlisting} 
+
+Once these $let$ bindings are transformed to $var$ bindings without renaming they would be declared in the same lexical scope. Whereas they are not at the moment. For a transformation to $var$ bindings to work one of these bindings and its uses has to be renamed.
+
+\paragraph{Introducing bindings}
+The transformation introduces no new bindings, it converts $let$ and $const$ bindings to $var$ bindings, and renames these bindings were necessary.
+
+\paragraph{Preconditions}
+Other transformations need to be performed before the let const extension is transformed. To prevent this extension to have dependencies on other extensions. For example the for-of extension has a dependency on the let-const extension:
+
+\begin{lstlisting}
+for( let x of arr ) <Statement>
+\end{lstlisting}
+
+If the for-of loop is transformed to a normal loop let-const needs not to be aware of the for-of loop as an extension, but just of the ECMAScript 5 manner to declare variables inside loops.
+
+\paragraph{Dividable}
+Variables declared through let and const can be transformed to ECMAScript 5 code separately.
 
 \bibliography{thesis}{}
 \bibliographystyle{plain}
