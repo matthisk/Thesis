@@ -9,6 +9,7 @@
 \usepackage{ifthen}
 \usepackage{xcolor}
 \usepackage{float}
+\usepackage{url}
 \definecolor{lightgray}{rgb}{.9,.9,.9}
 \definecolor{darkgray}{rgb}{.4,.4,.4}
 \definecolor{purple}{rgb}{0.65, 0.12, 0.82}
@@ -70,6 +71,9 @@ Part of my research is the creation of a taxonomy of language features introduce
 
 \subsection{Dimensions}
 The following dimensions are identified for all language extensions.
+
+\paragraph{Category}
+One of the categories defined by Eelco Visser\cite{Visser2003}
 
 \paragraph{Transformation level}
 At what level is the transformation performed, in other words what information is needed for this transformation. Possible only lexical information is needed for the transformation, however in most cases we expect to need information of the context-free syntax.
@@ -502,6 +506,47 @@ function fib(arg0,arg1,arg2) {
 \end{lstlisting}
 
 Figure \ref{lst:transformed-tail-call} illustrates how a function with tail recursion can be transformed to a function with an infinite loop. Not filling the call stack with new return positions and thus executing correctly even when our upper limit (100) is increased.
+
+\subsubsection{Generators}
+The ECMAScript 6 standard introduces a new function type, called generators\cite[14.4]{SpecJS}. These are functions that can be exited and later re-entered, when leaving the function through $yielding$ their context (i.e. variable bindings) is saved and restored upon re-entering the function. A generator function is declared through \lstinline$function*$ and returns a Generator object (which inherits from $Iterator$)
+
+\begin{table}[H]
+\centering
+\caption{Extension transformation dimensions}
+\label{generators-table}
+\begin{tabular}{@{}rc@{}}
+\toprule
+                                       & \multicolumn{1}{l}{\textbf{Generators}} \\ \midrule
+\textbf{Transformation level}          & Context-free syntax                          \\
+\textbf{Scope}                         & Local-to-local                               \\
+\textbf{Syntactically type preserving} & Yes                                          \\
+\textbf{Introducing bindings}          & No                                          \\%
+\textbf{Depending on bindings}         & Yes                                           \\
+\textbf{Compositional}                 & Yes                                          \\
+\textbf{Analysis of sub-terms}          & Yes                                          \\
+\textbf{Constraints on sub-terms}       & No                                           \\
+\textbf{Preconditions}                 & Yes                                          \\
+\textbf{Dependencies}                  & No                                           \\
+\textbf{Backwards compatible}          & Yes                                          \\
+\textbf{Dividable}                     & No                                           \\ \bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Scope}
+Including a run-time the transformation can be managed local-to-local.
+
+\paragraph{Syntactically type preserving}
+$<Statement>$ to $<Statement>$
+$<Expression>$ to $<Expression>$
+
+\paragraph{Analysis of sub-terms}
+Identifying the use of $yield$ and $return$
+
+\paragraph{Preconditions}
+The $<GeneratorBody>$ has to be transformed before transformation of the Generator function starts.
+
+\paragraph{Depending on bindings}
+A run-time system can be used to simulate the behavior of Generator functions\footnote{\url{http://github.com/facebook/regenerator/blob/master/runtime.js}}
 
 \subsubsection{Let and Const declarators}
 JavaScript's scoping happens according to the lexical scope of functions. Variable declarations are accessible in the entire scope of the executing function, this means no block scoping. The $let$ and $const$ declarator of the ECMAScript 6 specification change this. Variables declared with either one of these is lexically scoped to its block and not its executing function. The variables are also not hoisted to the top of their block, they can only be used after they are declared.
