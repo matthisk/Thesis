@@ -1,0 +1,34 @@
+% Chapter 1
+
+\chapter{Introduction and Motivation}
+
+\label{Chapter1}
+
+\lhead{Chapter 1. \emph{Introduction and Motivation}} 
+
+\section{Context}
+JavaScript is an implementation of the ECMAScript specification. Since the release of the first version of the specification there have been four iterations (where version four was skipped), the current version of the specification is ECMAScript 5. In the near future a new version of the specification will leave the draft status and become the standard (ECMAScript 6). With a new specification come new syntactic language features. Before these features can be used in the JavaScript run-time environment of choice, the vendors of these environments have to implement the new standard. However it is possible to use the new standard today through the use of program transformations.
+
+In this work we study the extension of programming languages, the new ECMAScript specification presents an opportunity to research these extensions and there transformations. Using the RASCAL meta-programming environment\citep{Klint} we will implement the program transformations. Afterwards we can perform an analysis on the resulting transformation suite to uncover the \emph{effectiveness} of our implementation.
+
+\textit{"Program transformations find ubiquitous application in compiler construction to realize desugaring, optimizes, and code generators"}\cite{Erdweg2014} 
+in our research we will focus on the desugaring of (new) language constructs.  
+
+\textit{"The aim of program transformation is to increase programmer productivity by automating programming tasks, thus enabling programming at a higher-level of abstraction, and increasing maintainability"}\cite{Visser2001}
+
+\section{Problem definition}
+
+\section{Scope}
+
+\subsection{Expected results}
+
+\section{Research questions}
+The central research questions of this thesis are the following:
+
+\begin{enumerate}
+	\item How can independent program transformations be categorized?
+	\item What are the cross-cutting concerns of any program transformation, and how can we take care of these concerns outside of the transformations themselves?
+	\item What is the advantage of using the RASCAL language workbench\cite{Klint} for the creation of our transformation suite?
+\end{enumerate}
+
+\section{Outline}
