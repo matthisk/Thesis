@@ -139,6 +139,7 @@
 \usepackage{rotating}
 \usepackage{listings}
 \usepackage{csquotes} % Use package csquotes for block quotations
+\SetBlockEnvironment{quotation}
 \usepackage{lstpatch}
 \lstset{captionpos=b,
         frame=tb,

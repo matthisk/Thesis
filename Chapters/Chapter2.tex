@@ -1,623 +1,67 @@
 % Chapter Template
 
-\chapter{Transforming ECMAScript} % Main chapter title
+\chapter{Background} % Main chapter title
 
 \label{Chapter2}
 
-\lhead{Chapter 2. \emph{Transforming ECMAScript}}
+\lhead{Chapter 2. \emph{Background}}
 
-\section{Taxonomy of language features}
+\section{Program Transformations}
 
-Part of my research is the creation of a taxonomy of language features introduced in the ECMAScript 6 specification document. The taxonomy is created in regards to the transformations needed to transform the code to ECMAScript 5 compliant code with identical semantics.
+Eelco Visser defines the aim of a program transformation as follows:
 
-\subsection{Dimensions}
-The following dimensions are identified for all language extensions.
+\blockquote[\cite{Visser2001}]{The aim of program transformation is to increase programmer productivity by automating programming tasks, thus enabling programming at a higher-level of abstraction, and increasing maintainability}
 
-\paragraph{Category}
-One of the rephrasing categories defined by Eelco Visser\cite{Visser2001}:
-\\ 
+There are many different types of program transformations. Programs can be transformed from a source to a target language. Where both can be the same or different. One can be a higher level language and one a lower level language. In this thesis we will focus on transformations in the category rephrasing\cite{Visser2001}. Here a program in a source language is transformed to a different program in the same language. The use case in our thesis is language extensions see section \ref{lang-ext}.
+
+\section{Language Extensions} \label{lang-ext}
+\textit{"Language extensions augment a base language with additional language features. Many compilers first desugar a source program to a core language."}\cite{Erdweg2014} For example the Haskell functional programming language defines for many constructs how they can be transformed to a kernel language\cite{PeytonJones}
+
+\section{Program Representation} \ref{program-representation}
+Before programs can be transformed they need a structured representation. Seldom are program transformations performed on the merely the textual input. Here we discuss some program representations.
+
+\paragraph{Parse Trees} 
+Parse trees represent a programs syntactic information in a tree. This tree includes layout information of the input program (e.g. white-space, comments). The parse tree is structured according to some context-free grammar, that defines how to parse textual input. The parse tree also deals with disambiguation of input and representation of parentheses.
+
+\paragraph{Abstract Syntax Trees}
+or AST is created when layout information is removed from a parse tree and only the core constructs of the language grammar remain as nodes in the tree. White-space layout, comments, and things like parentheses (i.e. implicitly implied by the structure of the AST) are removed. An AST is often the input for compiler pipelines, program transformations, and refactorings.
+
+\paragraph{Higher Order Syntax Trees (HOAS)}
+To represent not just a program's sub expression relations but also its variable binding we can use a Higher Order Syntax Tree (HOAS)\cite{Pfenning}. In a HOAS the variable bindings are made explicit (just as the sub expression relations are made explicit in an AST). Every variable has a binding-site and possibly uses throughout the rest of the tree. \textit{"In addition to dealing with the problem of variable capture, HOAS provides higher-order matching which synthesizes new function for higher-order  variables. One of the problems of higher-order mathcing is that there can be many matches for a pattern"}\cite{Visser2001}
+
+\section{The Language Workbench} \label{rascal}
+
+The language workbench is a term popularized by Martin Fowler and we can formulate his definition as follows:
+
+A language workbench makes it easy to build tools that match the best of modern IDEs, where the primary source of information is a persistent abstract representation. Its users can freely design new languages without a semantic barrier. With the result of language oriented programming becoming much more accessible.\cite{Fowler2005}
+
+\blockquote[\cite{Fowler2005}]{Essentially the promise of language workbenches is that they provide the flexibility of external DSLs without a semantic barrier. Furthermore they make it easy to build tools that match the best of modern IDEs. The result makes language oriented programming much easier to build and support, lowering the barriers that have made language oriented programming so awkward for so many.}
+
+These workbenches reduce the awkwardness of language oriented programming\cite{Ward1994} significantly, by giving programmers the the tools to define programming languages with an abstract representation.
+
+The RASCAL\cite{Klint} metaprogramming environment (mpl) is a language workbench. It allows programmers to define context-free grammars, generate parsers for these grammars. With these parsers programmers are able to define parse tree patterns. The RASCAL mpl uses Eclipse for IDE integration, which allows programmers to define interaction handles and syntax highlighting. All language extensions presented in this thesis are implemented using the RASCAL mpl.
+
+\paragraph{Concrete syntax}
+A Rascal generated parser returns a parse tree, which is an ordered, rooted tree that represents the syntactic structure of a string according to the formal grammar used to specify the parser. Most transformation systems would implode this concrete syntax tree to an AST and perform program transformations on this tree. Rascal gives the possibility to perform program transformation directly on the concrete syntax tree through the use of concrete-syntax patterns. Presenting multiple advantages over an AST based solution:
 \begin{itemize}
-	\item Simplification
-	\item Desugaring
-	\item Weaving
-	\item Specialization
-	\item Inlining
-	\item Fusion
-	\item Design improvement
-	\item Obfuscation
-	\item Renovation
+	\item Preserving layout information encoded in the concrete-syntax tree
+	\item Avoiding the use of a pretty printer to output the transformed AST to a textual representation
+	\item Transformation code reads as rewrite rules, instead of a clutter of AST nodes. (Concrete syntax is syntax highlighted using the generated parser)
 \end{itemize}
-
-\paragraph{Transformation level}
-At what level is the transformation performed, in other words what information is needed for this transformation. Possible only lexical information is needed for the transformation, however in most cases we expect to need information of the context-free syntax.
-
-\paragraph{Purely semantic}
-Is the extension purely in semantic, or does the extension introduce new syntax.
-
-\paragraph{Scope}
-What is the scope of a language extensions transformation rule(s). This can be one of the following: local-to-local, local-to-global, global-to-global, or global-to-local.
-
-\paragraph{Syntactically type preserving}
-Is the type of the transformed syntax element the same as it is before transformation (e.g. is an expression transformed to an expression, or to a list of statements)
-
-\paragraph{Introduction of bindings}
-Are new bindings introduced in the transformed code as opposed to the original code.
-
-\paragraph{Depending on bindings (i.e. run-time code)}
-Will the transformed code rely on function calls not introduced by the transformation itself but provided separately from the transformation suite.
-
-\paragraph{Compositional}
-...
-
-\paragraph{Preconditions}
-What are the preconditions that have to be met before execution of a transformation rule, to ensure validness of our transformation (e.g. all sub-terms have to be analyzed and transformed)
-
-\paragraph{Restrictions on sub-terms}
-Does the language extensions impose restrictions on the sub-terms used inside of the language extension. (e.g. are certain expressions not allowed in the nesting of a certain extension)
-
-\paragraph{Analysis of sub-terms}
-Are the non-terminals of our language extension analyzed and possibly transformed by the transformation rule.
-
-\paragraph{Dependency on other extensions}
-Can the language extensions be performed stand-alone or is there a dependency on one of the other extensions.
-
-\paragraph{Backwards compatible}
-Is the transformed code backwards compatible with ECMAScript 6 standard.
-
-\paragraph{Dividable}
-Is it possible to identify smaller transformation rules inside this language extension, that can be performed independently from one another.
-
-\subsection{Taxonomy}
-
-\subsubsection{Arrow Functions}
-Arrow functions\cite[14.2]{SpecJS} are the new lambda-like function definitions inspired by Coffeescript and C\# notation. The functions body knows no lexical this binding but instead uses the binding of its parent lexical scope.
-
-\begin{table}[h]
-\centering
-\caption{Extension transformation dimensions}
-\label{arrow-function-table}
-\begin{tabular}{@{}rc@{}}
-\toprule
-                                       & \multicolumn{1}{l}{\textbf{Arrow Functions}} \\ \midrule
-\textbf{Category}                      & Desugaring
-\\
-\textbf{Transformation level}          & Context-free syntax                          \\
-\textbf{Scope}                         & Local-to-local                               \\
-\textbf{Syntactically type preserving} & Yes                                          \\
-\textbf{Introducing bindings}          & Yes                                          \\%
-\textbf{Depending on bindings}         & No                                           \\
-\textbf{Compositional}                 & Yes                                          \\
-\textbf{Analysis of sub-terms}          & Yes                                          \\
-\textbf{Constraints on sub-terms}       & Yes                                           \\
-\textbf{Preconditions}                 & Yes                                          \\
-\textbf{Dependencies}                  & No                                           \\
-\textbf{Backwards compatible}          & Yes                                          \\
-\textbf{Dividable}                     & No                                           \\ \bottomrule
-\end{tabular}
-\end{table}
-
-\paragraph{Category}
-The arrow function construct is eliminated by translating them into the fundamental function construct. Thus we speak of a syntactic sugar and a desugaring.
-
-\paragraph{Analysis of sub-terms}
-References to the arguments, sup
-er and this keyword have to be identified in the ConciseBody of an ArrowFunction and renamed.
-\\
-\\
-\blockquote[{\cite[14.2.16]{SpecJS}}]{An ArrowFunction does not define local bindings for \textbf{arguments}, \textbf{super}, \textbf{this}, or new.target. Any reference to arguments, super, or this within an ArrowFunction must resolve to a binding in a lexically enclosing environment.}
-\\\\
-An arrow function is transformed to an ES5 function which is wrapped in a self-calling function which receives its lexical enclosing scopes \textbf{super}, \textbf{this}, and \textbf{arguments} variables. The enclosing lexical scope is not polluted with new variable declarations. Keywords references are prepended with an underscore, only references in the current scope (i.e. no deeper scope) are renamed.
+A concrete-syntax pattern may contain variables in the form of our grammars non-terminals, these variables are bound in the context of the current patterns use (e.g. functions body when used as a formal parameter). The following pattern matches unnamed JavaScript functions according to the Saner JavaScript syntax definition\footnote{\url{https://goo.gl/B6HR22}}
 
 \begin{lstlisting}
-var f = <Arrow Function>;
+(Expression)`function( <Params ps> ) { <Statement* body> }` := pt
 \end{lstlisting}
+
+In similar fashion new syntax trees can be constructed, using the variables bound from pattern matches.
 
 \begin{lstlisting}
-var f = (function(_super,_arguments,_this) {
-	return <Desugared Arrow Function>
-})(super,arguments,this);
+(Expression)`function plus(x, y) { return x + y; }`
 \end{lstlisting}
 
-\paragraph{Constraints on sub-terms}
-Use of the \textbf{yield} keyword is not allowed in an arrow functions ConciseBody. Arrow functions can not be generators and deep continuations are avoided.
-
-\paragraph{Preconditions}
-Before an arrow function can be transformed its ConciseBody should have been transformed. This to prevent the incorrect renaming of sub-terms (\textbf{super},\textbf{arguments},\textbf{this}), because they still fall in the same scope depth.
+Rascal also supplies a shorthand notation to parse a string starting from the supplied non-terminal
 
 \begin{lstlisting}
-var f = () => {
-	() => this;
-};
+[Expression]"1 + 2"
 \end{lstlisting}
-
-\begin{lstlisting}[caption={Incorrect renaming of this in nested arrow function}]
-var f = (function(_super,_arguments,_this) {
-	return function() {	
-		() => _this;
-	};
-})(super,arguments,this);
-\end{lstlisting}
-
-\subsubsection{Classes}
-Class definitions\cite[14.5]{SpecJS} are introduced in ECMAScript 6 as a new feature to standardize inheritance model. Underneath the prototypal inheritance model is still used to create class declarations.
-\begin{table}[h]
-\centering
-\caption{Extension transformation dimensions}
-\label{classes-table}
-\begin{tabular}{@{}rc@{}}
-\toprule
-                                       & \multicolumn{1}{l}{\textbf{Classes}} \\ \midrule
-\textbf{Category}                      & Desugaring
-\\ 
-\textbf{Transformation level}          & Context-free syntax                          \\
-\textbf{Scope}                         & Local-to-local                               \\
-\textbf{Syntactically type preserving} & Yes                                          \\
-\textbf{Introducing bindings}          & No                                          \\%
-\textbf{Depending on bindings}         & Yes                                           \\
-\textbf{Compositional}                 & Yes                                          \\
-\textbf{Analysis of sub-terms}          & Yes                                          \\
-\textbf{Constraints on sub-terms}       & Yes                                           \\
-\textbf{Preconditions}                 & Yes                                          \\
-\textbf{Dependencies}                  & No                                           \\
-\textbf{Backwards compatible}          & Yes                                          \\
-\textbf{Dividable}                     & No                                           \\ \bottomrule
-\end{tabular}
-\end{table}
-
-\paragraph{Category}
-The class construct is syntactic sugar for simulation of class based inheritance through the more fundamental prototypal inheritance system of the ECMAScript language.
-
-\paragraph{Syntactically type preserving}
-There are two types of class declarations, a direct declaration as a Statement, or an Expression declaration. They are both transformed to a construct of the same syntactical type.
-
-\paragraph{Depending on bindings}
-Several features of the class declaration as described in the specification demand some run-time. (e.g. the class methods being non enumerable)
-
-\paragraph{Analysis of sub-terms}
-References of \textbf{super} and a \textbf{super} call have to identified inside constructor or class methods. These are transformed to preserve the correct \textbf{this} binding.
-
-\paragraph{Constraints on sub-terms}
-The sub-terms of a class declaration are always executed in strict mode
-
-\blockquote[{\cite[14.5]{SpecJS}}]{A ClassBody is always strict code.}
-
-\paragraph{Preconditions}
-Bodies of constructor and class methods should have been transformed before the class declaration itself is transformed. This to prevent incorrect transformation of the sub-term \textbf{super}.
-
-\subsubsection{Destructuring}
-Destructuring\cite[12.14.5]{SpecJS} is a new language construct to extract values from object or arrays with a single assignment. It can be used in multiple places among which parameters, variable declaration, and expression assignment.
-
-\begin{table}[h]
-\centering
-\caption{Extension transformation dimensions}
-\label{destructuring-table}
-\begin{tabular}{@{}rc@{}}
-\toprule
-                                       & \multicolumn{1}{l}{\textbf{Destructuring}} \\ \midrule
-\textbf{Category}                      & Desugaring
-\\
-\textbf{Transformation level}          & Context-free syntax                          \\
-\textbf{Scope}                         & Local-to-local                               \\
-\textbf{Syntactically type preserving} & No                                          \\
-\textbf{Introducing bindings}          & Yes                                          \\%
-\textbf{Depending on bindings}         & Yes                                           \\
-\textbf{Compositional}                 & Yes                                          \\
-\textbf{Analysis of sub-terms}          & Yes                                          \\
-\textbf{Constraints on sub-terms}       & No                                           \\
-\textbf{Preconditions}                 & No                                          \\
-\textbf{Dependencies}                  & Yes                                           \\
-\textbf{Backwards compatible}          & Yes                                          \\
-\textbf{Dividable}                     & Yes                                           \\ \bottomrule
-\end{tabular}
-\end{table}
-
-\paragraph{Category}
-The destructuring language feature is eliminated by translating it into fundamental language concepts such as member access on objects and array member selection.
-
-\paragraph{Syntactically type preserving}
-The transformation is not syntactically type preserving in every situation. If the destructuring is used in a variable declaration the syntactic type is converted from $<Statement>$ to $<Statement*>$, because new bindings are introduced.
-
-\paragraph{Dependencies}
-Object destructuring supports the computed property notation of extended object literals (as discussed in section: \ref{object-literals}): 
-
-\begin{lstlisting}
-var qux = "key";
-var { [qux] : a } = obj;
-\end{lstlisting}
-
-Destructuring thus has a dependency on extended object literal notation for this feature to work properly.
-
-\paragraph{Dividable}
-This language features consists of two types of destructuring, object destructurings, and array destructurings. These two different features can be transformed separately. 
-
-\subsubsection{Extended object literals} \label{object-literals}
-Literal object notation receives three new features in the ECMAScript 6 standard\cite[12.2.5]{SpecJS}. Shorthand property notation, shorthand method notation, and computed property names.
-
-\begin{table}[h]
-\centering
-\caption{Extension transformation dimensions}
-\label{object-literals-table}
-\begin{tabular}{@{}rc@{}}
-\toprule
-                                       & \multicolumn{1}{l}{\textbf{Object literals}} \\ \midrule
-\textbf{Category}                      & Desugaring
-\\
-\textbf{Transformation level}          & Context-free syntax                          \\
-\textbf{Scope}                         & Local-to-local                               \\
-\textbf{Syntactically type preserving} & Yes                                          \\
-\textbf{Introducing bindings}          & No                                          \\%
-\textbf{Depending on bindings}         & No                                           \\
-\textbf{Compositional}                 & Yes                                          \\
-\textbf{Analysis of sub-terms}          & No                                          \\
-\textbf{Constraints on sub-terms}       & No                                           \\
-\textbf{Preconditions}                 & No                                          \\
-\textbf{Dependencies}                  & No                                           \\
-\textbf{Backwards compatible}          & Yes                                          \\
-\textbf{Dividable}                     & Yes                                           \\ \bottomrule
-\end{tabular}
-\end{table}
-
-\paragraph{Category}
-The extended object literals are syntactic sugar in the purest form. There are direct rules to eliminate the introduced concepts to fundamental concepts of the ECMAScript 5 language. (e.g. shorthand property notation translate to non-shorthand notation)
-
-\paragraph{Introducing bindings}
-For full spec compliance run-time code has to be introduced to set computed property keys. However this can also be done through the member notation:
-
-\begin{lstlisting}
-var obj = { [qux] : 0; }
-\end{lstlisting}
-
-\begin{lstlisting}
-var _obj;
-var obj = ( _obj = {}, _obj[qux] = 0, _obj );
-\end{lstlisting}  
-
-\paragraph{Dividable}
-All three extensions of the object literal can be transformed separately. 
-
-\subsubsection{For of loop}
-The ECMAScript 6 standard introduces iterators, and a shorthand for notation to loop over these iterators in the form of for of\cite[13.6.4]{SpecJS}. Previous versions of the ECMAScript standard had default for loops, and for in loops (which iterate over all enumerable properties of an object).
-
-\begin{table}[h]
-\centering
-\caption{Extension transformation dimensions}
-\label{for-of-table}
-\begin{tabular}{@{}rc@{}}
-\toprule
-                                       & \multicolumn{1}{l}{\textbf{For of loop}} \\ \midrule
-\textbf{Category}                      & Desugaring
-\\
-\textbf{Transformation level}          & Context-free syntax                          \\
-\textbf{Scope}                         & Local-to-local                               \\
-\textbf{Syntactically type preserving} & Yes                                          \\
-\textbf{Introducing bindings}          & No                                          \\%
-\textbf{Depending on bindings}         & No                                           \\
-\textbf{Compositional}                 & Yes                                          \\
-\textbf{Analysis of sub-terms}          & No                                          \\
-\textbf{Constraints on sub-terms}       & No                                           \\
-\textbf{Preconditions}                 & No                                          \\
-\textbf{Dependencies}                  & Yes                                           \\
-\textbf{Backwards compatible}          & Yes                                          \\
-\textbf{Dividable}                     & Yes                                           \\ \bottomrule
-\end{tabular}
-\end{table}
-
-\paragraph{Category}
-This construct can be eliminated by transformation to a for-loop using an iterator variable, and selecting the bound variable for the current index from the array using this iterator variable.
-
-\paragraph{Constraints on sub-terms}
-No constraints any $<Statement>$ can be used within the body of a for-of loop.
-
-\begin{lstlisting}{language=Java}
-syntax Statement 
-	= "for" "(" Declarator ForBinding "of" Expression ")" Statement;
-\end{lstlisting}
-    
-\paragraph{Dependencies}
-The for-of loop binding can be declared with the let declarator\ref{let-const}.
-
-\begin{lstlisting}
-for( let x of arr ) <Statement>
-\end{lstlisting}
-
-
-\subsubsection{Spread operator}
-ECMAScript 6 introduces a new unary operator named spread\cite[12.3.6.1]{SpecJS}. This operator is used to expand an expression in places where multiple arguments (i.e. function calls) or multiple elements (i.e. array literals) are expected.
-
-\begin{table}[h]
-\centering
-\caption{Extension transformation dimensions}
-\label{spread-oeprator-table}
-\begin{tabular}{@{}rc@{}}
-\toprule
-                                       & \multicolumn{1}{l}{\textbf{Spread operator}} \\ \midrule
-\textbf{Category}                      & Desugaring
-\\
-\textbf{Transformation level}          & Context-free syntax                          \\
-\textbf{Scope}                         & Local-to-local                               \\
-\textbf{Syntactically type preserving} & Yes                                          \\
-\textbf{Introducing bindings}          & Yes                                          \\%
-\textbf{Depending on bindings}         & Yes                                           \\
-\textbf{Compositional}                 & Yes                                          \\
-\textbf{Analysis of sub-terms}          & Yes                                          \\
-\textbf{Constraints on sub-terms}       & No                                           \\
-\textbf{Preconditions}                 & No                                          \\
-\textbf{Dependencies}                  & No                                           \\
-\textbf{Backwards compatible}          & Yes                                          \\
-\textbf{Dividable}                     & Yes                                           \\ \bottomrule
-\end{tabular}
-\end{table}
-
-\paragraph{Category}
-This unary operator can be expressed using fundamental concepts of the ECMAScript 5 language. In case the operator appears in a place where multiple arguments are expected, a call of member function $apply$ on our function can be used to supply arguments as an array. In case it appears in a place where multiple elements are expected the prototype function $concat$ of arrays can be used to interleave the supplied argument to the operator with the rest of the array. 
-
-\paragraph{Introducing bindings}
-A binding has to be introduced to save the scope in which a function is applied, when the function call happens on an object\ref{spread-analysis-sub-terms}
-
-\begin{lstlisting}
-a.b.f(...args);
-\end{lstlisting}
-\begin{lstlisting}
-var _a$b;
-(_a$b = a.b).f.apply(_a$b, args);
-\end{lstlisting}
-
-\paragraph{Depending on bindings}
-For correct specification compliance the argument of the spread operator has to be transformed to a consumable array. This behavior can be simulated through a run-time function.
-
-\paragraph{Analysis of sub-terms} \label{spread-analysis-sub-terms}
-If there exists a function call of function $f$ on object $a$ where spread operator is used in arguments list. This function call has to be transformed to a call to function $apply$ on function $f$ on object $a$. Where the first parameter of $apply$ is $a$ and second is the argument of spread. The sub-terms of function calls on objects with spread operators thus have to be analyzed to determine the call scope of the called function.
-
-\begin{lstlisting}
-a.f(...args);
-\end{lstlisting}
-\begin{lstlisting}[caption={apply function with correct $this$ scope}]
-a.f.apply(a,args);
-\end{lstlisting}
-
-\paragraph{Dividable}
-The operator can be used in two places (places of multiple arguments, and multiple elements), which can be transformed separately.
-
-\subsubsection{Default parameter}
-The ECMAScript 6 spec defines a way to give parameters default values\cite[9.2.12]{SpecJS}. These values are used if the caller does not supply any value on the position of this argument. Any default value is evaluated in the scope of the function (i.e. $this$ will resolve to the run-time context of the function the default parameter value is defined on).
-
-\begin{table}[h]
-\centering
-\caption{Extension transformation dimensions}
-\label{default-parameter-table}
-\begin{tabular}{@{}rc@{}}
-\toprule
-                                       & \multicolumn{1}{l}{\textbf{Default parameters}} \\ \midrule
-\textbf{Category}                      & Desugaring
-\\
-\textbf{Transformation level}          & Context-free syntax                          \\
-\textbf{Scope}                         & Local-to-local                               \\
-\textbf{Syntactically type preserving} & Yes                                          \\
-\textbf{Introducing bindings}          & No                                          \\%
-\textbf{Depending on bindings}         & No                                           \\
-\textbf{Compositional}                 & Yes                                          \\
-\textbf{Analysis of sub-terms}          & No                                          \\
-\textbf{Constraints on sub-terms}       & No                                           \\
-\textbf{Preconditions}                 & No                                          \\
-\textbf{Dependencies}                  & No                                           \\
-\textbf{Backwards compatible}          & Yes                                          \\
-\textbf{Dividable}                     & No                                           \\ \bottomrule
-\end{tabular}
-\end{table}
-
-\paragraph{Category}
-This language feature can be eliminated by transformation to a fundamental concept of the ECMAScript 5 language. By binding the variable in the function body to either the default value (in case the parameter equals $undefined$) or to the value supplied by the parameter.
-
-\paragraph{Introducing bindings}
-This transformation does not introduce any bindings because the bindings already exist as formal parameters.
-
-\subsubsection{Rest parameter}
-The \textit{BindingRestElement} defines a special parameter which binds to the remainder of the arguments supplied by the caller of the function.\cite[14.1]{SpecJS}
-
-\begin{table}[h]
-\centering
-\caption{Extension transformation dimensions}
-\label{rest-parameter-table}
-\begin{tabular}{@{}rc@{}}
-\toprule
-                                       & \multicolumn{1}{l}{\textbf{Rest Parameter}} \\ \midrule
-\textbf{Category}                      & Desugaring
-\\
-\textbf{Transformation level}          & Context-free syntax                          \\
-\textbf{Scope}                         & Local-to-local                               \\
-\textbf{Syntactically type preserving} & Yes                                          \\
-\textbf{Introducing bindings}          & No                                          \\%
-\textbf{Depending on bindings}         & No                                           \\
-\textbf{Compositional}                 & Yes                                          \\
-\textbf{Analysis of sub-terms}          & No                                          \\
-\textbf{Constraints on sub-terms}       & No                                           \\
-\textbf{Preconditions}                 & No                                          \\
-\textbf{Dependencies}                  & No                                           \\
-\textbf{Backwards compatible}          & Yes                                          \\
-\textbf{Dividable}                     & No                                           \\ \bottomrule
-\end{tabular}
-\end{table}
-
-\paragraph{Category}
-
-
-\paragraph{Syntactically type preserving}
-$<Function>$ to $<Function>$
-
-\subsubsection{Template strings}
-Standard string literals in JavaScript have some limitations. The ECMAScript 6 specification introduces a template string literal to overcome some of these\cite[12.2.8]{SpecJS}. Template string literals are delimited by the $`$ quotation mark, can span multiple lines and be interpolated by expressions: $\$\{<Expression>\}$
-
-\begin{table}[h]
-\centering
-\caption{Extension transformation dimensions}
-\label{template-strings-table}
-\begin{tabular}{@{}rc@{}}
-\toprule
-                                       & \multicolumn{1}{l}{\textbf{Template Strings}} \\ \midrule
-\textbf{Category}                      & Desugaring
-\\
-\textbf{Transformation level}          & Context-free syntax                          \\
-\textbf{Scope}                         & Local-to-local                               \\
-\textbf{Syntactically type preserving} & Yes                                          \\
-\textbf{Introducing bindings}          & No                                          \\%
-\textbf{Depending on bindings}         & No                                           \\
-\textbf{Compositional}                 & Yes                                          \\
-\textbf{Analysis of sub-terms}          & No                                          \\
-\textbf{Constraints on sub-terms}       & No                                           \\
-\textbf{Preconditions}                 & No                                          \\
-\textbf{Dependencies}                  & No                                           \\
-\textbf{Backwards compatible}          & Yes                                          \\
-\textbf{Dividable}                     & No                                           \\ \bottomrule
-\end{tabular}
-\end{table}
-
-\paragraph{Category}
-Template strings are syntactic sugar for Strings concatenated with expressions and new-line characters.
-
-\paragraph{Syntactically type preserving}
-$<TemplateLiteral>$ to $<StringLiteral>$
-
-\subsubsection{Tail call optimization}
-JavaScript knows no optimization for recursive calls in the tail of a function, this results in the stack increasing with each new recursive call overflowing the stack as a result.  The ECMAScript 6 specification introduces tail call optimization to overcome this problem\cite[14.6]{SpecJS}
-
-\paragraph{Category}
-Optimization, this transformation improves the space performance of a program.
-
-\paragraph{Pure semantics}
-This extension is purely semantic, no new syntax is introduced. To transform this extension to work in older JavaScript interpreters the tail call has to be removed and replaced by a $while$ loop, to prevent the call stack from overflowing.
-
-\begin{lstlisting}[caption={Function with tail recursion},label={lst:tail-call}]
-function fib(n,nn,res) {
-	if( nn > 100 ) return res;
-	return fib(nn,n + nn,res + [n,nn]);
-}
-\end{lstlisting}
-
-\begin{lstlisting}[caption={Semantically identical function, without tail recursion},label={lst:transformed-tail-call}]
-function fib(arg0,arg1,arg2) {
-	while (true) {
-		var n = arg0, nn = arg1, res = arg2;
-
-		if(nn > 100) return res;
-		arg0 = nn;
-		arg1 = n + nn;
-		arg2 = res + [n,nn];
-	}
-}
-\end{lstlisting}
-
-Figure \ref{lst:transformed-tail-call} illustrates how a function with tail recursion can be transformed to a function with an infinite loop. Not filling the call stack with new return positions and thus executing correctly even when our upper limit (100) is increased.
-
-\subsubsection{Generators}
-The ECMAScript 6 standard introduces a new function type, called generators\cite[14.4]{SpecJS}. These are functions that can be exited and later re-entered, when leaving the function through $yielding$ their context (i.e. variable bindings) is saved and restored upon re-entering the function. A generator function is declared through \lstinline$function*$ and returns a Generator object (which inherits from $Iterator$)
-
-\begin{table}[h]
-\centering
-\caption{Extension transformation dimensions}
-\label{generators-table}
-\begin{tabular}{@{}rc@{}}
-\toprule
-                                       & \multicolumn{1}{l}{\textbf{Generators}} \\ \midrule
-\textbf{Category}                      & Desugaring
-\\
-\textbf{Transformation level}          & Context-free syntax                          \\
-\textbf{Scope}                         & Local-to-local                               \\
-\textbf{Syntactically type preserving} & Yes                                          \\
-\textbf{Introducing bindings}          & No                                          \\%
-\textbf{Depending on bindings}         & Yes                                           \\
-\textbf{Compositional}                 & Yes                                          \\
-\textbf{Analysis of sub-terms}          & Yes                                          \\
-\textbf{Constraints on sub-terms}       & No                                           \\
-\textbf{Preconditions}                 & Yes                                          \\
-\textbf{Dependencies}                  & No                                           \\
-\textbf{Backwards compatible}          & Yes                                          \\
-\textbf{Dividable}                     & No                                           \\ \bottomrule
-\end{tabular}
-\end{table}
-
-\paragraph{Category}
-...
-
-\paragraph{Scope}
-Including a run-time the transformation can be managed local-to-local.
-
-\paragraph{Syntactically type preserving}
-$<Statement>$ to $<Statement>$
-$<Expression>$ to $<Expression>$
-
-\paragraph{Analysis of sub-terms}
-Identifying the use of $yield$ and $return$
-
-\paragraph{Preconditions}
-The $<GeneratorBody>$ has to be transformed before transformation of the Generator function starts.
-
-\paragraph{Depending on bindings}
-A run-time system can be used to simulate the behavior of Generator functions\footnote{\url{http://github.com/facebook/regenerator/blob/master/runtime.js}}
-
-\subsubsection{Let and Const declarators}
-JavaScript's scoping happens according to the lexical scope of functions. Variable declarations are accessible in the entire scope of the executing function, this means no block scoping. The $let$ and $const$ declarator of the ECMAScript 6 specification change this. Variables declared with either one of these is lexically scoped to its block and not its executing function. The variables are also not hoisted to the top of their block, they can only be used after they are declared.
-
-\begin{table}[h]
-\centering
-\caption{Extension transformation dimensions}
-\label{let-const-table}
-\begin{tabular}{@{}rc@{}}
-\toprule
-                                       & \multicolumn{1}{l}{\textbf{Let Const}} \\ \midrule
-\textbf{Category}                      & Undefined
-\\
-\textbf{Transformation level}          & Context-free syntax                          \\
-\textbf{Scope}                         & Global-to-global                               \\
-\textbf{Syntactically type preserving} & Yes                                          \\
-\textbf{Introducing bindings}          & No                                          \\%
-\textbf{Depending on bindings}         & No                                           \\
-\textbf{Compositional}                 & No                                          \\
-\textbf{Analysis of sub-terms}          & Yes                                          \\
-\textbf{Constraints on sub-terms}       & No                                           \\
-\textbf{Preconditions}                 & Yes                                          \\
-\textbf{Dependencies}                  & No                                           \\
-\textbf{Backwards compatible}          & No                                          \\
-\textbf{Dividable}                     & Yes                                           \\ \bottomrule
-\end{tabular}
-\end{table}
-
-\paragraph{Category}
-This language feature does not fall under any of the defined categories of rephrasing by Eelco Visser\cite{Visser2001}. The feature introduces a new language concept, however this concept is not syntactic sugar for a more fundamental concept in ECMAScript 5. This because the previous standard does not know \textit{block-scoping}.
-
-\paragraph{Scope}
-The transformation needs to analyse the entire program (global) and make transformations to its entirety (global). Thus the scope of the transformation is global-to-global.
-
-\paragraph{Compositional}
-The transformation of $let$ (or $const$) bindings is not compositional because bindings of these types can not be captured by names in sibling scopes
-
-\begin{lstlisting}
-{
-	let x = 0;
-}
-{
-	let x = 1;
-}
-\end{lstlisting} 
-
-Once these $let$ bindings are transformed to $var$ bindings without renaming they would be declared in the same lexical scope. Whereas they are not at the moment. For a transformation to $var$ bindings to work one of these bindings and its uses has to be renamed.
-
-\paragraph{Introducing bindings}
-The transformation introduces no new bindings, it converts $let$ and $const$ bindings to $var$ bindings, and renames these bindings were necessary.
-
-\paragraph{Preconditions}
-Other transformations need to be performed before the let const extension is transformed. To prevent this extension to have dependencies on other extensions. For example the for-of extension has a dependency on the let-const extension:
-
-\begin{lstlisting}
-for( let x of arr ) <Statement>
-\end{lstlisting}
-
-If the for-of loop is transformed to a normal loop let-const needs not to be aware of the for-of loop as an extension, but just of the ECMAScript 5 manner to declare variables inside loops.
-
-\paragraph{Dividable}
-Variables declared through let and const can be transformed to ECMAScript 5 code separately.
-
-\subsection{On the expressive power of ECMAScript 6}
-
-\section{Implementation}
-Each transformation is defined as a term-rewriting rule. It has a concrete syntax pattern which can match part of a parse-tree. The result is a concrete piece of syntax, using only constructs from the fundamental syntax definition (i.e. ECMAScript 5).
-The rewrite rules are exhaustively applied on the input parse-tree until no more rewrite rules match any sub-trees of the input. Application of rewrite rules to the parse tree is done bottom-up, because several rewrite rules (e.g. \ref{arrow-function-table}) demand for successful completion that their sub-terms are already transformed.

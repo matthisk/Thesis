@@ -17,13 +17,23 @@ in our research we will focus on the desugaring of (new) language constructs.
 \textit{"The aim of program transformation is to increase programmer productivity by automating programming tasks, thus enabling programming at a higher-level of abstraction, and increasing maintainability"}\cite{Visser2001}
 
 \section{Problem definition}
+Program transformations are faced by multiple problems, in what order do we run the transformation rules, how do we represent the program (e.g. abstract syntax) to perform transformations on, what guarantee do we have for the validity of our transformations, how can a transformation introduce new bindings.  
+Some of these problems reoccur in every transformation that is created. These problems are identified as cross-cutting concerns. The goal of this thesis is to identify these concerns and separate them from the transformation code. 
+
+The capture avoidance is one such problem, it is mostly studied in the context of macro expansion\cite{Herman2010a,Herman2010,Disney2014}. And is often called the hygiene of transformations. When an identifier originating from the source program references to a synthesized declaration, the transformation is sub-hygienic and introduces variable capture. To prevent this problem we implement the \textit{name-fix} algorithm\cite{Erdweg2014} for our transformation suite.
 
 \section{Scope}
 
 \subsection{Expected results}
-
+This thesis will have the following results:
+\begin{itemize}
+	\item A taxonomy of ES6 language features specified by their needed transformations
+	\item Language extension suite implementing (a subset of) the ES6 features.
+	\item A set of compatibility tests, testing our implementation against the specification document.
+	\item Eclipse integration (syntax highlighting \& declared at hyperlinks) for new language features
+\end{itemize}
 \section{Research questions}
-The central research questions of this thesis are the following:
+The central research questions of this thesis are:
 
 \begin{enumerate}
 	\item How can independent program transformations be categorized?
@@ -32,3 +42,4 @@ The central research questions of this thesis are the following:
 \end{enumerate}
 
 \section{Outline}
+In Chapter \ref{Chapter2} the background (program transformations, language workbench) is introduced. In Chapter \ref{Chapter3} we give an overview of language extensions that are introduced and make a taxonomy of their transformations. In \ref{Chapter4} we discuss the cross-cutting concerns of the transformation suite (i.e. variable capture). In Chapter \ref{Chapter5} we evaluate our resulting transformation suite (against others). Finally, we conclude in Chapter \ref{Chapter6}.
