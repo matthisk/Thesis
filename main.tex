@@ -29,6 +29,8 @@
 
 \graphicspath{{Pictures/}} % Specifies the directory where pictures are stored
 
+\usepackage{pdflscape}
+\usepackage{afterpage}
 \usepackage[square, numbers, comma, sort&compress]{natbib} % Use the natbib reference package - read up on this to edit the reference style; if you want text (e.g. Smith et al., 2012) for the in-text references (instead of numbers), remove 'numbers' 
 \hypersetup{urlcolor=blue, colorlinks=true} % Colors hyperlinks in blue - change to black if annoying
 
@@ -65,7 +67,7 @@
 
 
 \lstdefinelanguage{JavaScript}{
-  keywords={break, case, catch, continue, debugger, default, delete, do, else, false, finally, for, function, if, in, instanceof, new, null, return, switch, this, throw, true, try, typeof, var, void, while, with},
+  keywords={break, case, catch, continue, debugger, default, delete, do, else, false, finally, for, function, if, in, instanceof, new, null, return, switch, this, throw, true, try, typeof, var, let, const void, while, with},
   morecomment=[l]{//},
   morecomment=[s]{/*}{*/},
   morestring=[b]',
@@ -195,21 +197,21 @@ The acknowledgements and the people to thank go here, don't forget to include yo
 %	ABBREVIATIONS
 %----------------------------------------------------------------------------------------
 
-\clearpage % Start a new page
+%\clearpage % Start a new page
 
-\setstretch{1.5} % Set the line spacing to 1.5, this makes the following tables easier to read
+%\setstretch{1.5} % Set the line spacing to 1.5, this makes the following tables easier to read
 
-\lhead{\emph{Abbreviations}} % Set the left side page header to "Abbreviations"
-\listofsymbols{ll} % Include a list of Abbreviations (a table of two columns)
-{
-\textbf{ES6} & \textbf{E}CMA\textbf{S}cript 6 \\
-\textbf{ES5} & \textbf{E}CMA\textbf{S}cript 5 \\
-\textbf{LOC} & \textbf{L}ines \textbf{O}f \textbf{C}ode \\
-\textbf{AST} & \textbf{A}bstract \textbf{S}yntax \textbf{T}ree \\
-\textbf{HOAS} & \textbf{H}igher \textbf{O}rder \textbf{A}bstract \textbf{S}yntax \\
+%\lhead{\emph{Abbreviations}} % Set the left side page header to "Abbreviations"
+%\listofsymbols{ll} % Include a list of Abbreviations (a table of two columns)
+%{
+%\textbf{ES6} & \textbf{E}CMA\textbf{S}cript 6 \\
+%\textbf{ES5} & \textbf{E}CMA\textbf{S}cript 5 \\
+%\textbf{LOC} & \textbf{L}ines \textbf{O}f \textbf{C}ode \\
+%\textbf{AST} & \textbf{A}bstract \textbf{S}yntax \textbf{T}ree \\
+%\textbf{HOAS} & \textbf{H}igher \textbf{O}rder \textbf{A}bstract \textbf{S}yntax \\
 
 %\textbf{Acronym} & \textbf{W}hat (it) \textbf{S}tands \textbf{F}or \\
-}
+%}
 
 %----------------------------------------------------------------------------------------
 %	THESIS CONTENT - CHAPTERS
@@ -226,7 +228,7 @@ The acknowledgements and the people to thank go here, don't forget to include yo
 \input{Chapters/Chapter1}
 \input{Chapters/Chapter2} 
 \input{Chapters/Chapter3}
-%\input{Chapters/Chapter4} 
+\input{Chapters/Chapter4} 
 %\input{Chapters/Chapter5} 
 %\input{Chapters/Chapter6} 
 %\input{Chapters/Chapter7} 
@@ -242,7 +244,7 @@ The acknowledgements and the people to thank go here, don't forget to include yo
 % Include the appendices of the thesis as separate files from the Appendices folder
 % Uncomment the lines as you write the Appendices
 
-\input{Appendices/AppendixA}
+%\input{Appendices/AppendixA}
 %\input{Appendices/AppendixB}
 %\input{Appendices/AppendixC}
 

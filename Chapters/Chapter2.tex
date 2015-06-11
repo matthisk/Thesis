@@ -17,17 +17,28 @@ There are many different types of program transformations. Programs can be trans
 \section{Language Extensions} \label{lang-ext}
 \textit{"Language extensions augment a base language with additional language features. Many compilers first desugar a source program to a core language."}\cite{Erdweg2014} For example the Haskell functional programming language defines for many constructs how they can be transformed to a kernel language\cite{PeytonJones}
 
+Language extensions are closely related to other forms of program transformations. There are (syntax) macros\cite{Leavenworth1966}, these are language extensions defined within the same source file and are expanded before compilation (examples SweeterJS\cite{Disney2014}, Syntax macros\cite{Weise1993}). These "define syntactic abstractions over code fragments"\cite{Bravenboer2004}. Macro systems have several limitations that make it difficult to implement a full language extension set, as needed for the transformation of ES6 features. The transformations need to be present in the same source file, macros are often restrained to a fixed invocation (through a macro identifier), and they often lack the expressiveness in their rewriting language\cite{Bravenboer2004}. There was an attempt to implement the ES6 spec through the use of syntax macros but the project\footnote{\url{https://github.com/jlongster/es6-macros}} is abandoned.
+
+Syntactic sugar is another relative of language extensions. As mentioned before there are several languages that before compilation are transformed to a core language (e.g. Haskell core language).  Language features classified as syntactic sugar, are features that can be expressed in the core language. But often benefit from improved human readability when notated with aid of the syntactic sugar. For example the assignment expression $a += b$ is syntactic sugar notation for $a = a + b$ of frequent occurrence in (c-style) programming languages.
+
 \section{Program Representation} \ref{program-representation}
 Before programs can be transformed they need a structured representation. Seldom are program transformations performed on the merely the textual input. Here we discuss some program representations.
 
 \paragraph{Parse Trees} 
-Parse trees represent a programs syntactic information in a tree. This tree includes layout information of the input program (e.g. white-space, comments). The parse tree is structured according to some context-free grammar, that defines how to parse textual input. The parse tree also deals with disambiguation of input and representation of parentheses.
+Parse trees represent a programs syntactic information in a tree. This tree includes layout information of the input program (e.g. white-space, comments). The parse tree is structured according to some context-free grammar, that defines how to parse textual input. The parse tree also deals with disambiguation of input and representation of parentheses. If the parser finds an ambiguity during the parse process the two (or more) alternatives are all inserted in the tree under an ambiguity node.
 
 \paragraph{Abstract Syntax Trees}
-or AST is created when layout information is removed from a parse tree and only the core constructs of the language grammar remain as nodes in the tree. White-space layout, comments, and things like parentheses (i.e. implicitly implied by the structure of the AST) are removed. An AST is often the input for compiler pipelines, program transformations, and refactorings.
+or AST is created when layout information is removed from a parse tree and only the core constructs of the language grammar remain as nodes in the tree. White-space layout, comments, and things like parentheses (these are implicitly implied by the structure of the AST) are removed. An AST is often the input for compiler pipelines, program transformations, and refactorings.
 
 \paragraph{Higher Order Syntax Trees (HOAS)}
 To represent not just a program's sub expression relations but also its variable binding we can use a Higher Order Syntax Tree (HOAS)\cite{Pfenning}. In a HOAS the variable bindings are made explicit (just as the sub expression relations are made explicit in an AST). Every variable has a binding-site and possibly uses throughout the rest of the tree. \textit{"In addition to dealing with the problem of variable capture, HOAS provides higher-order matching which synthesizes new function for higher-order  variables. One of the problems of higher-order mathcing is that there can be many matches for a pattern"}\cite{Visser2001}
+
+\section{Parsing}
+Before a program is represented in on of the previously defined tree formats, it is represented in textual form. To transform the stream of input characters to a tree a program called a parser is used. There are many different types of parser techniques, and a large body of research\cite{Visser1997,Brand2002,Salomon1989}
+
+The parsing of textual input often happens in two stages. First a \textit{scanner} performs the lexical analysis. Which identifies the tokens of our syntax (e.g. keywords, identifiers). With this identification the parser only has to operate on these identified tokens. "The lexical syntax of a language is usually specified by regular expression"\cite{Bravenboer2004}.
+
+Scanners that do not have access to the parser, are also unaware of the context of lexical tokens. In case of JavaScript this can impose subtle difficulties in the implementation of a scanner. "due to ambiguities in how regular expression literals (such as /[0-9]*/) and the divide operator (/) should be lexed."\cite{Disney2014}. For this reason traditional JavaScript parsers are often intertwined with their lexer. Disney et. al. avoid this problem by introducing a separate reader stage in the parser. However this problem can also be avoided by using scannerless parsing, these parsers preserve the lexical structure of the input characters, and make it possible to compose grammars\cite{Visser1997}.  
 
 \section{The Language Workbench} \label{rascal}
 
@@ -40,6 +51,9 @@ A language workbench makes it easy to build tools that match the best of modern 
 These workbenches reduce the awkwardness of language oriented programming\cite{Ward1994} significantly, by giving programmers the the tools to define programming languages with an abstract representation.
 
 The RASCAL\cite{Klint} metaprogramming environment (mpl) is a language workbench. It allows programmers to define context-free grammars, generate parsers for these grammars. With these parsers programmers are able to define parse tree patterns. The RASCAL mpl uses Eclipse for IDE integration, which allows programmers to define interaction handles and syntax highlighting. All language extensions presented in this thesis are implemented using the RASCAL mpl.
+
+\paragraph{Syntax definition}
+....
 
 \paragraph{Concrete syntax}
 A Rascal generated parser returns a parse tree, which is an ordered, rooted tree that represents the syntactic structure of a string according to the formal grammar used to specify the parser. Most transformation systems would implode this concrete syntax tree to an AST and perform program transformations on this tree. Rascal gives the possibility to perform program transformation directly on the concrete syntax tree through the use of concrete-syntax patterns. Presenting multiple advantages over an AST based solution:
