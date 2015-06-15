@@ -1,0 +1,51 @@
+% Chapter Template
+
+\chapter{Results and Comparison} % Main chapter title
+
+\label{Chapter4}
+
+\lhead{Chapter 4. \emph{Results and Comparison}}
+
+\section{Implementation}
+
+\begin{table}[h]
+\centering
+\caption{Lines of code - transformations}
+\label{loc-transformations}
+\begin{tabular}{@{}lcc@{}}
+\toprule
+              & {\bf Files} & \multicolumn{1}{l}{{\bf Lines of code}} \\ \midrule
+{\bf Babel}   & 76          & 6547                                    \\
+{\bf Traceur} & 19          & 9881                                    \\
+{\bf Rascal}  & 62          & 1368                                    \\ \bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\centering
+\caption{Lines of code - parser}
+\label{loc-parser}
+\begin{tabular}{@{}lcc@{}}
+\toprule
+              & {\bf Files} & \multicolumn{1}{l}{{\bf Lines of code}} \\ \midrule
+{\bf Babel}   & 22          & 3583                                    \\
+{\bf Traceur} & 15          & 6681                                    \\
+{\bf Rascal}  & 12          & 555                                    \\ \bottomrule
+\end{tabular}
+\end{table}
+
+
+Compatibility tests\footnote{\url{https://kangax.github.io/compat-table/es6/}}
+\begin{table}[h]
+\centering
+\caption{Compatibility tests}
+\label{my-label}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+                & {\bf Total} & \multicolumn{1}{l}{{\bf Babel}} & \multicolumn{1}{l}{{\bf Traceur}} & \multicolumn{1}{l}{{\bf Rascal}} \\ \midrule
+{\bf Syntax}    & 76          & 76                              & 60                                & 58                               \\
+{\bf Bindings}  & 19          & 15                              & 15                                & 12                               \\
+{\bf Functions} & 62          & 54                              & 50                                & 34                               \\
+{\bf Total}     & 157         & 136 (87\%)                      & 125 (80\%)                        & 98 (62\%)                        \\ \bottomrule
+\end{tabular}
+\end{table}
