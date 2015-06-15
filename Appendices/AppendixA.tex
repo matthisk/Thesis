@@ -1,9 +1,75 @@
 % Appendix A
 
-\chapter{Appendix Title Here} % Main appendix title
+\chapter{Artifact Description} % Main appendix title
 
 \label{AppendixA} % For referencing this appendix elsewhere, use \ref{AppendixA}
 
-\lhead{Appendix A. \emph{Appendix Title Here}} % This is for the header on each page - perhaps a shortened title
+\lhead{Appendix A. \emph{Artifact Description}} % This is for the header on each page - perhaps a shortened title
 
-Write your Appendix content here.
+\paragraph{Summary}
+We provide implementation of ECMAScript 6 language features syntax, and transformation rules in the Rascal meta-programming language (\url{http://rascal-mpl.org}). We use rascal's built-in support for syntax definition and parsing.
+
+\paragraph{Content}
+The code for language extensions is stored in \textit{src/extensions} here we will discuss implementation status for each language feature:
+
+\paragraph{Function extensions}\mbox{}\\
+\textbf{Arrow functions} (\textit{src/extensions/arrow}) \newline
+Full functionality\textsuperscript{*} (i.e. basic functionality and correct \textit{this},\textit{arguments} binding)
+
+\textbf{Class declaration} (\textit{src/extensions/classes}) \newline
+Full functionality.\textsuperscript{*} (i.e. basic support, support for extension, getter/setter/static methods, methods are non-enumerable)
+
+\textbf{Super} (\textit{src/extensions/classes}) \newline
+Full functionality.\textsuperscript{*}
+
+\textbf{Generators} (\textit{src/extensions/generators}) \newline
+No support. Due to the time constraint nature of the project this feature has not been implemented. 
+
+\paragraph{Syntax extensions}\mbox{}\\
+\textbf{Destructuring} (\textit{src/extensions/destructuring}) \newline
+Near full functionality. There is no support for unbound match:
+\begin{lstlisting}
+var [,b] = [1,2]; // b == 2
+\end{lstlisting}
+This feature is not implemented because syntax definition for empty elements in a comma separated list fairly complex. Making the resulting concrete syntax even more complex. To avoid unneeded complexity we decided to refrain from implementation of this feature.
+
+\textbf{For of loops} (\textit{src/extensions/forof}) \newline
+Full functionality.
+
+\textbf{Binary \& Octal literals} (\textit{src/extensions/literal}) \newline
+Full functionality.
+
+\textbf{Object literal} (\textit{src/extensions/object}) \newline
+Full functionality.
+
+\textbf{Rest Parameters} (\textit{src/extensions/parameters}) \newline
+Near full functionality. (i.e. no support for arguments object interaction outside of strict mode).
+
+\textbf{Default} (\textit{src/extensions/parameters}) \newline
+Basic functionality.
+
+\textbf{Spread operator} (\textit{src/extensions/spread}) \newline
+Near full functionality. (i.e. no support for spread operator with generators, because we do not implement generators)
+
+\textbf{Template Literals} (\textit{src/extensions/template}) 
+Full functionality (i.e. tagged template literals and normal template literals)
+
+\paragraph{Binding extensions}\mbox{}\\
+\textbf{Let} (\textit{src/extensions/letconst}) \newline
+Full functionality. (i.e. support for renaming of function scoped clashes of block scoped names, no reference possible before definition, and possibility to throw run-time errors on redeclaration)
+
+\textbf{Const} (\textit{src/extensions/letconst}) \newline
+Full functionality. (i.e. same as let)
+
+\textbf{Modules} (\textit{src/extensions/modules}) 
+No support.
+
+\textsuperscript{*} These features make use of the ES6 \textit{new.target} property. This newly introduced property is an implicit parameters. Implicit parameters are those parameters that are set during every function executed but not explicitly passed by the caller (e.g. \textit{arguments}). It is used to refer to the constructor function when a function is invoked with the use of the \textit{new} keyword.
+Our implementation does not support the \textit{new.target} property. It is possible to parse a new.target references but we have not implemented any desugaring code to transform the reference to ES5 code. The dynamic behavior of \textit{new.target} makes the transformation complex to perform during a static (i.e. non-runtime) phase. A transformation would be global-to-global (see:\ref{AppendixB}) (every function call has to be analyzed in the entire program).
+
+The compatibility tests as discussed in \ref{} are stored in \textit{input/compatibility} and can be invoked from the Rascal module at \textit{src/test/Compatibility.rsc}
+
+Our implementation of the \textit{name-fix}\citep{Erdweg2014a} algorithm resides in \textit{src/core/resolver}. 
+
+\paragraph{Getting the artifact}
+The latest version of the artifact is available at \url{https://github.com/matthisk/rascal-sweetjs} as a git repository. The repository page includes information on how to run the artifact inside the Eclipse IDE\footnote{\url{http://eclipse.org}}.

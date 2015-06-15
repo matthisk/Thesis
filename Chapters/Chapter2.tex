@@ -6,6 +6,48 @@
 
 \lhead{Chapter 2. \emph{Background}}
 
+\section{ECMAScript}
+JavaScript is the programming language implemented from the ECMAScript specification. The specification is maintained by the World wide web consortium (w3c). In this section we will identify some of the key characteristics of the ECMAScript/JavaScript programming language.
+
+\paragraph{Syntax} \label{javascript-syntax}
+One of the main concerns for program transformations is syntax. The syntax of the programming language is to be extended to support new language features/constructs. ECMAScript falls in the C-type family % TODO: citation
+of syntax definitions. It uses curly braces to delimit blocks of code. 
+A program exists of a list of \textit{statements}. A \textit{statement} can be one of the language control from constructs, a function, or an \textit{expression}. Functions in JavaScript can be either defined as an \textit{expression} or as a \textit{statement}\ref{javascript-functions}.
+
+\paragraph{Inhertiance \& Object orientation} \label{javascript-inheritance}
+JavaScript can be classified as an object oriented language but without \textit{class} based inheritance model\footnote{Most popular object-oriented languages do have \textit{class} based inheritance (e.g. Java or C++)}. Instead of such a model JavaScript objects have a prototype chain that determine the inheritance. With prototypal inheritance it is possible to implement \textit{class} based inheritance and more.
+
+Everything is an object (with the exception of primitive data-types, e.g. numbers), with properties (even functions \ref{javascript-functions}) and one special property called the \textit{prototype}, this prototype references another object (with yet another prototype) until finally one object has prototype \textit{null}. This chain of objects is called the \textit{prototype chain}. When performing a lookup on a object for a certain key $x$, the JavaScript interpreter will look for property $x$ on our object, if $x$ is not found it will look at the prototype object of our object. This iteration will continue until either prototype \textit{null} is found or an object with property $x$ is found in the prototype chain. 
+
+The best analogy to understand the prototypal inheritance as compared to class based inheritance is that of a buildings blueprint. Every class in class based inheritance is the blueprint for a certain thing/object, when such a class is constructed to an object it is build from this blueprint. And when we call a function on this object it is retrieved from the blueprint. Thus we have an object-class relation. In prototypal inheritance there is no blueprint (or class), but a fully build house (or object). Thus an object-object relation.
+
+Without the use blueprints code will become inefficient rapidly once we start constructing many objects. To avoid this a constructed object has a prototype object which is also a constructed object. The prototype is only constructed once for all the objects that have this object as its prototype.
+
+\paragraph{Scoping} \label{javascript-scoping}
+Most programming languages have some form of variable binding. These bindings are only bound in a certain context, such a context is often called a scope. There are two different ways to handle scope in a programming language, Lexical (or static) scoping and dynamic scoping. Lexical scoping is determined by the placing of a binding within the source program and its \textit{lexical context}. Variables bound in a dynamic scope are determined through the program state. 
+
+In JavaScript bindings are determined through the use of lexical scoping, on a function level. This implies that variables bound within a function's context are available throughout the entire execution of the variable. 
+
+One exception on the lexical scoping is the binding of the \textit{this} keyword. Similar to many pure object oriented languages JavaScript makes use of a \textit{this} keyword. In most object oriented languages the current object is implicitly bound to \textit{this} inside functions of that object. \footnote{Sometimes \textit{this} is called \textit{self} (e.g. in the \href{http://ruby.org}{Ruby}) programming language} 
+JavaScript being object oriented, binds the \textit{this} variable. In JavaScript the value of \textit{this} can change between function calls. For this reason the \textit{this} binding has dynamic scoping (we can not determine the value of \textit{this} before runtime). 
+
+\paragraph{Typing} \label{javascript-typing}
+JavaScript is a dynamically (duck) typed language without type annotations. Each object can be typecast without the use of special operator(s). 
+
+\paragraph{Functions} \label{javascript-functions}
+in JavaScript are as explained above also an object. Because of this functions are automatically promoted to first-class citizens (i.e. they can be used anywhere and in anyway normal bindings can be used). This presents the possibility to supply functions as arguments to functions, and calling member functions of the function object. Every function object inherits from the \textit{Function.prototype}\footnote{\url{https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/prototype}} which contains functions that allow the overriding of this binding (see \ref{javascript-scoping}).
+
+Another common pattern is JavaScript related to functions, is that of the immediately invoking function expression (IIFE). Functions in JavaScript can be defined either in a statement or in an expression. When a function is defined as an expression it is possible to immediately invoke the created function:
+
+\begin{lstlisting}[title=IIFE,caption={Immediately invoking function expression}]
+(function() {
+	<Statement* body>
+})()
+\end{lstlisting}
+
+\paragraph{Asynchronous}
+JavaScript is a single-threaded language, this means that concurrency through the use of processes, threads, or other concurrency constructs is impossible. Many operations that have to wait on some form of IO can be asynchronous (non-blocking). Asynchronous programming is a whole subject of its own and falls outside the scope of this thesis.
+
 \section{Program Transformations}
 
 Eelco Visser defines the aim of a program transformation as follows:
@@ -40,7 +82,7 @@ The parsing of textual input often happens in two stages. First a \textit{scanne
 
 Scanners that do not have access to the parser, are also unaware of the context of lexical tokens. In case of JavaScript this can impose subtle difficulties in the implementation of a scanner. "due to ambiguities in how regular expression literals (such as /[0-9]*/) and the divide operator (/) should be lexed."\cite{Disney2014}. For this reason traditional JavaScript parsers are often intertwined with their lexer. Disney et. al. avoid this problem by introducing a separate reader stage in the parser. However this problem can also be avoided by using scannerless parsing, these parsers preserve the lexical structure of the input characters, and make it possible to compose grammars\cite{Visser1997}.  
 
-\section{The Language Workbench} \label{rascal}
+\section{Language Workbenches} \label{rascal}
 
 The language workbench is a term popularized by Martin Fowler and we can formulate his definition as follows:
 
