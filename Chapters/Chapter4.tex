@@ -6,7 +6,43 @@
 
 \lhead{Chapter 4. \emph{Results and Comparison}}
 
-\section{Implementation}
+\section{Evaluation}
+
+There are several criteria as to which we evaluate the resulting transformation suite. These criteria are described in the following table.
+
+\begin{table}[h]
+\def\arraystretch{1.5}
+\caption{Evaluation criteria}
+\label{criteria}
+\begin{tabular}{rp{0.7\linewidth}}
+{\bf Correctness} & A language extension is performed correct if the target program is semantically similar to that of the language feature defined in the ECMAScript 6 specification\cite{SpecJS}. To test the correctness we use a test-suite created especially for this purpose\footnotemark\\
+{\bf Modularity}  & Is it possible separate and recombine the different language extensions.\\
+{\bf Size}        & How many lines of code are used to implement the transformation suite, if possible compared on a feature basis\\
+{\bf Output "noise"} & One of the challenges programmers face when using program transformations is the debugging of the generated program. Because during transformation the language extensions are eliminated from their code (and replaced by core language constructs). The more "noise" a transformation (suite) generates the harder it becomes for a programmer to debug generated code. An informal definition of noise is code added by a transformation that removes structure of the target program further away from the source program. \\
+{\bf Coverage}    & How many language features are implemented\\
+{\bf Performance} & What is the run time of the transformation code\\
+\end{tabular}
+\end{table}
+\footnotetext{\url{https://kangax.github.io/compat-table/es6/}}
+
+To evaluate the our implementation of the transformation suite we validate against three open-source implementation of ECMAScript 6 language as a transformation suite (to ECMAScript 5). We selected the following \textit{transpilers} (these transformation suites categories themselves as transpilers a combination of compiler and transformer) to evaluate against:
+
+\begin{table}[h]
+\def\arraystretch{1.5}
+\caption{Open-source transpilers}
+\label{transpilers}
+\begin{tabular}{rp{0.5\linewidth}p{0.1\linewidth}p{0.1\linewidth}}
+ & \textbf{Description} & \textbf{Cont.} & \textbf{Com.} \\
+{\bf Babel JS\footnotemark[1]} & The most used ECMAScript 6 to 5 transpiler (was named 6to5 before). It is created using JavaScript and relies on the Acorn\footnotemark[4] JavaScript parser. & 105 & 4582 \\
+{\bf Traceur\footnotemark[2]} & This transpiler is produced by a team from Google. Written in JavaScript and includes its own parser. This transpiler relies more heavily on a run-time environment than the other transpilers. & 55 & 1584\\
+{\bf ES6-Transpiler\footnotemark[3]} & Apart form Traceur and Babel JS there only exist small individual projects that implement ES6 to 5 transpilers. This is the most feature complete of those transpilers. It relies on the ESPrima\footnotemark[5] JavaScript parser. & 5 & 250 \\
+\end{tabular}
+\end{table}
+\footnotetext[1]{\url{http://www.babeljs.io}}
+\footnotetext[2]{\url{https://github.com/google/traceur-compiler}}
+\footnotetext[3]{\url{https://github.com/termi/es6-transpiler}}
+\footnotetext[4]{\url{https://github.com/marijnh/acorn}}
+\footnotetext[5]{\url{http://esprima.org/}}
 
 \begin{table}[h]
 \centering
@@ -34,8 +70,6 @@
 \end{tabular}
 \end{table}
 
-
-Compatibility tests\footnote{\url{https://kangax.github.io/compat-table/es6/}}
 \begin{table}[h]
 \centering
 \caption{Compatibility tests}
@@ -49,3 +83,10 @@ Compatibility tests\footnote{\url{https://kangax.github.io/compat-table/es6/}}
 {\bf Total}     & 157         & 136 (87\%)                      & 125 (80\%)                        & 98 (62\%)                        \\ \bottomrule
 \end{tabular}
 \end{table}
+
+\section{Related Work}
+Eelco Visser,
+name-fix algo,
+Irvine program transformation catalog,
+Maerds
+

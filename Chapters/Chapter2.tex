@@ -63,7 +63,10 @@ Language extensions are closely related to other forms of program transformation
 
 Syntactic sugar is another relative of language extensions. As mentioned before there are several languages that before compilation are transformed to a core language (e.g. Haskell core language).  Language features classified as syntactic sugar, are features that can be expressed in the core language. But often benefit from improved human readability when notated with aid of the syntactic sugar. For example the assignment expression $a += b$ is syntactic sugar notation for $a = a + b$ of frequent occurrence in (c-style) programming languages.
 
-\section{Program Representation} \ref{program-representation}
+\subsection{Hygiene} \label{hygiene}
+...
+
+\section{Program Representation} \label{program-representation}
 Before programs can be transformed they need a structured representation. Seldom are program transformations performed on the merely the textual input. Here we discuss some program representations.
 
 \paragraph{Parse Trees} 

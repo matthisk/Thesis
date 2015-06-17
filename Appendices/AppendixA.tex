@@ -12,6 +12,10 @@ We provide implementation of ECMAScript 6 language features syntax, and transfor
 \paragraph{Content}
 The code for language extensions is stored in \textit{src/extensions} here we will discuss implementation status for each language feature:
 
+\paragraph{Core}
+\textbf{Syntax} (\textit{src/core/Syntax.rsc}) \newline
+The core JavaScript syntax definition. There are two differences with the specification, semicolons are required (the ECMAScript 5 defines a functionality called automatic semicolon insertion or asi, with asi semicolons are not required and can be inferred by the parser). Because we use the Rascal syntax definition (and not a custom parser) we do not support asi. For the same reason there is no support for comma expression, the introduction of this expression causes ambiguities in the grammar.
+
 \paragraph{Function extensions}\mbox{}\\
 \textbf{Arrow functions} (\textit{src/extensions/arrow}) \newline
 Full functionality\textsuperscript{*} (i.e. basic functionality and correct \textit{this},\textit{arguments} binding)
@@ -31,7 +35,7 @@ Near full functionality. There is no support for unbound match:
 \begin{lstlisting}
 var [,b] = [1,2]; // b == 2
 \end{lstlisting}
-This feature is not implemented because syntax definition for empty elements in a comma separated list fairly complex. Making the resulting concrete syntax even more complex. To avoid unneeded complexity we decided to refrain from implementation of this feature.
+This feature is not implemented because syntax definition for empty elements in a comma separated list is complex. Resulting in very unclear/cluttered/complicated transformation rules/code. To avoid this complexity we decided to refrain from implementation of this feature.
 
 \textbf{For of loops} (\textit{src/extensions/forof}) \newline
 Full functionality.
@@ -64,8 +68,10 @@ Full functionality. (i.e. same as let)
 \textbf{Modules} (\textit{src/extensions/modules}) 
 No support.
 
-\textsuperscript{*} These features make use of the ES6 \textit{new.target} property. This newly introduced property is an implicit parameters. Implicit parameters are those parameters that are set during every function executed but not explicitly passed by the caller (e.g. \textit{arguments}). It is used to refer to the constructor function when a function is invoked with the use of the \textit{new} keyword.
-Our implementation does not support the \textit{new.target} property. It is possible to parse a new.target references but we have not implemented any desugaring code to transform the reference to ES5 code. The dynamic behavior of \textit{new.target} makes the transformation complex to perform during a static (i.e. non-runtime) phase. A transformation would be global-to-global (see:\ref{AppendixB}) (every function call has to be analyzed in the entire program).
+\textsuperscript{*}These features make use of the ES6 \textit{new.target} property. This newly introduced property is an implicit parameters. Implicit parameters are those parameters that are set during every function execution but not explicitly passed as an argument by the caller. It is used to refer to the constructor function when a function is invoked with the use of the \textit{new} keyword.
+Our implementation does not support the \textit{new.target} property. It is possible to parse a new.target references but we have not implemented any transformation code to transform the property reference to ES5 code. The dynamic behavior\footnotemark of \textit{new.target} makes the transformation complex to perform during a static (i.e. non-runtime) phase. To transform \textit{new.target} a global analysis of the program would be needed and a global transformation (each function needs to be analyzed and each function call), thus a global-to-global transformation (see Section \ref{taxonomy}).
+
+\footnotetext{\textit{new.target} refers to the constructor function called with the new keyword, even inside the paren constructor function invoked through \textit{super}. It is undefined in functions that are called without new keyword. The behavior can be overridden with the use of \textit{Reflect.construct}}
 
 The compatibility tests as discussed in \ref{} are stored in \textit{input/compatibility} and can be invoked from the Rascal module at \textit{src/test/Compatibility.rsc}
 
