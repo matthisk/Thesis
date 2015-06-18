@@ -7,35 +7,52 @@
 \lhead{Chapter 2. \emph{Background}}
 
 \section{ECMAScript}
-JavaScript is the programming language implemented from the ECMAScript specification. The specification is maintained by the World wide web consortium (w3c). In this section we will identify some of the key characteristics of the ECMAScript/JavaScript programming language.
+JavaScript\footnotemark is the programming language implemented from the ECMAScript specification\cite{SpecJS}. JavaScript is an interpreted, object-oriented, dynamically typed scripting language with functions as first-class citizens. It is mostly used inside the Web browser, but also available for non browser environments (e.g. node.js). In this section we will identify some of the key characteristics of the JavaScript programming language. 
+\footnotetext{Documentation on the JavaScript programming language can be found at the \href{https://developer.mozilla.org/en-US/docs/Web/JavaScript}{Mozilla Developer Network}}
 
 \paragraph{Syntax} \label{javascript-syntax}
 One of the main concerns for program transformations is syntax. The syntax of the programming language is to be extended to support new language features/constructs. ECMAScript falls in the C-type family % TODO: citation
-of syntax definitions. It uses curly braces to delimit blocks of code. 
-A program exists of a list of \textit{statements}. A \textit{statement} can be one of the language control from constructs, a function, or an \textit{expression}. Functions in JavaScript can be either defined as an \textit{expression} or as a \textit{statement}\ref{javascript-functions}.
+of syntax definitions (i.e. it uses curly braces to delimit blocks of code). 
+A program exists of a list of \textit{statements}. A \textit{statement} can be one of the language control flow constructs, a declaration, a function, or an \textit{expression}. Functions in JavaScript can be either defined as an \textit{expression} or as a \textit{statement} (see section \ref{javascript-functions}).
 
 \paragraph{Inhertiance \& Object orientation} \label{javascript-inheritance}
-JavaScript can be classified as an object oriented language but without \textit{class} based inheritance model\footnote{Most popular object-oriented languages do have \textit{class} based inheritance (e.g. Java or C++)}. Instead of such a model JavaScript objects have a prototype chain that determine the inheritance. With prototypal inheritance it is possible to implement \textit{class} based inheritance and more.
+JavaScript can be classified as an object oriented language without \textit{class} based inheritance model\footnote{Most popular object-oriented languages do have \textit{class} based inheritance (e.g. Java or C++)}. Instead of such a model JavaScript objects have a prototype chain that determine the inheritance. 
 
-Everything is an object (with the exception of primitive data-types, e.g. numbers), with properties (even functions \ref{javascript-functions}) and one special property called the \textit{prototype}, this prototype references another object (with yet another prototype) until finally one object has prototype \textit{null}. This chain of objects is called the \textit{prototype chain}. When performing a lookup on a object for a certain key $x$, the JavaScript interpreter will look for property $x$ on our object, if $x$ is not found it will look at the prototype object of our object. This iteration will continue until either prototype \textit{null} is found or an object with property $x$ is found in the prototype chain. 
+In the JavaScript run-time environment everything is an object with properties (even functions \ref{javascript-functions}), with the exception of primitive data-types (e.g. numbers). Every object has one special property called the \textit{prototype}, this prototype references another object (with yet another prototype) until finally one object has prototype \textit{null}. This chain of objects is called the \textit{prototype chain}. When performing a lookup on an object for a certain key $x$, the JavaScript interpreter will look for property $x$ on our object, if $x$ is not found it will look at the \textit{prototype} of our object. This iteration will continue until either prototype \textit{null} is found or an object with property $x$ is found in the prototype chain. 
 
-The best analogy to understand the prototypal inheritance as compared to class based inheritance is that of a buildings blueprint. Every class in class based inheritance is the blueprint for a certain thing/object, when such a class is constructed to an object it is build from this blueprint. And when we call a function on this object it is retrieved from the blueprint. Thus we have an object-class relation. In prototypal inheritance there is no blueprint (or class), but a fully build house (or object). Thus an object-object relation.
+To understand prototypal inheritance in comparison to class based inheritance, we can use an analogy. A class in a class based programming language can be seen as a blueprint from which to construct objects. When calling a function on an object created from such a blueprint the function is retrieved from the blueprint and not from the (constructed) object. So the object is related to the class (or blueprint) with an object-class relation. With prototypal inheritance there is no blueprint everything is an object. This is also how inheritance works, we do not reference a blueprint but we reference a fully build object as our prototype. This creates an object-object relation. 
 
-Without the use blueprints code will become inefficient rapidly once we start constructing many objects. To avoid this a constructed object has a prototype object which is also a constructed object. The prototype is only constructed once for all the objects that have this object as its prototype.
+If we have an object Car which inherits from Vehicle we set the Car's object prototype to an instance of the Vehicle object. Where in class based inheritance there is a blueprint for Car which inherits from the Vehicle blueprint, to build a car we initialize from the blueprint.
+
+\begin{lstlisting}
+var Vehicle = function() {...};
+var Car = function() {...};
+
+Car.prototype = new Vehicle();
+\end{lstlisting}
 
 \paragraph{Scoping} \label{javascript-scoping}
-Most programming languages have some form of variable binding. These bindings are only bound in a certain context, such a context is often called a scope. There are two different ways to handle scope in a programming language, Lexical (or static) scoping and dynamic scoping. Lexical scoping is determined by the placing of a binding within the source program and its \textit{lexical context}. Variables bound in a dynamic scope are determined through the program state. 
+Most programming languages have some form of variable binding. These bindings are only bound in a certain context, such a context is often called a scope. There are two different ways to handle scope in a programming language, Lexical (or static) scoping and dynamic scoping. Lexical scoping is determined by the placing of a binding within the source program or its \textit{lexical context}. Variables bound in a dynamic scope are resolved through the program state or \textit{run-time context}. 
 
-In JavaScript bindings are determined through the use of lexical scoping, on a function level. This implies that variables bound within a function's context are available throughout the entire execution of the variable. 
+In JavaScript bindings are determined through the use of lexical scoping, on a function level. Variables bound within a function's context are available throughout the entire lexical scope of the function. 
 
-One exception on the lexical scoping is the binding of the \textit{this} keyword. Similar to many pure object oriented languages JavaScript makes use of a \textit{this} keyword. In most object oriented languages the current object is implicitly bound to \textit{this} inside functions of that object. \footnote{Sometimes \textit{this} is called \textit{self} (e.g. in the \href{http://ruby.org}{Ruby}) programming language} 
-JavaScript being object oriented, binds the \textit{this} variable. In JavaScript the value of \textit{this} can change between function calls. For this reason the \textit{this} binding has dynamic scoping (we can not determine the value of \textit{this} before runtime). 
+One exception on the lexical scoping is the binding of the \textit{this} keyword. Similar to many other object oriented languages JavaScript makes use of a \textit{this} keyword. In most object oriented languages the current object is implicitly bound to \textit{this} inside functions of that object. \footnote{Sometimes \textit{this} is called \textit{self} (e.g. in the \href{http://ruby.org}{Ruby}) programming language} In JavaScript the value of \textit{this} can change between function calls. For this reason the \textit{this} binding has dynamic scoping (we can not determine the value of \textit{this} before runtime). 
 
 \paragraph{Typing} \label{javascript-typing}
-JavaScript is a dynamically (duck) typed language without type annotations. Each object can be typecast without the use of special operator(s). 
+JavaScript is a dynamically typed language without type annotations. Each object can be typecast without the use of special operator(s) and will be be converted automatically to correct type during execution. There are 5 primitive types: 
+
+\begin{itemize}
+	\item \textit{Boolean}
+	\item \textit{null}
+	\item \textit{undefined}
+	\item \textit{Number}
+	\item \textit{String}
+\end{itemize}
+
+Everything is else is an object.
 
 \paragraph{Functions} \label{javascript-functions}
-in JavaScript are as explained above also an object. Because of this functions are automatically promoted to first-class citizens (i.e. they can be used anywhere and in anyway normal bindings can be used). This presents the possibility to supply functions as arguments to functions, and calling member functions of the function object. Every function object inherits from the \textit{Function.prototype}\footnote{\url{https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/prototype}} which contains functions that allow the overriding of this binding (see \ref{javascript-scoping}).
+in JavaScript functions are objects. Because of this functions are automatically promoted to first-class citizens (i.e. they can be used anywhere and in anyway normal bindings can be used). This presents the possibility to supply functions as arguments to functions, and calling member functions of the function object. Every function object inherits from the \textit{Function.prototype}\footnote{For more information see \href{https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/prototype}{Mozilla Developer Network}} which contains functions that allow the overriding of this binding (see section \ref{javascript-scoping}).
 
 Another common pattern is JavaScript related to functions, is that of the immediately invoking function expression (IIFE). Functions in JavaScript can be defined either in a statement or in an expression. When a function is defined as an expression it is possible to immediately invoke the created function:
 
@@ -46,37 +63,37 @@ Another common pattern is JavaScript related to functions, is that of the immedi
 \end{lstlisting}
 
 \paragraph{Asynchronous}
-JavaScript is a single-threaded language, this means that concurrency through the use of processes, threads, or other concurrency constructs is impossible. Many operations that have to wait on some form of IO can be asynchronous (non-blocking). Asynchronous programming is a whole subject of its own and falls outside the scope of this thesis.
+JavaScript is a single-threaded language, this means that concurrency through the use of processes, threads, or similar concurrency constructs is impossible.
 
 \section{Program Transformations}
-
 Eelco Visser defines the aim of a program transformation as follows:
 
 \blockquote[\cite{Visser2001}]{The aim of program transformation is to increase programmer productivity by automating programming tasks, thus enabling programming at a higher-level of abstraction, and increasing maintainability}
 
-There are many different types of program transformations. Programs can be transformed from a source to a target language. Where both can be the same or different. One can be a higher level language and one a lower level language. In this thesis we will focus on transformations in the category rephrasing\cite{Visser2001}. Here a program in a source language is transformed to a different program in the same language. The use case in our thesis is language extensions see section \ref{lang-ext}.
+There are many different types of program transformations. Programs can be transformed from a source to a target language. Where both can be the same or different. One can be a higher level language and one a lower level language. In this thesis we will focus on transformations in the category rephrasing~\cite{Visser2001}. Here a program in a source language is transformed to a different program in the same language. The use case in our thesis is language extensions which are discussed in the next section.
 
 \section{Language Extensions} \label{lang-ext}
-\textit{"Language extensions augment a base language with additional language features. Many compilers first desugar a source program to a core language."}\cite{Erdweg2014} For example the Haskell functional programming language defines for many constructs how they can be transformed to a kernel language\cite{PeytonJones}
+\textit{"Language extensions augment a base language with additional language features."}~\cite{Erdweg2014} 
+With the use of program transformations these extensions can be eliminated an a target program in the base language can be produced. \textit{"Many compilers first desugar a source program to a core language."}~\cite{Erdweg2014} For example the Haskell functional programming language defines for many constructs how they can be transformed to a kernel language~\cite{PeytonJones}. These pieces of \textit{syntactic sugar} are examples of language extensions.
 
-Language extensions are closely related to other forms of program transformations. There are (syntax) macros\cite{Leavenworth1966}, these are language extensions defined within the same source file and are expanded before compilation (examples SweeterJS\cite{Disney2014}, Syntax macros\cite{Weise1993}). These "define syntactic abstractions over code fragments"\cite{Bravenboer2004}. Macro systems have several limitations that make it difficult to implement a full language extension set, as needed for the transformation of ES6 features. The transformations need to be present in the same source file, macros are often restrained to a fixed invocation (through a macro identifier), and they often lack the expressiveness in their rewriting language\cite{Bravenboer2004}. There was an attempt to implement the ES6 spec through the use of syntax macros but the project\footnote{\url{https://github.com/jlongster/es6-macros}} is abandoned.
+Language extensions are closely related to other forms of program transformations. There are (syntax) macros\cite{Leavenworth1966}, these are language extensions defined within the same source file and are expanded before compilation (examples are SweeterJS~\cite{Disney2014}, Syntax macros~\cite{Weise1993}). These \textit{"define syntactic abstractions over code fragments"}~\cite{Bravenboer2004}. Macro systems have several limitations. The transformations need to be present in the source file, macros are often restrained to a fixed invocation (through a macro identifier), and they often lack the expressiveness in their rewriting language\cite{Bravenboer2004}. There was an attempt to implement the ES6 specification through the use of syntax macros but the project\footnote{\url{https://github.com/jlongster/es6-macros}} is abandoned.
 
-Syntactic sugar is another relative of language extensions. As mentioned before there are several languages that before compilation are transformed to a core language (e.g. Haskell core language).  Language features classified as syntactic sugar, are features that can be expressed in the core language. But often benefit from improved human readability when notated with aid of the syntactic sugar. For example the assignment expression $a += b$ is syntactic sugar notation for $a = a + b$ of frequent occurrence in (c-style) programming languages.
+Most language extensions can be classified as syntactic sugar. As mentioned before there are several languages that before compilation are transformed to a core language (e.g. Haskell core language).  Language features classified as syntactic sugar, are features that can be expressed in the core language. But often benefit from improved human readability when notated with aid of the syntactic sugar. For example the assignment expression \textit{a += b} is syntactic sugar notation for \textit{a = a + b} of frequent occurrence in (c-style) programming languages.
 
 \subsection{Hygiene} \label{hygiene}
-...
+The capture avoidance is one such problem, it is mostly studied in the context of macro expansion\cite{Herman2010a,Herman2010,Disney2014}. And is often called the hygiene of transformations. When an identifier originating from the source program references to a synthesized declaration, the transformation is sub-hygienic and introduces variable capture. To prevent this problem we implement the \textit{name-fix} algorithm\cite{Erdweg2014} for our transformation suite.
 
 \section{Program Representation} \label{program-representation}
-Before programs can be transformed they need a structured representation. Seldom are program transformations performed on the merely the textual input. Here we discuss some program representations.
+Before programs can be transformed they need a structured representation. Seldom are program transformations performed on the the textual input. Here we discuss several ways to represent programs.
 
 \paragraph{Parse Trees} 
 Parse trees represent a programs syntactic information in a tree. This tree includes layout information of the input program (e.g. white-space, comments). The parse tree is structured according to some context-free grammar, that defines how to parse textual input. The parse tree also deals with disambiguation of input and representation of parentheses. If the parser finds an ambiguity during the parse process the two (or more) alternatives are all inserted in the tree under an ambiguity node.
 
-\paragraph{Abstract Syntax Trees}
-or AST is created when layout information is removed from a parse tree and only the core constructs of the language grammar remain as nodes in the tree. White-space layout, comments, and things like parentheses (these are implicitly implied by the structure of the AST) are removed. An AST is often the input for compiler pipelines, program transformations, and refactorings.
+\paragraph{Abstract Syntax Tree}
+or AST is produced by removing layout information from a parse tree, only the core constructs of the language grammar remain as nodes in the tree. White-space layout, comments, and things like parentheses (these are implicitly implied by the structure of the AST) are removed. An AST is often the input for compiler pipelines, program transformations, and refactorings.
 
 \paragraph{Higher Order Syntax Trees (HOAS)}
-To represent not just a program's sub expression relations but also its variable binding we can use a Higher Order Syntax Tree (HOAS)\cite{Pfenning}. In a HOAS the variable bindings are made explicit (just as the sub expression relations are made explicit in an AST). Every variable has a binding-site and possibly uses throughout the rest of the tree. \textit{"In addition to dealing with the problem of variable capture, HOAS provides higher-order matching which synthesizes new function for higher-order  variables. One of the problems of higher-order mathcing is that there can be many matches for a pattern"}\cite{Visser2001}
+To represent not just a program's sub expression relations but also its variable binding we can use a Higher Order Syntax Tree (HOAS)\cite{Pfenning1988}. In a HOAS the variable bindings are made explicit (just as the sub expression relations are made explicit in an AST). Every variable has a binding-site and possibly uses throughout the rest of the tree. \textit{"In addition to dealing with the problem of variable capture, HOAS provides higher-order matching which synthesizes new function for higher-order  variables. One of the problems of higher-order mathcing is that there can be many matches for a pattern"}\cite{Visser2001}
 
 \section{Parsing}
 Before a program is represented in on of the previously defined tree formats, it is represented in textual form. To transform the stream of input characters to a tree a program called a parser is used. There are many different types of parser techniques, and a large body of research\cite{Visser1997,Brand2002,Salomon1989}
