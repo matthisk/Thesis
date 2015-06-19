@@ -63,13 +63,13 @@ function f() {
 
 \section{Taxonomy of language features} \label{taxonomy}
 
-Every language extension has several properties which can be identified and categorized along certain dimensions. In this chapter we present such a taxonomy for all the language extensions presented in the ECMAScript 6 specification\cite{SpecJS}.
+Every language extension has several properties which can be identified and categorized along certain dimensions. In this chapter we present a taxonomy for language extensions. In appendix \ref{AppendixB} we categorize ES6 language features according to this model.
 
 \subsection{Dimensions}
 The following dimensions are identified and used to categorize every language extension.
 
 \paragraph{Category}
-One of the rephrasing categories defined by Eelco Visser\cite{Visser2001}, rephrasings are program transformations that transform, where the source and target program language are the same. We identify each category in table \ref{table-rephrasing-categories}
+One of the rephrasing categories defined by Eelco Visser\cite{Visser2001}, rephrasings are program transformations where source and target program language are the same. Each category is explained in table \ref{table-rephrasing-categories}.
 
 \begin{table}[h]
 \centering
@@ -80,24 +80,24 @@ One of the rephrasing categories defined by Eelco Visser\cite{Visser2001}, rephr
 \multicolumn{1}{l}{Normalization} & The reduction of a source program to a target program in a sub-language of the source program language.                                                                                                                                                                               
 \\
 \multicolumn{1}{r}{\bf Desugaring}                  & a language construct (called syntactic sugar) is reduced to a core language.                                                    \\
-\multicolumn{1}{r}{\bf Simplification}              & this is a more generic form of normalization in which parts of the program are transformed to a standard form (e.g. removing an if statement which always evaluates to false) \\
-\multicolumn{1}{r}{\bf Weaving}                     & this transformation injects functionality in a source program. (best known use is aspect-oriented programming\cite{})                                                                                                                                                                               \\
+\multicolumn{1}{r}{\bf Simplification}              & this is a more generic form of normalization in which parts of the program are transformed to a standard form, with the goal of simplifying the program without changing the semantics. \\
+\multicolumn{1}{r}{\bf Weaving}                     & this transformation injects functionality in a source program, without modifying the code. It is used in aspect-oriented programming, where cross-cutting concerns are separated from the main code and later 'weaved' with the main program through a aspect weaver.)                                                                                                                                                                               \\
 \\
 \multicolumn{1}{l}{Optimization}  & These transformations help improve the run-time and/or space performance of a program                                                                                         \\
-\multicolumn{1}{r}{\bf Specialization}              & Code specialization deals with code that runs with a specific fixed set of parameters. When it is known that some function will run with some parameters fixed the function can be optimized for these values before run-time. (e.g. compiling a regex before execution instead of interpreting the regex).                                                                                                                                                                               \\
-\multicolumn{1}{r}{\bf Inlining}                    & Transform code to inline a certain (standard) function within your function body, instead of calling the function from the (standard) library. This produces a slight performance increase because we avoid an additional function call. (this technique is more common in lower level programming languages like C or C++)                                                                                                                                                                              \\
+\multicolumn{1}{r}{\bf Specialization}              & Code specialization deals with code that runs with a fixed set of parameters. When it is known that some function will run with some parameters fixed the function can be optimized for these values before run-time. (e.g. compiling a regular expression before execution).                                                                                                                                                                               \\
+\multicolumn{1}{r}{\bf Inlining}                    & Transform code to inline a certain (standard) function within your function body, instead of calling the function from the (standard) library. This produces a slight performance increase because we avoid an additional function call. (this technique is more common in lower level programming languages e.g. C or C++)                                                                                                                                                                              \\
 \multicolumn{1}{r}{\bf Fusion}                      & Fusion merges two bodies of loops (or recursive code) that do not share references and loop over the same range, with the goal to reduce run-time of the program.                                                                                                                                                                               \\
 \\
 \multicolumn{1}{l}{Other}         &                                                                                                                                                                               \\
 \multicolumn{1}{r}{\bf Refactoring}                 & "is a disciplined technique for restructuring an existing body of code, alteringits internal structure without changing its external behaviour."\footnotemark                 \\
 \multicolumn{1}{r}{\bf Obfuscation}                 & is a transformation that makes output code less (human) readable, while not changing any of the semantics.                                                                    \\
-\multicolumn{1}{r}{\bf Renovation}                  & is a special form of refactoring, "to repair an error or to bring it up to date with respect to changed requirements"\cite{Visser2001}                                                
+\multicolumn{1}{r}{\bf Renovation}                  & is a special form of refactoring, "\textit{to repair an error or to bring it up to date with respect to changed requirements"}~\cite{Visser2001}                                                
 \end{tabular}
 \end{table}
 \footnotetext{\url{http://www.refactoring.com}}
 
 \paragraph{Abstraction level}
-Program transformations can be categorized by their abstraction level. There are four levels of abstraction (similar to those of macro expansions\cite{Weise1993}), character-, token-, syntax-, or semantic-based. Character and token based transformations work on a program in textual representation. Syntactical transformations work on a program in its parsed representation (either as an AST or as a parse tree, see section \ref{program-representation}). Next to the syntactic representation semantic transformations also have access to the static semantics of the input program (e.g. variable binding).
+Program transformations can be categorized by their abstraction level. There are four levels of abstraction (similar to those of macro expansions~\cite{Weise1993}), character-, token-, syntax-, or semantic-based. Character and token based transformations work on a program in textual representation. Syntactical transformations work on a program in its parsed representation (either as an AST or as a parse tree, see section \ref{program-representation}). Next to the syntactic representation semantic transformations also have access to the static semantics of the input program (e.g. variable binding).
 
 \paragraph{Extension or Modification}
 Rephrasings (identified above) try to say the same thing (i.e. no change in semantics) but using different words\cite{Visser2001}. Sometimes these different words are an extension on the core language, in this case we call the transformation a \textit{program extension}. In other cases the transformation uses only the words available in the core language, then we call the transformation a \textit{program modification}. Transformations that fall in the \textit{optimization} (see table \ref{table-rephrasing-categories}) category are program modifications. An example is tail call optimization in which a recursive function call in the \textit{return} statement is reduced to a loop to avoid a call-stack overflow error (see section \ref{tail-call-optimization}). 
@@ -105,7 +105,7 @@ Rephrasings (identified above) try to say the same thing (i.e. no change in sema
 \paragraph{Scope}
 Program transformations can happen within four different scopes: 
 
-When a program transformation matches on a sub-tree of the parse-tree and only transforms this matched sub-tree it is a \textit{(1) local-to-local} transformation. If the transformation needs information outside the context of the matched sub-tree, but only transforms the matched sub-tree it is \textit{(2) global-to-local}. When a transformation has no additional context from its local sub-tree but does alter the entire parse-tree it is called \textit{(3) local-to-global}.If the transformation transforms the input program in its entirety it is \textit{(4) global-to-global}.  
+When a program transformation matches on a sub-tree of the parse-tree and only transforms this matched sub-tree it is a \textit{(1) local-to-local} transformation. If the transformation needs information outside the context of the matched sub-tree, but only transforms the matched sub-tree it is \textit{(2) global-to-local}. When a transformation has no additional context from its local sub-tree but does alter the entire parse-tree it is called \textit{(3) local-to-global}. If the transformation transforms the input program in its entirety it is \textit{(4) global-to-global}.  
 
 \paragraph{Syntactically type preserving}
 Program transformations performed on syntax elements can preserve the syntactical type of their input element or alter it. Two main syntactical types in JavaScript are Statement and Expression (see section \ref{javascript-syntax}). If a transformation matches on a Expression node but returns a Statement it is non syntactical type preserving.
@@ -117,10 +117,8 @@ Does the transformation introduce new bindings. Transformations that do not intr
 Will the target program produced by the transformation depend on context not introduced by the transformation (e.g. global variables, external libraries).
 
 \paragraph{Compositional}
-When a program transformation does not alter the containing context of the matched parse-tree node, it is said to be compositional. The main concern of compositionality of program transformations is if the 
-\\
-\\
-transformation can be reversed or not. 
+When a program transformation does not alter the containing context of the matched parse-tree node, it is said to be compositional. The main concern of compositionality of program transformations is if the transformation can be reversed or not.
+\\ 
 A parse-tree node with context $C$ and children context $C[x]$ is transformed to context $C'$ with children context $C'[x]$ where $x$ is unchanged.
 
 \paragraph{Preconditions}
@@ -154,22 +152,21 @@ Is it possible to identify smaller transformation rules inside this language ext
 
 \begin{tabular}{rcccccc}
 \hline
-                                                    & {\bf Arrow Functions} & {\bf Classes} & {\bf Destructuring} & {\bf Object literals} & {\bf For of loop} & {\bf Spread operator} \\ \hline
-{\bf Category}                              & D.                    & D.            & D.                  & D.                    & D.                & D.                    \\
-{\bf Abstraction level}                   & CfS.                  & CfS.          & CfS.                & CfS.                  & CfS.              & CfS.                  \\
-{\bf Scope}                                   & L2L                   & L2L           & L2L                 & L2L                   & L2L               & L2L                   \\
-{\bf Extension or Modification}                                   & E.                   & E.           & E.                 & E.                   & E.               & E.                   \\
-
-{\bf Syntactically type preserving}  & $\bullet$             & $\bullet$     & $\circ$             & $\bullet$             & $\bullet$         & $\bullet$             \\
-{\bf Introducing bindings}               & $\bullet$             & $\circ$       & $\bullet$           & $\circ$               & $\circ$           & $\bullet$             \\
-{\bf Depending on bindings}            & $\circ$               & $\bullet$     & $\bullet$           & $\circ$               & $\circ$           & $\bullet$             \\
-{\bf Compositional}                        & $\bullet$             & $\bullet$     & $\bullet$           & $\bullet$             & $\bullet$         & $\bullet$             \\
-{\bf Analysis of subterms}              & $\bullet$             & $\bullet$     & $\bullet$           & $\circ$               & $\circ$           & $\bullet$             \\
-{\bf Constraints on subterms}         & $\circ$               & $\bullet$     & $\circ$             & $\circ$               & $\circ$           & $\circ$               \\
-{\bf Preconditions}                         & $\bullet$             & $\bullet$     & $\circ$             & $\circ$               & $\circ$           & $\circ$               \\
-{\bf Dependencies}                        & $\circ$               & $\circ$       & $\bullet$           & $\circ$               & $\bullet$         & $\circ$               \\
-{\bf Backwards compatible}             & $\bullet$             & $\bullet$     & $\bullet$           & $\bullet$             & $\bullet$         & $\bullet$             \\
-{\bf Decomposable}                                & $\circ$               & $\circ$       & $\bullet$           & $\bullet$             & $\bullet$         & $\bullet$             \\ \hline
+& {\bf Arrow Functions} & {\bf Classes} & {\bf Destructuring} & {\bf Object literals} & {\bf For of loop} & {\bf Spread operator} \\ \hline
+{\bf Category} & D. & D. & D. & D. & D. & D. \\
+{\bf Abstraction level} & CfS. & CfS. & CfS. & CfS. & CfS. & CfS. \\
+{\bf Scope} & G2L & L2L & L2L & L2L & L2L & L2L \\
+{\bf Extension or Modification} & E. & E. & E. & E. & E. & E. \\
+{\bf Syntactically type preserving} & $\bullet$ & $\bullet$ & $\circ$ & $\bullet$ & $\bullet$ & $\bullet$ \\
+{\bf Introducing bindings} & $\bullet$ & $\circ$ & $\bullet$ & $\circ$ & $\circ$ & $\bullet$ \\
+{\bf Depending on bindings} & $\circ$ & $\bullet$ & $\bullet$ & $\circ$ & $\circ$ & $\bullet$ \\
+{\bf Compositional} & $\bullet$ & $\bullet$ & $\bullet$ & $\bullet$ & $\bullet$ & $\bullet$ \\
+{\bf Analysis of subterms} & $\bullet$ & $\bullet$ & $\bullet$ & $\circ$ & $\circ$ & $\bullet$  \\
+{\bf Constraints on subterms} & $\circ$ & $\bullet$ & $\circ$ & $\circ$ & $\circ$ & $\circ$   \\
+{\bf Preconditions} & $\bullet$ & $\bullet$ & $\circ$ & $\circ$ & $\circ$ & $\circ$   \\
+{\bf Dependencies}  & $\circ$ & $\circ$ & $\bullet$ & $\circ$ & $\bullet$ & $\circ$   \\
+{\bf Backwards compatible} & $\bullet$ & $\bullet$ & $\bullet$ & $\bullet$ & $\bullet$ & $\bullet$  \\
+{\bf Decomposable} & $\circ$ & $\circ$ & $\bullet$ & $\bullet$ & $\bullet$ & $\bullet$  \\ \hline
 \end{tabular}
 \vspace*{0.5cm}
 \newline
@@ -182,7 +179,7 @@ Is it possible to identify smaller transformation rules inside this language ext
 {\bf Scope} & L2L & L2L & L2L & L2L & G2G & L2L \\
 {\bf Extension or Modification} & E. & E. & E. & E. & E. & M. \\
 {\bf Syntactically type preserving} & $\bullet$ & $\bullet$ & $\bullet$ & $\bullet$ & $\bullet$  & $\bullet$      \\
-{\bf Introducing bindings} & $\circ$ & $\circ$ & $\circ$ & $\circ$ & $\circ$ & $\circ$ \\
+{\bf Introducing bindings} & $\circ$ & $\circ$ & $\circ$ & $\circ$ & $\bullet$ & $\circ$ \\
 {\bf Depending on bindings} & $\circ$ & $\circ$ & $\circ$ & $\bullet$ & $\circ$ & $\circ$ \\
 {\bf Compositional} & $\bullet$ & $\bullet$ & $\bullet$ & $\bullet$ & $\circ$ & $\circ$ \\
 {\bf Analysis of subterms} & $\circ$ & $\circ$ & $\circ$ & $\bullet$ & $\bullet$ & $\bullet$ \\
@@ -204,14 +201,13 @@ Matthias Felleisen presents a rigorous mathematical framework to define the expr
 
 The formal specification presented by Felleisen falls outside of the scope of this thesis. But we can summaries his findings informally: If a construct in language $A$ can be expressed in a construct in language $B$ by only performing local transformations (\textit{local-to-local}), then language $A$ is no more expressive than language $B$. And \textit{"By the definition of an expressible construct, programs in a less expressive language generally have a globally different structure from functionally equivalent programs in a more expressive language."}\cite{Felleisen1990} 
 
-This implies that every language extension transformed through a \textit{local-to-local} scoped transformation (see section \ref{taxonomy}), creates a language that is no more expressive than the original (core) language. In table \ref{full-table} the categorization of ECMAScript 6 language extensions is displayed. Eleven of the twelve extensions can be transformed with the use of a \textit{local-to-local} transformation, the only exception is the extension of binding constructs (see section \ref{let-const}). This extension requires a \textit{global-to-global} transformation. 
+This implies that every language extension transformed through a \textit{local-to-local} scoped transformation (see section \ref{taxonomy}), creates a language that is no more expressive than the original (core) language. In table \ref{full-table} the categorization of ECMAScript 6 language extensions is displayed. Ten of the twelve extensions can be transformed with the use of a \textit{local-to-local} transformation, the two exceptions are, the extension of binding constructs (see appendix \ref{let-const}). This extension requires a \textit{global-to-global} transformation. And the arrow function (see appendix \ref{arrow}) which requires a \textit{global-to-local} transformation, because the transformation depends on the context in which the arrow function is used (i.e. either the global scope or inside a function).
 
-\textit{"Intuitively, a programming language is less expressive than another if the latter can express all the facilities the former can express in the language universe."}\cite{Felleisen1990}
-
+\textit{"Intuitively, a programming language is less expressive than another if the latter can express all the facilities the former can express in the language universe."}~\cite{Felleisen1990}. Thus ES6 is more expressive than ES5.
 
 \section{Implementation}
 Each transformation is defined as a rewrite rule. It has a concrete syntax pattern which matches part of a parse-tree. The result is a concrete piece of syntax, using only constructs from the core syntax definition (i.e. ECMAScript 5).
-The rewrite rules are exhaustively applied on the input parse-tree until no more rewrite rules match any sub-trees of the input. Application of rewrite rules to the parse-tree is done bottom-up, because several rewrite rules (e.g. \ref{arrow-function-table}) demand there sub-terms to be transformed for successful completion.
+The rewrite rules are exhaustively applied on the input parse-tree until no more rewrite rules match any sub-trees of the input. Application of rewrite rules to the parse-tree is done bottom-up, because several rewrite rules (e.g. arrow function) demand their sub-terms to be transformed to guarantee successful completion.
 
 \subsection{cross-cutting concerns}
 Each transformation rule has to deal with similar issues, can we identify these issues and solve them in a standalone (language agnostic) fashion?

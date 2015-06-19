@@ -78,10 +78,56 @@ With the use of program transformations these extensions can be eliminated an a 
 
 Language extensions are closely related to other forms of program transformations. There are (syntax) macros\cite{Leavenworth1966}, these are language extensions defined within the same source file and are expanded before compilation (examples are SweeterJS~\cite{Disney2014}, Syntax macros~\cite{Weise1993}). These \textit{"define syntactic abstractions over code fragments"}~\cite{Bravenboer2004}. Macro systems have several limitations. The transformations need to be present in the source file, macros are often restrained to a fixed invocation (through a macro identifier), and they often lack the expressiveness in their rewriting language\cite{Bravenboer2004}. There was an attempt to implement the ES6 specification through the use of syntax macros but the project\footnote{\url{https://github.com/jlongster/es6-macros}} is abandoned.
 
-Most language extensions can be classified as syntactic sugar. As mentioned before there are several languages that before compilation are transformed to a core language (e.g. Haskell core language).  Language features classified as syntactic sugar, are features that can be expressed in the core language. But often benefit from improved human readability when notated with aid of the syntactic sugar. For example the assignment expression \textit{a += b} is syntactic sugar notation for \textit{a = a + b} of frequent occurrence in (c-style) programming languages.
+Most language extensions can be classified as syntactic sugar. As mentioned before there are several languages that before compilation are transformed to a core language (e.g. Haskell core language).  Language features classified as syntactic sugar, are features that can be expressed in the core language. But often benefit from improved human readability when notated with aid of the syntactic sugar. For example the assignment expression \lstinline$a += b$ is syntactic sugar notation for \lstinline$a = a + b$ of frequent occurrence in (c-style) programming languages.
 
 \subsection{Hygiene} \label{hygiene}
-The capture avoidance is one such problem, it is mostly studied in the context of macro expansion\cite{Herman2010a,Herman2010,Disney2014}. And is often called the hygiene of transformations. When an identifier originating from the source program references to a synthesized declaration, the transformation is sub-hygienic and introduces variable capture. To prevent this problem we implement the \textit{name-fix} algorithm\cite{Erdweg2014} for our transformation suite.
+Any program transformations that introduces new bindings in the target program risks the unintended shadow of user identifiers, or variable capture. When variable capture happens as a result of a program transformation, this transformation is unhygienic. Transformations without unintended variable capture are hygienic transformations. Hygienic program transformations are mostly studied in the context of macro expansions~\cite{Herman2010a,Herman2010,Disney2014}
+
+The problem of variable capture can best be explained through the use of a simple example. Here we use a language extension called swap, that can swap the values of two bindings with the use of a single statement. The transformation eliminates the \lstinline$swap$ statement and introduces an immediately invoking function expression (see section \ref{javascript-functions}) to swap out the values. In the body of this function we bind the value of one of the input variables to a temporary binding:
+
+\begin{figure}[!h]
+\begin{minipage}{0.45\textwidth}
+	\begin{lstlisting}
+	swap x y;
+	\end{lstlisting}
+\end{minipage}
+\hfill
+\begin{minipage}{0.45\textwidth}
+	\begin{lstlisting}
+	(function() {
+		var tmp = x;
+		x = y;
+		y = tmp;
+	})();
+	\end{lstlisting}
+\end{minipage}
+
+\caption{A language extension swap is transformed to core JavaScript}
+\end{figure}
+
+When the \lstinline$swap$ statement is performed by the user on a variable named \lstinline$tmp$ the transformation will shadow the users binding and not produce the expected result (see figure \ref{fig:unhygienic}).
+
+\begin{figure}[!h] 
+\label{fig:unhygienic}
+\begin{minipage}{0.45\textwidth}
+	\begin{lstlisting}
+	swap x tmp;
+	\end{lstlisting}
+\end{minipage}
+\hfill
+\begin{minipage}{0.45\textwidth}
+	\begin{lstlisting}
+	(function() {
+		var tmp = x;
+		x = tmp;
+		tmp = tmp;
+	})();
+	\end{lstlisting}
+\end{minipage}
+\caption{Introduction of variable capture because the transformation binds non-free name}
+\end{figure}
+
+The unhygienic transformation as explained above can often introduce subtle bugs in target programs, which are hard to identify for the user of the program transformation. Especially in the context of real-world applications, because of the complexity of the source program, and the transformation suite. Many transformations suites fail to identify and solve variable capture in their program transformations, in a case study performed by Erdweg et. al. eight out of nine DSL implementations were prone to variable capture~\cite{Erdweg2014a}.
 
 \section{Program Representation} \label{program-representation}
 Before programs can be transformed they need a structured representation. Seldom are program transformations performed on the the textual input. Here we discuss several ways to represent programs.
@@ -93,51 +139,51 @@ Parse trees represent a programs syntactic information in a tree. This tree incl
 or AST is produced by removing layout information from a parse tree, only the core constructs of the language grammar remain as nodes in the tree. White-space layout, comments, and things like parentheses (these are implicitly implied by the structure of the AST) are removed. An AST is often the input for compiler pipelines, program transformations, and refactorings.
 
 \paragraph{Higher Order Syntax Trees (HOAS)}
-To represent not just a program's sub expression relations but also its variable binding we can use a Higher Order Syntax Tree (HOAS)\cite{Pfenning1988}. In a HOAS the variable bindings are made explicit (just as the sub expression relations are made explicit in an AST). Every variable has a binding-site and possibly uses throughout the rest of the tree. \textit{"In addition to dealing with the problem of variable capture, HOAS provides higher-order matching which synthesizes new function for higher-order  variables. One of the problems of higher-order mathcing is that there can be many matches for a pattern"}\cite{Visser2001}
+To represent not just a program's sub expression relations but also its variable binding we can use a Higher Order Syntax Tree (HOAS)\cite{Pfenning1988}. In a HOAS the variable bindings are made explicit (just as the sub expression relations are made explicit in an AST). Every variable has a binding-site and possibly uses throughout the rest of the tree. \textit{"In addition to dealing with the problem of variable capture, HOAS provides higher-order matching which synthesizes new function for higher-order  variables. One of the problems of higher-order matching is that there can be many matches for a pattern"}~\cite{Visser2001}
 
-\section{Parsing}
-Before a program is represented in on of the previously defined tree formats, it is represented in textual form. To transform the stream of input characters to a tree a program called a parser is used. There are many different types of parser techniques, and a large body of research\cite{Visser1997,Brand2002,Salomon1989}
+\section{Parsing} \label{parsing}
+Before a program is represented in on of the previously defined tree formats, it is represented in textual form. To transform the stream of input characters to a tree a program called a parser is used. There are many different types of parser techniques, and a large body of research~\cite{Visser1997,VandenBrand2002,Salomon1989}
 
-The parsing of textual input often happens in two stages. First a \textit{scanner} performs the lexical analysis. Which identifies the tokens of our syntax (e.g. keywords, identifiers). With this identification the parser only has to operate on these identified tokens. "The lexical syntax of a language is usually specified by regular expression"\cite{Bravenboer2004}.
+The parsing of textual input often happens in two stages. First a \textit{scanner} performs the lexical analysis. Which identifies the tokens of our syntax (e.g. keywords, identifiers). With this identification the parser operates on the identified tokens. Usually the lexical syntax of a language is \textit{"specified by regular expression"}~\cite{Bravenboer2004}.
 
-Scanners that do not have access to the parser, are also unaware of the context of lexical tokens. In case of JavaScript this can impose subtle difficulties in the implementation of a scanner. "due to ambiguities in how regular expression literals (such as /[0-9]*/) and the divide operator (/) should be lexed."\cite{Disney2014}. For this reason traditional JavaScript parsers are often intertwined with their lexer. Disney et. al. avoid this problem by introducing a separate reader stage in the parser. However this problem can also be avoided by using scannerless parsing, these parsers preserve the lexical structure of the input characters, and make it possible to compose grammars\cite{Visser1997}.  
+Scanners that do not have access to the parser, are also unaware of the context of lexical tokens. In case of JavaScript this can impose subtle difficulties in the implementation of a scanner. \textit{"due to ambiguities in how regular expression literals (such as /[0-9]*/) and the divide operator (/) should be lexed."}~\cite{Disney2014}. For this reason traditional JavaScript parsers are often intertwined with their lexer. Disney et. al. avoid this problem by introducing a separate reader stage in the parser. This problem can also be avoided by using scannerless parsing, \textit{"Scannerless parsing is a parsing technique that does not use a scanner to divide a string into lexical tokens. Instead lexical analysis is integrated in the context-free analysis of the entire string."}~\cite{Visser1997} these parsers preserve the lexical structure of the input characters, and make it possible to compose grammars~\cite{Visser1997}.
+
+There exist different types of parsers, where some can handle more grammars than others. Examples of parser types are LR (left to right), SLR (simple left to right), LALR (look-ahed left to right), or CLR (canonical left to right). Each of these parsers uses a parse table which contains all the knowledge of the grammar that has to be parsed. Now the parser is a loop over the input using the parse table to identify possible next symbols.
+
+Scannerless parsing suffers form conflicts in the parse table~\cite{Visser1997}, there are two causes for these conflicts, either there exists an ambiguity in the grammar, or lack of look-ahead. This second case occurs when a choice from the parse table is incorrect, but this can not be determined by the parser inside its current look-ahead window. Generalized parsers solve this problem by foking new parsers for each conflict found in the parse table, when all forked parsers finish correctly the parser outputs a parse forest (instead of a parse tree). When conflict arose from lack of look-ahead the forked parser for this conflict will fail.
 
 \section{Language Workbenches} \label{rascal}
 
-The language workbench is a term popularized by Martin Fowler and we can formulate his definition as follows:
+Language workbench is a term popularized by Martin Fowler and we can formulate his definition as follows:
 
-A language workbench makes it easy to build tools that match the best of modern IDEs, where the primary source of information is a persistent abstract representation. Its users can freely design new languages without a semantic barrier. With the result of language oriented programming becoming much more accessible.\cite{Fowler2005}
+A language workbench makes it easy to build tools that match the best of modern IDEs, where the primary source of information is a persistent abstract representation. Its users can freely design new languages without a semantic barrier. With the result of language oriented programming becoming much more accessible.~\cite{Fowler2005}
 
 \blockquote[\cite{Fowler2005}]{Essentially the promise of language workbenches is that they provide the flexibility of external DSLs without a semantic barrier. Furthermore they make it easy to build tools that match the best of modern IDEs. The result makes language oriented programming much easier to build and support, lowering the barriers that have made language oriented programming so awkward for so many.}
 
-These workbenches reduce the awkwardness of language oriented programming\cite{Ward1994} significantly, by giving programmers the the tools to define programming languages with an abstract representation.
+These workbenches improve the efficiency of language oriented programming\cite{Ward1994} significantly, by giving programmers the the tools to define programming languages with an abstract representation.
 
-The RASCAL\cite{Klint} metaprogramming environment (mpl) is a language workbench. It allows programmers to define context-free grammars, generate parsers for these grammars. With these parsers programmers are able to define parse tree patterns. The RASCAL mpl uses Eclipse for IDE integration, which allows programmers to define interaction handles and syntax highlighting. All language extensions presented in this thesis are implemented using the RASCAL mpl.
+The RASCAL\cite{Klint} meta-programming environment is a language workbench. It allows programmers to define context-free grammars, generate parsers for these grammars. The workbench integrates with the Eclipse development environment, which allows meta-programmers to integrate interactive language-specific IDE features and syntax highlighting. All language extensions presented in this thesis are implemented using the RASCAL meta-programming environment.
 
 \paragraph{Syntax definition}
-....
+Syntax definitions in RASCAL allows the definition of parsers for programming languages or domain-specific languages. RASCAL generates scannerless parsers from the context-free syntax definition (see section \ref{parsing}). RASCAl uses generalized parsing to avoid lack of look-ahead, when an ambiguity appears two parsers are forked from the main parser, and in case of ambiguity a parse forest is returned, in case of look-ahead error the parser fails (see section \ref{parsing}).
 
 \paragraph{Concrete syntax}
-A Rascal generated parser returns a parse tree, which is an ordered, rooted tree that represents the syntactic structure of a string according to the formal grammar used to specify the parser. Most transformation systems would implode this concrete syntax tree to an AST and perform program transformations on this tree. Rascal gives the possibility to perform program transformation directly on the concrete syntax tree through the use of concrete-syntax patterns. Presenting multiple advantages over an AST based solution:
+A Rascal generated parser returns a parse tree (or forest), which is an ordered, rooted tree that represents the syntactic structure of a string according to the formal grammar used to specify the parser. Most transformation systems would implode this concrete syntax tree to an AST and perform program transformations on this tree. Rascal gives the possibility to perform program transformation directly on the concrete syntax tree through the use of concrete-syntax patterns. This has multiple advantages over an AST based solution:
 \begin{itemize}
 	\item Preserving layout information encoded in the concrete-syntax tree
 	\item Avoiding the use of a pretty printer to output the transformed AST to a textual representation
-	\item Transformation code reads as rewrite rules, instead of a clutter of AST nodes. (Concrete syntax is syntax highlighted using the generated parser)
+	\item Rewrite rules can use concrete syntax patterns for their definition, improving human readability
 \end{itemize}
-A concrete-syntax pattern may contain variables in the form of our grammars non-terminals, these variables are bound in the context of the current patterns use (e.g. functions body when used as a formal parameter). The following pattern matches unnamed JavaScript functions according to the Saner JavaScript syntax definition\footnote{\url{https://goo.gl/B6HR22}}
+A concrete-syntax pattern may contain variables in the form of a grammars non-terminals, these variables are bound in the context of the current patterns use (e.g. functions body when used as a formal parameter) if the pattern is matched successful. A quoted concrete-syntax pattern starts with a non-terminal to define the desired syntactic type (e.g. Expression), and they ignore layout. 
 
 \begin{lstlisting}
-(Expression)`function( <Params ps> ) { <Statement* body> }` := pt
+(Symbol)`Token1 Token2 ... Token3` := pt
 \end{lstlisting}
 
-In similar fashion new syntax trees can be constructed, using the variables bound from pattern matches.
+Where a token can be a lexical token, typed variable pattern: \lstinline$<Type Var>$, or a bound variable pattern \lstinline$<Var>$ (where \lstinline$Var$ is already bound in the current context, resolved and used as a pattern). And \lstinline$Symbol$ is a non-terminal.
+
+RASCAL supports a shorthand notation to parse a string starting from a non-terminal: (where \lstinline$"..."$ is any string)
 
 \begin{lstlisting}
-(Expression)`function plus(x, y) { return x + y; }`
-\end{lstlisting}
-
-Rascal also supplies a shorthand notation to parse a string starting from the supplied non-terminal
-
-\begin{lstlisting}
-[Expression]"1 + 2"
+[Symbol]"..."
 \end{lstlisting}
