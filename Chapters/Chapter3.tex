@@ -1,10 +1,10 @@
 % Chapter Template
 
-\chapter{Transforming ECMAScript} % Main chapter title
+\chapter{Transforming ECMAScript 6} % Main chapter title
 
 \label{Chapter3}
 
-\lhead{Chapter 3. \emph{Transforming ECMAScript}}
+\lhead{Chapter 3. \emph{Transforming ECMAScript 6}}
 
 \section{Motivating Examples}
 
@@ -147,7 +147,7 @@ Is it possible to identify smaller transformation rules inside this language ext
 		\centering
 
 		\begin{table}[h]
-		\caption{ES6 features transformation dimensions (1/2)}
+		\caption{ES6 features transformation dimensions}
 		\label{full-table}
 
 \begin{tabular}{rcccccc}
@@ -189,6 +189,7 @@ Is it possible to identify smaller transformation rules inside this language ext
 {\bf Backwards compatible} & $\bullet$ & $\bullet$ & $\bullet$ & $\bullet$ & $\circ$ & $\bullet$ \\
 {\bf Decomposable} & $\circ$ & $\circ$ & $\circ$ & $\circ$ & $\bullet$ & $\circ$ \\ \hline
 \end{tabular}
+\caption*{$\bullet$: Yes, $\circ$: No, \textbf{D}: Desugaring, \textbf{U}: Undefined, \textbf{Opt}: Optimization, \textbf{CfS}: Context-free-syntax, \textbf{L2L}: local-to-local, \textbf{E}: Extension, \textbf{M}: Modification}
 	\end{table}
 
 		
@@ -214,24 +215,87 @@ Each transformation rule has to deal with similar issues, can we identify these 
 Many problems with transformations originate with name binding in source and target language.
 
 \paragraph{Variable capture}
-What happens when a transformation rule introduces a new binding. There are two possibilities either the binding-name is not yet bound in the source program, or the binding-name is already bound in the source program. In the second case our transformation code introduces \textit{variable capture}. This can be illustrated with the use of a simple example.
+In section \ref{hygiene} we have described the problem of variable capture in the context of program transformations. To solve this problem for our transformation suite we reuse the \textit{name-fix} algorithm presented by Erdweg et. al.~\cite{Erdweg2014}. The algorithm relies on a binding graph to identify variable capture, and uses string origins~\cite{Inostroza2014} to distinguish between synthesized identifiers (i.e. those identifiers introduced by the transformation) and identifiers originating from the source program.
 
-\begin{minipage}{0.45\textwidth}
-\begin{lstlisting}[caption=Input JavaScript]
-var {x} = obj;
+\textit{name-fix} analyses the \textit{name graph} of source and target program to identify variable capture. The name graph contains nodes for all identifiers in the program, a directed edge indicates a reference to a declaration. 
+
+
+
+\begin{figure}[h]
+\centering
+
+\begin{minipage}{0.25\linewidth}
+
+\begin{lstlisting}
+	var x = 0, 
+		tmp = 1;
+		
+	(function() {
+		var tmp = x;
+		x = tmp;
+		tmp = tmp;
+	})();
 \end{lstlisting}
+
 \end{minipage}
 \hfill
-\begin{minipage}{0.45\textwidth}
-\begin{lstlisting}[caption=Desugared JavaScript]
-var _ref = obj;
-var x = _ref.x;
-\end{lstlisting}
+\begin{minipage}{0.65\linewidth}
+
+\begin{tikzpicture}[
+source/.style={circle, draw=black, fill=white, very thick, minimum size=10mm},
+synthesized/.style={circle, draw=black, fill=gray!60, very thick, minimum size=10mm}
+]
+\node[source](x_dec){1:x};
+\node[source](tmp_dec)[right=of x_dec]{2:t};
+\node[synthesized](tmp_dec_2)[right=of tmp_dec]{5:t};
+
+\node[source](x_ref)[below=of x_dec,xshift=7mm]{5:x};
+\node[source](x_ref_2)[below=of x_dec,xshift=-7mm]{6:x};
+\node[source](tmp_ref)[below=of tmp_dec_2,xshift=-7mm]{6:t};
+\node[synthesized](tmp_ref_2)[below=of tmp_dec_2,xshift=7mm]{7:t};
+
+\node[source](tmp_ref_3)[below=of tmp_dec]{7:t};
+
+\draw[->] (x_ref.north) -- (x_dec.south);
+\draw[->] (x_ref_2.north) -- (x_dec.south);
+\draw[->] (tmp_ref.north) -- (tmp_dec_2.south);
+\draw[->] (tmp_ref_2.north) -- (tmp_dec_2.south);
+\draw[->] (tmp_ref_3.north) -- (tmp_dec_2.south);
+\end{tikzpicture}
+
 \end{minipage}
 
-For this example we look at destructuring variable declaration (see: \ref{destructuring}). During the transformation a new binding is created to store the object (named \_ref). 
+\caption{Name graph produced from code} \label{fig:name-graph}
+\end{figure}
 
-If however the name \_ref was already bound in our source program this would result in an illegal redeclaration of \_ref. This problem is identified as variable capture and can arise for any piece of transformation code, were source and target language have name binding.
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[
+source/.style={circle, draw=black, fill=white, very thick, minimum size=10mm},
+synthesized/.style={circle, draw=black, fill=gray!60, very thick, minimum size=10mm}
+]
+\node[source](x_dec){1:x};
+\node[source](tmp_dec)[right=of x_dec]{2:t};
+\node[synthesized](tmp_dec_2)[right=of tmp_dec]{5:t'};
+
+\node[source](x_ref)[below=of x_dec,xshift=7mm]{5:x};
+\node[source](x_ref_2)[below=of x_dec,xshift=-7mm]{6:x};
+\node[source](tmp_ref)[below=of tmp_dec,xshift=7mm]{6:t};
+\node[synthesized](tmp_ref_2)[below=of tmp_dec_2]{7:t'};
+
+\node[source](tmp_ref_3)[below=of tmp_dec,xshift=-7mm]{7:t};
+
+\draw[->] (x_ref.north) -- (x_dec.south);
+\draw[->] (x_ref_2.north) -- (x_dec.south);
+\draw[->] (tmp_ref.north) -- (tmp_dec.south);
+\draw[->] (tmp_ref_2.north) -- (tmp_dec_2.south);
+\draw[->] (tmp_ref_3.north) -- (tmp_dec.south);
+\end{tikzpicture}
+\caption{Name graph after name-fix is applied} \label{fig:name-graph-fixed}
+\end{figure}
+
+Because our source and target language are both JavaScript and thus have the same binding mechanism, we only generate the name graph for our target program. 
+
 
 What are some possible solutions for this problem. Let each transformation deal with the avoidance of variable capture. Build full scope tree and supply this scope to our \textit{desugaring} functions, generate new identifiers that are unique in the scope. Disadvantage of this solution is that programmers creating transformation code need also be capable of creating scope trees, and our transformer start to have more resemblance with full fledged compiler than term-rewriting rules.
 
@@ -240,7 +304,4 @@ The solution presented by Erdweg et. al.\cite{Erdweg2014a} is called \textit{nam
 \paragraph{Introducing (multiple) bindings}
 As described above various desugarings have to introduce bindings for correct transformation. In most cases new bindings will be bound to some descriptive variable name (e.g. \_ref). If a language extension is used multiple times within the same scope the same identifier will be declared multiple times. This is a similar problem to that of variable capture, but the capture now happens with binding all introduced by transformation code. And not from a transformation to source binding. Similar to the variable capture problem this problem could be solved uniquely for every transformation, or can be extracted and solved in a generic manner (i.e. agnostic from transformation code). 
 
-Supply each \textit{desugar} function with a function called \textit{generateUId} (generate unique identifier). When a transformation wants to generate a identifier (.e.g \_ref), it calls this function (which has knowledge of all previously generated identifiers) and generates a unique identifier through the use of \textit{gensym}\ref{gen-sym} algorithm.  
-
-\paragraph{Introducing new bindings}
-Many transformations introduce new bindings to store some intermediate value needed for our transformation. These bindings should be introduced in the containing block-scope where our transformation is performed. With the use of annotations on the parse-tree we can set declarations on our current matched node. A final pass over the tree will take care of setting declarations in the correct block scope.
+Supply each \textit{desugar} function with a function called \textit{generateUId} (generate unique identifier). When a transformation wants to generate a identifier (.e.g \_ref), it calls this function (which has knowledge of all previously generated identifiers) and generates a unique identifier through the use of \textit{gensym}\ref{gen-sym} algorithm. 

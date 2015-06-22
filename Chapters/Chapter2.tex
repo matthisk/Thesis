@@ -81,9 +81,9 @@ Language extensions are closely related to other forms of program transformation
 Most language extensions can be classified as syntactic sugar. As mentioned before there are several languages that before compilation are transformed to a core language (e.g. Haskell core language).  Language features classified as syntactic sugar, are features that can be expressed in the core language. But often benefit from improved human readability when notated with aid of the syntactic sugar. For example the assignment expression \lstinline$a += b$ is syntactic sugar notation for \lstinline$a = a + b$ of frequent occurrence in (c-style) programming languages.
 
 \subsection{Hygiene} \label{hygiene}
-Any program transformations that introduces new bindings in the target program risks the unintended shadow of user identifiers, or variable capture. When variable capture happens as a result of a program transformation, this transformation is unhygienic. Transformations without unintended variable capture are hygienic transformations. Hygienic program transformations are mostly studied in the context of macro expansions~\cite{Herman2010a,Herman2010,Disney2014}
+Any program transformations that introduces new bindings in the target program risks the unintended shadow of user identifiers, or variable capture. When variable capture happens as a result of a program transformation, this transformation is unhygienic. Transformations that guarantee that no unintended variable capture will occur are called hygienic transformations. Hygienic program transformations are mostly studied in the context of macro expansions~\cite{Herman2010a,Herman2010,Disney2014}
 
-The problem of variable capture can best be explained through the use of a simple example. Here we use a language extension called swap, that can swap the values of two bindings with the use of a single statement. The transformation eliminates the \lstinline$swap$ statement and introduces an immediately invoking function expression (see section \ref{javascript-functions}) to swap out the values. In the body of this function we bind the value of one of the input variables to a temporary binding:
+The problem of variable capture can best be explained through the use of an example. Here we use a language extension called \textit{swap}, that can swap the values of two bindings with the use of a single statement. The transformation eliminates the \lstinline$swap$ statement and introduces an immediately invoking function expression (see section \ref{javascript-functions}) to swap out the values. In the body of this function we bind the value of one of the input variables to a temporary binding:
 
 \begin{figure}[!h]
 \begin{minipage}{0.45\textwidth}
@@ -95,7 +95,7 @@ The problem of variable capture can best be explained through the use of a simpl
 \begin{minipage}{0.45\textwidth}
 	\begin{lstlisting}
 	(function() {
-		var tmp = x;
+		var tmp = x; (*@\label{hygiene-tmp}@*)
 		x = y;
 		y = tmp;
 	})();
@@ -105,7 +105,7 @@ The problem of variable capture can best be explained through the use of a simpl
 \caption{A language extension swap is transformed to core JavaScript}
 \end{figure}
 
-When the \lstinline$swap$ statement is performed by the user on a variable named \lstinline$tmp$ the transformation will shadow the users binding and not produce the expected result (see figure \ref{fig:unhygienic}).
+This transformation rule introduces a new binding named \lstinline$tmp$ (at line \ref{hygiene-tmp}). Because of this introduction the transformation could possibly generate variable capture in the target program. When the \lstinline$swap$ statement is performed by the user, where one of the variables to swap is named \lstinline$tmp$ the transformation will shadow the users binding and not produce the expected result (see figure \ref{fig:unhygienic}).
 
 \begin{figure}[!h] 
 \label{fig:unhygienic}
@@ -165,7 +165,7 @@ These workbenches improve the efficiency of language oriented programming\cite{W
 The RASCAL\cite{Klint} meta-programming environment is a language workbench. It allows programmers to define context-free grammars, generate parsers for these grammars. The workbench integrates with the Eclipse development environment, which allows meta-programmers to integrate interactive language-specific IDE features and syntax highlighting. All language extensions presented in this thesis are implemented using the RASCAL meta-programming environment.
 
 \paragraph{Syntax definition}
-Syntax definitions in RASCAL allows the definition of parsers for programming languages or domain-specific languages. RASCAL generates scannerless parsers from the context-free syntax definition (see section \ref{parsing}). RASCAl uses generalized parsing to avoid lack of look-ahead, when an ambiguity appears two parsers are forked from the main parser, and in case of ambiguity a parse forest is returned, in case of look-ahead error the parser fails (see section \ref{parsing}).
+Syntax definitions in Rascal allows the definition of parsers for programming languages or domain-specific languages. Rascal generates scannerless parsers from the context-free syntax definition (see section \ref{parsing}). Rascal uses generalized parsing to avoid lack of look-ahead, when the parser detects an ambiguity in its parse table, two parsers are forked from the main parser. In case of ambiguity a parse forest is returned, in case of lack of look-ahead error this parser fails (see section \ref{parsing}).
 
 \paragraph{Concrete syntax}
 A Rascal generated parser returns a parse tree (or forest), which is an ordered, rooted tree that represents the syntactic structure of a string according to the formal grammar used to specify the parser. Most transformation systems would implode this concrete syntax tree to an AST and perform program transformations on this tree. Rascal gives the possibility to perform program transformation directly on the concrete syntax tree through the use of concrete-syntax patterns. This has multiple advantages over an AST based solution:
@@ -182,7 +182,7 @@ A concrete-syntax pattern may contain variables in the form of a grammars non-te
 
 Where a token can be a lexical token, typed variable pattern: \lstinline$<Type Var>$, or a bound variable pattern \lstinline$<Var>$ (where \lstinline$Var$ is already bound in the current context, resolved and used as a pattern). And \lstinline$Symbol$ is a non-terminal.
 
-RASCAL supports a shorthand notation to parse a string starting from a non-terminal: (where \lstinline$"..."$ is any string)
+Rascal supports a shorthand notation to parse a string starting from a non-terminal: (where \lstinline$"..."$ is any string)
 
 \begin{lstlisting}
 [Symbol]"..."
