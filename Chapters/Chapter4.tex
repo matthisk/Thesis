@@ -18,18 +18,18 @@ There are several criteria as to which we evaluate the resulting transformation 
 {\bf Correctness} & A language extension is performed correct if the target program is semantically similar to that of the language feature defined in the ECMAScript 6 specification\cite{SpecJS}. To test the correctness we use a test-suite created especially for this purpose\footnotemark\\
 {\bf Modularity}  & Is it possible separate and recombine the different language extensions.\\
 {\bf Size}        & How many lines of code are used to implement the transformation suite, if possible compared on a feature basis\\
-{\bf Output "noise"} & One of the challenges programmers face when using program transformations is the debugging of the generated program. Because during transformation the language extensions are eliminated from their code (and replaced by core language constructs). The more "noise" a transformation (suite) generates the harder it becomes for a programmer to debug generated code. An informal definition of noise is code added by a transformation that removes structure of the target program further away from the source program. \\
+{\bf Output "noise"} & One of the challenges programmers face when using program transformations is the debugging of the generated program. During transformation the language extensions are eliminated from their code (and replaced by core language constructs). The more "noise" a transformation (suite) generates the harder it becomes for a programmer to debug generated code. An informal definition of noise is code added by a transformation that removes structure of the target program further away from the source program. \\
 {\bf Coverage}    & How many language features are implemented\\
 {\bf Performance} & What is the run time of the transformation code\\
 \end{tabular}
 \end{table}
 \footnotetext{\url{https://kangax.github.io/compat-table/es6/}}
 
-To evaluate the our implementation of the transformation suite we validate against three open-source implementation of ECMAScript 6 language as a transformation suite (to ECMAScript 5). We selected the following \textit{transpilers} (these transformation suites categories themselves as transpilers a combination of compiler and transformer) to evaluate against:
+To evaluate our implementation of the transformation suite we validate against three open-source implementation of ECMAScript 6 language as a transformation suite (to ECMAScript 5). We selected the following \textit{transpilers} (these transformation suites categories themselves as transpilers a combination of compiler and transformer) to evaluate against:
 
 \begin{table}[h]
 \def\arraystretch{1.5}
-\caption{Open-source transpilers}
+\caption{Open-source ES6 transpilers}
 \label{transpilers}
 \begin{tabular}{rp{0.5\linewidth}p{0.1\linewidth}p{0.1\linewidth}}
  & \textbf{Description} & \textbf{Cont.} & \textbf{Com.} \\
@@ -44,7 +44,8 @@ To evaluate the our implementation of the transformation suite we validate again
 \footnotetext[4]{\url{https://github.com/marijnh/acorn}}
 \footnotetext[5]{\url{http://esprima.org/}}
 
-\begin{table}[h]
+\begin{minipage}{0.45\linewidth}
+\begin{table}
 \centering
 \caption{Lines of code - transformations}
 \label{loc-transformations}
@@ -56,8 +57,10 @@ To evaluate the our implementation of the transformation suite we validate again
 {\bf Rascal}  & 62          & 1368                                    \\ \bottomrule
 \end{tabular}
 \end{table}
-
-\begin{table}[h]
+\end{minipage}
+\hspace
+\begin{minipage}{0.45\linewidth}
+\begin{table}
 \centering
 \caption{Lines of code - parser}
 \label{loc-parser}
@@ -69,6 +72,28 @@ To evaluate the our implementation of the transformation suite we validate again
 {\bf Rascal}  & 12          & 555                                    \\ \bottomrule
 \end{tabular}
 \end{table}
+\end{minipage}
+
+\begin{table}
+\caption{BabelJS - Lines of code per transformation}
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+                           & \textbf{Babel JS} & \textbf{Traceur} & \textbf{ES6 transpiler} & \textbf{Rascal} \\ \midrule
+\textbf{Arrow functions}   & 7                 & 144              & 277\footnotemark[2]     & 40 \\
+\textbf{Classes}           & 390               & 286              & 498                     & 215 \\
+\textbf{Destructuring}     & 349               & 403              & 303                     & 261 \\
+\textbf{For of loop}       & 127               & 90               & 529                     & 159 \\
+\textbf{Binding}           & 513               & 651              & 219                     & 221 \\
+\textbf{Parameters}        & 192               & 554              & 277\footnotemark[2]     & 58 \\
+\textbf{Object literals}   & 74                & 248              & 204                     & 74 \\
+\textbf{Spread}            & 93                & 117              & 460                     & 57 \\
+\textbf{Template literals} & 64                & 203              & -\footnotemark          & 89 \\
+\textbf{Numeric literals}  & -                 & 31               & 22                      & - \\ \bottomrule
+\end{tabular}
+\end{table}
+\footnotetext[2]{ES6 transpiler does not have separate files for arrow function and paramater transformation, these both reside in \textit{functions.js}. This number is the size (in lines of code) of this file.}
+\footnotetext{Not implemented by ES6 transpiler}
+
 
 \begin{table}[h]
 \centering

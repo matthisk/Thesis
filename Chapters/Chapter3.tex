@@ -100,10 +100,10 @@ One of the rephrasing categories defined by Eelco Visser\cite{Visser2001}, rephr
 Program transformations can be categorized by their abstraction level. There are four levels of abstraction (similar to those of macro expansions~\cite{Weise1993}), character-, token-, syntax-, or semantic-based. Character and token based transformations work on a program in textual representation. Syntactical transformations work on a program in its parsed representation (either as an AST or as a parse tree, see section \ref{program-representation}). Next to the syntactic representation semantic transformations also have access to the static semantics of the input program (e.g. variable binding).
 
 \paragraph{Extension or Modification}
-Rephrasings (identified above) try to say the same thing (i.e. no change in semantics) but using different words\cite{Visser2001}. Sometimes these different words are an extension on the core language, in this case we call the transformation a \textit{program extension}. In other cases the transformation uses only the words available in the core language, then we call the transformation a \textit{program modification}. Transformations that fall in the \textit{optimization} (see table \ref{table-rephrasing-categories}) category are program modifications. An example is tail call optimization in which a recursive function call in the \textit{return} statement is reduced to a loop to avoid a call-stack overflow error (see section \ref{tail-call-optimization}). 
+Rephrasings (identified above) try to say the same thing (i.e. no change in semantics) but using different words\cite{Visser2001}. Sometimes these different words are an extension on the core language, in this case we call the transformation a \textit{program extension}. In other cases the transformation uses only the words available in the core language, then we call the transformation a \textit{program modification}. Transformations that fall in the \textit{optimization} (see table \ref{table-rephrasing-categories}) category are program modifications. An example is tail call optimization in which a recursive function call in the \textit{return} statement is reduced to a loop to avoid a call-stack overflow error (see appendix \ref{tail-call-optimization}). 
 
 \paragraph{Scope}
-Program transformations can happen within four different scopes: 
+Program transformations performed on the abstraction level of context-free syntax (or semantics) receive the parse tree of the source program as their input. A transformation searches the parse tree for a specific type of node. The type of node to match on is defined by the transformation and can be any syntactical type defined in the source program's grammar. The node matched by a transformation and whether or not information from outside this node's scope is used during transformation determine the scope of a program transformation, there are four different scopes:
 
 When a program transformation matches on a sub-tree of the parse-tree and only transforms this matched sub-tree it is a \textit{(1) local-to-local} transformation. If the transformation needs information outside the context of the matched sub-tree, but only transforms the matched sub-tree it is \textit{(2) global-to-local}. When a transformation has no additional context from its local sub-tree but does alter the entire parse-tree it is called \textit{(3) local-to-global}. If the transformation transforms the input program in its entirety it is \textit{(4) global-to-global}.  
 
@@ -111,7 +111,7 @@ When a program transformation matches on a sub-tree of the parse-tree and only t
 Program transformations performed on syntax elements can preserve the syntactical type of their input element or alter it. Two main syntactical types in JavaScript are Statement and Expression (see section \ref{javascript-syntax}). If a transformation matches on a Expression node but returns a Statement it is non syntactical type preserving.
 
 \paragraph{Introduction of bindings}
-Does the transformation introduce new bindings. Transformations that do not introduce bindings are guaranteed to be hygienic (see section \ref{hygiene}), where binding introducing transformations can cause variable capture from transformation bindings to source bindings.
+Does the transformation introduce new bindings. Transformations that do not introduce bindings are guaranteed to be hygienic (see section \ref{hygiene}), where binding introducing transformations can cause variable capture from synthesized bindings to source bindings.
 
 \paragraph{Depending on bindings (i.e. run-time code)}
 Will the target program produced by the transformation depend on context not introduced by the transformation (e.g. global variables, external libraries).
@@ -217,15 +217,13 @@ Many problems with transformations originate with name binding in source and tar
 \paragraph{Variable capture}
 In section \ref{hygiene} we have described the problem of variable capture in the context of program transformations. To solve this problem for our transformation suite we reuse the \textit{name-fix} algorithm presented by Erdweg et. al.~\cite{Erdweg2014}. The algorithm relies on a binding graph to identify variable capture, and uses string origins~\cite{Inostroza2014} to distinguish between synthesized identifiers (i.e. those identifiers introduced by the transformation) and identifiers originating from the source program.
 
-\textit{name-fix} analyses the \textit{name graph} of source and target program to identify variable capture. The name graph contains nodes for all identifiers in the program, a directed edge indicates a reference to a declaration. 
+\textit{name-fix} analyses the \textit{name graph} of source and target program to identify variable capture. The name graph contains nodes for all identifiers in the program, a directed edge indicates a reference to a declaration. Because our source and target language are both JavaScript and thus have the same binding mechanism, we only generate the name graph for our target program. In the graph a distinction is made between synthesized and user bindings. To identify whether a binding originates from the source program or was synthesized during transformation, the \textit{name-fix} algorithm uses string origins~\cite{Inostroza2014}. 
 
-
+In figure \ref{fig:name-graph} we use the target program from our \lstinline$swap$ language extension (see section \ref{hygiene}) to illustrate how these name graphs are constructed, and how \textit{name-fix} identifies variable capture. Each node contains a line number and the identifier it resembles from that line, a directed edge is a reference to a declaration. Nodes with a white background originate from the source program, nodes with a dark background are synthesized during transformation. Line numbers from synthesized identifiers are appended with a tick.
 
 \begin{figure}[h]
 \centering
-
 \begin{minipage}{0.25\linewidth}
-
 \begin{lstlisting}
 	var x = 0, 
 		tmp = 1;
@@ -236,23 +234,21 @@ In section \ref{hygiene} we have described the problem of variable capture in th
 		tmp = tmp;
 	})();
 \end{lstlisting}
-
 \end{minipage}
 \hfill
 \begin{minipage}{0.65\linewidth}
-
 \begin{tikzpicture}[
 source/.style={circle, draw=black, fill=white, very thick, minimum size=10mm},
 synthesized/.style={circle, draw=black, fill=gray!60, very thick, minimum size=10mm}
 ]
 \node[source](x_dec){1:x};
 \node[source](tmp_dec)[right=of x_dec]{2:t};
-\node[synthesized](tmp_dec_2)[right=of tmp_dec]{5:t};
+\node[synthesized](tmp_dec_2)[right=of tmp_dec]{5':t};
 
 \node[source](x_ref)[below=of x_dec,xshift=7mm]{5:x};
 \node[source](x_ref_2)[below=of x_dec,xshift=-7mm]{6:x};
 \node[source](tmp_ref)[below=of tmp_dec_2,xshift=-7mm]{6:t};
-\node[synthesized](tmp_ref_2)[below=of tmp_dec_2,xshift=7mm]{7:t};
+\node[synthesized](tmp_ref_2)[below=of tmp_dec_2,xshift=7mm]{7':t};
 
 \node[source](tmp_ref_3)[below=of tmp_dec]{7:t};
 
@@ -262,26 +258,41 @@ synthesized/.style={circle, draw=black, fill=gray!60, very thick, minimum size=1
 \draw[->] (tmp_ref_2.north) -- (tmp_dec_2.south);
 \draw[->] (tmp_ref_3.north) -- (tmp_dec_2.south);
 \end{tikzpicture}
-
 \end{minipage}
 
-\caption{Name graph produced from code} \label{fig:name-graph}
+\caption{Target program generated by swap language extension and corresponding name graph} \label{fig:name-graph}
 \end{figure}
+
+Node \textit{7:t} and \textit{6:t} originate from the source program but reference a synthesized declaration. Node \textit{5:t} shadows the original declaration \textit{2:t}. \textit{name-fix} adds node \textit{5:t} to the list of declarations to be renamed. After the entire name graph is analyzed/generated all declarations from this list are rebound under free names (i.e. names not yet bound in the target program). Since \textit{7:t} and \textit{6:t} are not correct references of \textit{5:t} they are not renamed. The resulting name graph and target program are presented in figure \ref{fig:name-graph-fixed}  
 
 \begin{figure}[h]
 \centering
+\begin{minipage}{0.25\linewidth}
+\begin{lstlisting}
+	var x = 0, 
+		tmp = 1;
+		
+	(function() {
+		var tmp$0 = x;
+		x = tmp;
+		tmp$0 = tmp;
+	})();
+\end{lstlisting}
+\end{minipage}
+\hfill
+\begin{minipage}{0.65\linewidth}
 \begin{tikzpicture}[
 source/.style={circle, draw=black, fill=white, very thick, minimum size=10mm},
 synthesized/.style={circle, draw=black, fill=gray!60, very thick, minimum size=10mm}
 ]
 \node[source](x_dec){1:x};
-\node[source](tmp_dec)[right=of x_dec]{2:t};
-\node[synthesized](tmp_dec_2)[right=of tmp_dec]{5:t'};
+\node[source](tmp_dec)[right=of x_dec,xshift=7mm]{2:t};
+\node[synthesized](tmp_dec_2)[right=of tmp_dec]{5':t'};
 
 \node[source](x_ref)[below=of x_dec,xshift=7mm]{5:x};
 \node[source](x_ref_2)[below=of x_dec,xshift=-7mm]{6:x};
 \node[source](tmp_ref)[below=of tmp_dec,xshift=7mm]{6:t};
-\node[synthesized](tmp_ref_2)[below=of tmp_dec_2]{7:t'};
+\node[synthesized](tmp_ref_2)[below=of tmp_dec_2]{7':t'};
 
 \node[source](tmp_ref_3)[below=of tmp_dec,xshift=-7mm]{7:t};
 
@@ -291,17 +302,14 @@ synthesized/.style={circle, draw=black, fill=gray!60, very thick, minimum size=1
 \draw[->] (tmp_ref_2.north) -- (tmp_dec_2.south);
 \draw[->] (tmp_ref_3.north) -- (tmp_dec.south);
 \end{tikzpicture}
-\caption{Name graph after name-fix is applied} \label{fig:name-graph-fixed}
+\end{minipage}
+
+\caption{Target program and name graph after \textit{name-fix} algorithm} \label{fig:name-graph-fixed}
 \end{figure}
 
-Because our source and target language are both JavaScript and thus have the same binding mechanism, we only generate the name graph for our target program. 
-
-
-What are some possible solutions for this problem. Let each transformation deal with the avoidance of variable capture. Build full scope tree and supply this scope to our \textit{desugaring} functions, generate new identifiers that are unique in the scope. Disadvantage of this solution is that programmers creating transformation code need also be capable of creating scope trees, and our transformer start to have more resemblance with full fledged compiler than term-rewriting rules.
-
-The solution presented by Erdweg et. al.\cite{Erdweg2014a} is called \textit{name-fix}, this is a standalone algorithm that does not interfere with transformation code. It identifies variable capture through the use of string origin\cite{Inostroza2014} information stored in the parse-tree.
+\textit{name-fix} does apply a \textit{"a closed-world assumption to infer that all unbound variables are indeed free, and thus can be renamed at will."}~\cite{Erdweg2014}. This means that global variables defined by the user (or a third-party library) that are included within the same run-time as our target problem, could possibly be shadowed by the renamed bindings. However there is no way for \textit{name-fix} to know what bindings will be taken by other bindings than those bound in the source program.
 
 \paragraph{Introducing (multiple) bindings}
-As described above various desugarings have to introduce bindings for correct transformation. In most cases new bindings will be bound to some descriptive variable name (e.g. \_ref). If a language extension is used multiple times within the same scope the same identifier will be declared multiple times. This is a similar problem to that of variable capture, but the capture now happens with binding all introduced by transformation code. And not from a transformation to source binding. Similar to the variable capture problem this problem could be solved uniquely for every transformation, or can be extracted and solved in a generic manner (i.e. agnostic from transformation code). 
+As described above various desugarings have to introduce bindings for correct transformation. In most cases new bindings will be bound to some temporary or reference variable name (e.g. \_ref or \_tmp). If a language extension is used multiple times within the same scope the same identifier will be declared multiple times. This is a similar problem to that of variable capture, but the capture now happens with binding all introduced by transformation code and not from a transformation to source binding. Similar to the variable capture problem this problem could be solved uniquely for every transformation, or can be extracted and solved in a generic manner (i.e. agnostic from transformation code). 
 
-Supply each \textit{desugar} function with a function called \textit{generateUId} (generate unique identifier). When a transformation wants to generate a identifier (.e.g \_ref), it calls this function (which has knowledge of all previously generated identifiers) and generates a unique identifier through the use of \textit{gensym}\ref{gen-sym} algorithm. 
+Supply each \textit{desugar} function with a function called \textit{generateUId} (generate unique identifier). When a transformation wants to generate an identifier, it calls this function (which has knowledge of all previously generated identifiers) and generates a unique identifier through the use of \textit{gensym}\ref{gen-sym} algorithm. 
