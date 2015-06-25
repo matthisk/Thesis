@@ -58,6 +58,12 @@ Near full functionality. (i.e. no support for spread operator with generators, b
 \textbf{Template Literals} (\textit{src/extensions/template}) 
 Full functionality (i.e. tagged template literals and normal template literals)
 
+\textbf{Unicode Escape Points}
+Not implemented, due to time constraints.
+
+\textbf{RegExp "y" and "u" flag}
+Not implemented, due to time constraints.
+
 \paragraph{Binding extensions}\mbox{}\\
 \textbf{Let} (\textit{src/extensions/letconst}) \newline
 Full functionality. (i.e. support for renaming of function scoped clashes of block scoped names, no reference possible before definition, and possibility to throw run-time errors on redeclaration)
@@ -73,9 +79,9 @@ Our implementation does not support the \textit{new.target} property. It is poss
 
 \footnotetext{\textit{new.target} refers to the constructor function called with the new keyword, even inside the paren constructor function invoked through \textit{super}. It is undefined in functions that are called without new keyword. The behavior can be overridden with the use of \textit{Reflect.construct}}
 
-The compatibility tests as discussed in \ref{} are stored in \textit{input/compatibility} and can be invoked from the Rascal module at \textit{src/test/Compatibility.rsc}
+The compatibility tests as discussed in section \ref{sec:correctness} are stored in \textit{input/compatibility} and can be invoked from the Rascal module at \textit{src/test/Compatibility.rsc}
 
 Our implementation of the \textit{name-fix}\citep{Erdweg2014a} algorithm resides in \textit{src/core/resolver}. 
 
 \paragraph{Getting the artifact}
-The latest version of the artifact is available at \url{https://github.com/matthisk/rascal-sweetjs} as a git repository. The repository page includes information on how to run the artifact inside the Eclipse IDE\footnote{\url{http://eclipse.org}}.
+The latest version of the artifact is available at \url{https://github.com/matthisk/ESarmonia} as a git repository. The repository page includes information on how to run the artifact inside the Eclipse IDE\footnote{\url{http://eclipse.org}}.

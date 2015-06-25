@@ -44,70 +44,92 @@ To evaluate our implementation of the transformation suite we validate against t
 \footnotetext[4]{\url{https://github.com/marijnh/acorn}}
 \footnotetext[5]{\url{http://esprima.org/}}
 
-\begin{minipage}{0.45\linewidth}
-\begin{table}
+\paragraph{Correctness} \label{sec:correctness}
+In table \ref{tab:compatibility} results of the compatibility tests. Four categories are of interest because they provide tests for the new language features of ES 6, and not tests for new standard-library functionality introduced by ES 6. Syntax depicts the category testing all language features that introduce new syntactical elements. Tests regarding the new binding mechanisms fall under the category Bindings. Tests for the new function types (i.e. generators, arrow functions, and classes) fall under the Function category. 
+
+Not all tests can be satisfied by a transformation suite alone, some tests use the \textit{eval} function to evaluate a string as JavaScript in the current run-time. A transformation suite only has access to the static semantics during transformation it can not resolve the \textit{string} that is going to be evaluated during run-time. Because other transformation suites face the same issue we do not remove these tests from the set of tests. 
+
+Our implementation does not score as high as the big open-source projects, mainly because we do not implement generators and automatically fail twenty-two tests related to generators. ES6-transpiler scores lower than our implementation. The compatibility score indicates that our artifact could be used in a \textit{real-world} environment, as long as unimplemented features are avoided. For a full list of features implemented by our artifact consult appendix \ref{AppendixA}.
+
+\begin{table}[h]
 \centering
-\caption{Lines of code - transformations}
-\label{loc-transformations}
-\begin{tabular}{@{}lcc@{}}
+\caption{Compatibility tests} \label{tab:compatibility}
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+                & {\bf Total} & \multicolumn{1}{l}{{\bf Babel}} & \multicolumn{1}{l}{{\bf Traceur}} & \multicolumn{1}{l}{{\bf ES6 Transpiler}} & \multicolumn{1}{l}{{\bf Rascal}} \\ \midrule
+{\bf Syntax}    & 76          & 76                              & 60                     & 46           & 64                               \\
+{\bf Bindings}  & 19          & 15                              & 15                     & 10           & 16                               \\
+{\bf Functions} & 62          & 54                              & 50                     & 43           & 35                               \\
+{\bf Total}     & 157         & 136 (87\%)                      & 125 (80\%)             & 99 (63\%)    & 115 (73\%)                        \\ \bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Modularity}
+
+\paragraph{Size}
+In table \ref{tab:loc} we compare the size of all projects in lines of code, where our own artifact is named Rascal. Lines of code are measured using the \textit{cloc} tool\footnote{\url{http://cloc.sourceforge.net/}}, because \textit{cloc} has no built in support to measure lines of code of Rascal programs we forced \textit{cloc} to measure Rascal programs as if they where \textit{Java} code (Rascal comments are similar to those of Java).
+
+Our artifact is about five times smaller in size, compared to other implementations. 
+
+Our artifact relies on the Rascal parser generator and a Rascal syntax definition to define the ES 5 grammar, and ES 6 language extensions. Other implementations rely on open-source ECMAScript parsers implemented in JavaScript, or implement their own parser. The syntax definitions are about eight to ten times smaller in size than any of the JavaScript parsers. Rascal syntax definitions do impose some limitations that made it difficult or impossible to implement certain language grammar features, in appendix \ref{AppendixA} we elaborate on this.
+
+\begin{table}[h]
+\caption{Lines of code - transformations \& parser} \label{tab:loc}
+\begin{minipage}{0.45\linewidth}
+\begin{tabular}{@{}lrr@{}}
 \toprule
               & {\bf Files} & \multicolumn{1}{l}{{\bf Lines of code}} \\ \midrule
 {\bf Babel}   & 76          & 6547                                    \\
 {\bf Traceur} & 19          & 9881                                    \\
+{\bf ES6 Transpiler} & 22    & 5341
+\\
 {\bf Rascal}  & 62          & 1368                                    \\ \bottomrule
 \end{tabular}
-\end{table}
 \end{minipage}
-\hspace
+\hfill
 \begin{minipage}{0.45\linewidth}
-\begin{table}
-\centering
-\caption{Lines of code - parser}
-\label{loc-parser}
-\begin{tabular}{@{}lcc@{}}
+\begin{tabular}{@{}lrr@{}}
 \toprule
               & {\bf Files} & \multicolumn{1}{l}{{\bf Lines of code}} \\ \midrule
-{\bf Babel}   & 22          & 3583                                    \\
+{\bf Acorn}   & 22          & 3583                                    \\
 {\bf Traceur} & 15          & 6681                                    \\
+{\bf ESprima} & 1           & 4323
+\\
 {\bf Rascal}  & 12          & 555                                    \\ \bottomrule
 \end{tabular}
-\end{table}
 \end{minipage}
+\end{table}
 
-\begin{table}
-\caption{BabelJS - Lines of code per transformation}
+In table \ref{tab:loc-feature} we analyze the size of each transpiler on a feature basis, where only the size of actual transformation code for an extension is measured. Rascal's implementation and that of Babel JS have simlilar sizes for transformations. Traceur and ES6 transpiler's size difference as compared to Rascal's implementation are similar to that of the size different of the projects as a whole. 
+
+The main reason why Babel JS is able to reduce the size of their transformations is because of the architecture of the project. Many concerns are extracted from transformation code and solved separately in different modules/files. Some examples: creating new bindings (\textit{src/babel/traversal/scope/binding.js}), pattern matching on parse tree nodes (\textit{src/babel/traversal} LOC: 2456), creating new abstract syntax (\textit{src/babel/transformations/templates} LOC: 456). 
+
+\begin{table}[h]
+\centering
+\caption{BabelJS - Lines of code per transformation} \label{tab:loc-feature}
 \begin{tabular}{@{}lrrrr@{}}
 \toprule
                            & \textbf{Babel JS} & \textbf{Traceur} & \textbf{ES6 transpiler} & \textbf{Rascal} \\ \midrule
-\textbf{Arrow functions}   & 7                 & 144              & 277\footnotemark[2]     & 40 \\
+\textbf{Arrow functions}   & 7                 & 144              & 277\footnotemark[1]     & 40 \\
 \textbf{Classes}           & 390               & 286              & 498                     & 215 \\
 \textbf{Destructuring}     & 349               & 403              & 303                     & 261 \\
 \textbf{For of loop}       & 127               & 90               & 529                     & 159 \\
 \textbf{Binding}           & 513               & 651              & 219                     & 221 \\
-\textbf{Parameters}        & 192               & 554              & 277\footnotemark[2]     & 58 \\
+\textbf{Parameters}        & 192               & 554              & 277\footnotemark[1]     & 58 \\
 \textbf{Object literals}   & 74                & 248              & 204                     & 74 \\
 \textbf{Spread}            & 93                & 117              & 460                     & 57 \\
 \textbf{Template literals} & 64                & 203              & -\footnotemark          & 89 \\
 \textbf{Numeric literals}  & -                 & 31               & 22                      & - \\ \bottomrule
 \end{tabular}
 \end{table}
-\footnotetext[2]{ES6 transpiler does not have separate files for arrow function and paramater transformation, these both reside in \textit{functions.js}. This number is the size (in lines of code) of this file.}
+\footnotetext[1]{ES6 transpiler does not have separate files for arrow function and paramater transformation, these both reside in \textit{functions.js}. This number is the size (in lines of code) of this file.}
 \footnotetext{Not implemented by ES6 transpiler}
 
+\paragraph{Noise}
 
-\begin{table}[h]
-\centering
-\caption{Compatibility tests}
-\label{my-label}
-\begin{tabular}{@{}lcccc@{}}
-\toprule
-                & {\bf Total} & \multicolumn{1}{l}{{\bf Babel}} & \multicolumn{1}{l}{{\bf Traceur}} & \multicolumn{1}{l}{{\bf Rascal}} \\ \midrule
-{\bf Syntax}    & 76          & 76                              & 60                                & 58                               \\
-{\bf Bindings}  & 19          & 15                              & 15                                & 12                               \\
-{\bf Functions} & 62          & 54                              & 50                                & 34                               \\
-{\bf Total}     & 157         & 136 (87\%)                      & 125 (80\%)                        & 98 (62\%)                        \\ \bottomrule
-\end{tabular}
-\end{table}
+\paragraph{Coverage}
+
+\paragraph{Performance}
 
 \section{Related Work}
 Eelco Visser,
