@@ -104,7 +104,7 @@ In table \ref{tab:loc-feature} we analyze the size of each transpiler on a featu
 
 The main reason why Babel JS is able to reduce the size of their transformations is because of the architecture of the project. Many concerns are extracted from transformation code and solved separately in different modules/files. Some examples: creating new bindings (\textit{src/babel/traversal/scope/binding.js}), pattern matching on parse tree nodes (\textit{src/babel/traversal} LOC: 2456), creating new abstract syntax (\textit{src/babel/transformations/templates} LOC: 456). 
 
-\begin{table}[h]
+\begin{table}[h!]
 \centering
 \caption{BabelJS - Lines of code per transformation} \label{tab:loc-feature}
 \begin{tabular}{@{}lrrrr@{}}
@@ -126,14 +126,68 @@ The main reason why Babel JS is able to reduce the size of their transformations
 \footnotetext{Not implemented by ES6 transpiler}
 
 \paragraph{Noise}
+To measure the amount of noise a transpiler produces we will compare the size of the input program (in characters) against the size of the output program. We use several example files given in Appendix \ref{AppendixC}. Several other indications of noise are the amount of (temporal) bindings introduced by the transformation, and the size of necessary run-time code needed for transformed JavaScript to function correctly.
+
+\begin{table}
+\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+{}                         & \textbf{Input} & \textbf{Babel JS} & \textbf{Traceur} & \textbf{ES6 transpiler} & \textbf{Rascal} \\ \midrule
+\textbf{Arrow functions}   & 409            & 580               & 688              & 498 & - \\
+\textbf{Destructuring}     & 188            & 455               & 1134             & 294 & - \\ 
+\textbf{Object literals}   & 116            & 193               & 607              & 251 & - \\    
+\bottomrule
+\end{tabular}
+\end{table}
+
+Noise experienced by the JavaScript programmer can also be reduced by outputting a mapping from target to source program, called a sourcemap. With this sourcemap JavaScript developer tool (i.e. debuggers) can present the written ES6 code to the programmer while the transformed ES5 code is actually being executed.
 
 \paragraph{Coverage}
+In appendix \ref{AppendixA} we give an overview of ES6 features implemented by our transformation suite, with argumentation why several features are not implemented. Babel JS is them most feature complete with the exception of \textit{new.target} property (not implemented by any of the transpilers). Generators are transformed by Babel JS but the needed transformation is not implemented by the Babel JS developers (they use the \textit{regenerator} transformation suite to transform generators). Traceur lacks support for propert tail-calls and the \textit{new.target} property they do have their own implementation of generator transformations. ES6 Transpiler implements \textit{for of} loops in a variant to basic to categorize it as implemented (i.e. \textit{for of} loops can only iterate over lists, not strings, or iterables). ES6 transpiler also lacks support for generators, the \textit{new.target} property, and proper tail-calls.
+
+\begin{table}[h!]
+\centering
+\caption{ES6 features implemented}
+\begin{tabular}{@{}l|cccc@{}}
+\toprule
+{} & \textbf{Babel JS} & \textbf{Traceur} & \textbf{ES6 Transpiler} & \textbf{Rascal} \\ \midrule
+{\bf Function extensions} & & & & \\ 
+{Arrow functions}   & $\bullet$ & $\bullet$ & $\bullet$ & $\bullet$ \\
+{Class declaration} & $\bullet$ & $\bullet$ & $\bullet$ & $\bullet$ \\
+{Super}             & $\bullet$ & $\bullet$ & $\bullet$ & $\bullet$ \\
+{Generators}        & $\circ$ & $\bullet$ & $\circ$ & $\circ$ \\
+{New.target}        & $\circ$ & $\circ$ & $\circ$ & $\circ$ \\ \midrule
+
+{\bf Syntax extensions} & & & & \\ 
+{Destructuring}            & $\bullet$ & $\bullet$ & $\bullet$ & $\bullet$ \\
+{For of loops}             & $\bullet$ & $\bullet$ & $\circ$ & $\bullet$ \\
+{Binary \& Octal literals} & $\bullet$ & $\bullet$ & $\bullet$ & $\bullet$ \\
+{Object literal}           & $\bullet$ & $\bullet$ & $\bullet$& $\bullet$ \\
+{Rest Parameters}          & $\bullet$ & $\bullet$ & $\bullet$ & $\bullet$ \\
+{Default}                  & $\bullet$ & $\bullet$ & $\bullet$ & $\bullet$ \\
+{Spread operator}          & $\bullet$ & $\bullet$ & $\bullet$ & $\bullet$ \\
+{Template Literals}        & $\bullet$ & $\bullet$ & $\bullet$ & $\bullet$ \\
+{Unicode Escape Points}    & $\bullet$ & $\bullet$ & $\bullet$ & $\circ$ \\
+{RegExp "y" and "u" flag}  & $\bullet$ & $\bullet$ & $\bullet$ & $\circ$ \\ \midrule
+
+{\bf Binding extensions} & & & & \\ 
+{Let}     & $\bullet$ & $\bullet$ & $\bullet$ & $\bullet$ \\
+{Const}   & $\bullet$ & $\bullet$ & $\bullet$ & $\bullet$ \\
+{Modules} & $\bullet$ & $\bullet$ & $\circ$ & $\circ$ \\ \midrule
+
+{\bf Optimization} & & & & \\
+{Proper tail-calls} & $\bullet$ & $\circ$ & $\circ$ & $\circ$ \\ \bottomrule
+\end{tabular}
+\caption*{$\bullet$: Implemented, $\circ$: Not implemented}
+\end{table}
 
 \paragraph{Performance}
 
 \section{Related Work}
-Eelco Visser,
-name-fix algo,
-Irvine program transformation catalog,
-Maerds
+Various research has been performed into the creation of tools to aid extension of programming languages and IDE's by meta-programmers. In Eelco Visser's paper~\cite{Visser20024} presents a system for language extension. In this system grammar's are defined using Syntax Definition Formalism and program transformations are implemented using the Stratego language. Visser ignores the cross-cutting concerns of program transformations (e.g. variable capture). Erdweg et. al.~\cite{Erdweg} present a system for extensible languages named Sugar*, which is agnostic from base language. The system can extend- syntax, editor support, and static analysis. In contrast to the system presented in this thesis, Sugar* relies on information from a compiler of the base language to operate correctly.  
+All of the work discussed above present minimal examples of actual language extensions implemented using their tools for extensible languages. The specific extension of the JavaScript programming language is studied by Disney et. al. in~\cite{Disney2014}, here JavaScript is extended through the use of syntax macros instead of separate language extensions as presented in this thesis.
 
+In related work of our taxonomy of language extensions (section \ref{taxonomy}) we can identify several categorizations of program transformations. For example the Irvine program transformation catalog~\cite{Standish1976a} presents a categorization for program transformations for lower-level procedural programming languages (e.g. the C programming language). Visser~\cite{Visser2001} presents a taxonomy for program transformations, which we partly reuse in our taxonomy of language extensions. 
+
+Other aspects of program transformations have also received attention in the past. In this thesis we reuse the \textit{name-fix} algorithm presented by Erdweg et. al.~\cite{Erdweg2014}. Transformation hygiene has received a lot of attention in the domain of language macros~\cite{Kohlbecker1986,Herman2010a,Disney2014}
+
+\section{Conclusions}

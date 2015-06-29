@@ -1,0 +1,59 @@
+% Appendix A
+
+\chapter{ES6 Test Examples} % Main appendix title
+
+\label{AppendixC} % For referencing this appendix elsewhere, use \ref{AppendixA}
+
+\lhead{Appendix C. \emph{ES6 Test Examples}} % This is for the header on each page - perhaps a shortened title
+
+\begin{lstlisting}[caption=Arrow function]
+var evens = [2,4,6,8,10],
+    fives = [];
+
+var odds = evens.map(v => v + 1);
+var nums = evens.map((v, i) => v + i);
+
+console.log(odds);
+console.log(nums);
+
+nums.forEach(v => {
+  if (v % 5 === 0) fives.push(v);
+});
+
+function thisBinding() {
+  return () => console.log(this.string);
+}
+
+thisBinding.call({ string: 'bound' })();
+
+function args() {
+  return () => console.log(arguments);
+}
+
+args('arg1','arg2')();
+\end{lstlisting}
+
+\begin{lstlisting}[caption=Destructuring]
+var [a,b,c] = [1,2,3];
+
+function fun( [a,b] ) {
+  return a + b;
+}
+
+var qux = "corge";
+var { [qux] : corge } = { corge: "graphly" };
+
+var { d = '100' } = {b:0};
+var [e,f,g = '100'] = [0,1];
+\end{lstlisting}
+
+\begin{lstlisting}[caption=Object literals]
+var handler;
+var obj = {
+    handler,
+    toString() {
+     return "d";
+    },
+    [ 'prop_' + (() => 42)() ]: 42
+};
+\end{lstlisting}
