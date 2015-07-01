@@ -13,12 +13,12 @@ JavaScript\footnotemark is the programming language implemented from the ECMAScr
 \paragraph{Syntax} \label{javascript-syntax}
 One of the main concerns for program transformations is syntax. The syntax of the programming language is to be extended to support new language features/constructs. ECMAScript falls in the C-type family % TODO: citation
 of syntax definitions (i.e. it uses curly braces to delimit blocks of code). 
-A program exists of a list of \textit{statements}. A \textit{statement} can be one of the language control flow constructs, a declaration, a function, or an \textit{expression}. Functions in JavaScript can be either defined as an \textit{expression} or as a \textit{statement} (see section \ref{javascript-functions}).
+A program exists of a list of \textit{statements}. A \textit{statement} can be one of the language control flow constructs, a declaration, a function, or an \textit{expression}. Functions in JavaScript can be either defined as an \textit{expression} or as a \textit{statement} (see section \ref{javascript-functions}). The ES standard specifies automatic semicolon insertion (or ASI), this grammar feature makes it possible for programmers to omit the the trailing semicolon after statements and let the parser insert these automatically.
 
 \paragraph{Inhertiance \& Object orientation} \label{javascript-inheritance}
-JavaScript can be classified as an object oriented language without \textit{class} based inheritance model\footnote{Most popular object-oriented languages do have \textit{class} based inheritance (e.g. Java or C++)}. Instead of such a model JavaScript objects have a prototype chain that determine the inheritance. 
+JavaScript can be classified as an object oriented language without \textit{class} based inheritance model\footnote{Most popular object-oriented languages do have \textit{class} based inheritance (e.g. Java or C++)}. Instead of such a model JavaScript objects have a prototype chain that determine their inheritance. 
 
-In the JavaScript run-time environment everything is an object with properties (even functions \ref{javascript-functions}), with the exception of primitive data-types (e.g. numbers). Every object has one special property called the \textit{prototype}, this prototype references another object (with yet another prototype) until finally one object has prototype \textit{null}. This chain of objects is called the \textit{prototype chain}. When performing a lookup on an object for a certain key $x$, the JavaScript interpreter will look for property $x$ on our object, if $x$ is not found it will look at the \textit{prototype} of our object. This iteration will continue until either prototype \textit{null} is found or an object with property $x$ is found in the prototype chain. 
+In the JavaScript run-time environment everything is an object with properties (even functions see section \ref{javascript-functions}), with the exception of primitive data-types (e.g. numbers). Every object has one special property called the \textit{prototype}, this prototype references another object (with yet another prototype) until finally one object has prototype \textit{null}. This chain of objects is called the \textit{prototype chain}. When performing a lookup on an object for a certain key $x$, the JavaScript interpreter will look for property $x$ on our object, if $x$ is not found it will look at the \textit{prototype} of our object. This iteration will continue until either prototype \textit{null} is found or an object with property $x$ is found in the prototype chain. 
 
 To understand prototypal inheritance in comparison to class based inheritance, we can use an analogy. A class in a class based programming language can be seen as a blueprint from which to construct objects. When calling a function on an object created from such a blueprint the function is retrieved from the blueprint and not from the (constructed) object. So the object is related to the class (or blueprint) with an object-class relation. With prototypal inheritance there is no blueprint everything is an object. This is also how inheritance works, we do not reference a blueprint but we reference a fully build object as our prototype. This creates an object-object relation. 
 
@@ -34,12 +34,12 @@ Car.prototype = new Vehicle();
 \paragraph{Scoping} \label{javascript-scoping}
 Most programming languages have some form of variable binding. These bindings are only bound in a certain context, such a context is often called a scope. There are two different ways to handle scope in a programming language, Lexical (or static) scoping and dynamic scoping. Lexical scoping is determined by the placing of a binding within the source program or its \textit{lexical context}. Variables bound in a dynamic scope are resolved through the program state or \textit{run-time context}. 
 
-In JavaScript bindings are determined through the use of lexical scoping, on a function level. Variables bound within a function's context are available throughout the entire lexical scope of the function. 
+In JavaScript bindings are determined through the use of lexical scoping, on a function level. Variables bound within a function's context are available throughout the entire lexical scope of the function, independent of their placement within this function (this is called hoisting).
 
-One exception on the lexical scoping is the binding of the \textit{this} keyword. Similar to many other object oriented languages JavaScript makes use of a \textit{this} keyword. In most object oriented languages the current object is implicitly bound to \textit{this} inside functions of that object. \footnote{Sometimes \textit{this} is called \textit{self} (e.g. in the \href{http://ruby.org}{Ruby}) programming language} In JavaScript the value of \textit{this} can change between function calls. For this reason the \textit{this} binding has dynamic scoping (we can not determine the value of \textit{this} before runtime). 
+One exception on the lexical scoping is binding of the \textit{this} keyword. Similar to many other object oriented languages JavaScript makes use of a \textit{this} keyword. In most object oriented languages the current object is implicitly bound to \textit{this} inside functions of that object.\footnote{Sometimes \textit{this} is called \textit{self} (e.g. in the \href{http://ruby.org}{Ruby} programming language)} In JavaScript the value of \textit{this} can change between function calls. For this reason the \textit{this} binding has dynamic scoping (we can not determine the value of \textit{this} before run-time). 
 
 \paragraph{Typing} \label{javascript-typing}
-JavaScript is a dynamically typed language without type annotations. Each object can be typecast without the use of special operator(s) and will be be converted automatically to correct type during execution. There are 5 primitive types: 
+JavaScript is a dynamically typed language without type annotations. Each object can be typecast without the use of special operator(s) and will be be converted automatically to correct type during execution. There are 5 primitive types, everything is else is an object:
 
 \begin{itemize}
 	\item \textit{Boolean}
@@ -48,8 +48,6 @@ JavaScript is a dynamically typed language without type annotations. Each object
 	\item \textit{Number}
 	\item \textit{String}
 \end{itemize}
-
-Everything is else is an object.
 
 \paragraph{Functions} \label{javascript-functions}
 in JavaScript functions are objects. Because of this functions are automatically promoted to first-class citizens (i.e. they can be used anywhere and in anyway normal bindings can be used). This presents the possibility to supply functions as arguments to functions, and calling member functions of the function object. Every function object inherits from the \textit{Function.prototype}\footnote{For more information see \href{https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/prototype}{Mozilla Developer Network}} which contains functions that allow the overriding of this binding (see section \ref{javascript-scoping}).
@@ -63,22 +61,22 @@ Another common pattern is JavaScript related to functions, is that of the immedi
 \end{lstlisting}
 
 \paragraph{Asynchronous}
-JavaScript is a single-threaded language, this means that concurrency through the use of processes, threads, or similar concurrency constructs is impossible.
+JavaScript is a single-threaded language, this means that concurrency through the use of processes, threads, or similar concurrency constructs is not possible.
 
 \section{Program Transformations}
 Eelco Visser defines the aim of a program transformation as follows:
 
-\blockquote[\cite{Visser2001}]{The aim of program transformation is to increase programmer productivity by automating programming tasks, thus enabling programming at a higher-level of abstraction, and increasing maintainability}
+\blockquote[\cite{Visser2001}]{\textit{The aim of program transformation is to increase programmer productivity by automating programming tasks, thus enabling programming at a higher-level of abstraction, and increasing maintainability}}
 
-There are many different types of program transformations. Programs can be transformed from a source to a target language. Where both can be the same or different. One can be a higher level language and one a lower level language. In this thesis we will focus on transformations in the category rephrasing~\cite{Visser2001}. Here a program in a source language is transformed to a different program in the same language. The use case in our thesis is language extensions which are discussed in the next section.
+There are many different types of program transformations. Programs can be transformed from a source to a target language. Where both can be the same or different. One can be a higher level language and one a lower level language. In this thesis we will focus on transformations in the category rephrasing~\cite{Visser2001}. Here a program in a source language is transformed to a different program in the same language.
 
 \section{Language Extensions} \label{lang-ext}
 \textit{"Language extensions augment a base language with additional language features."}~\cite{Erdweg2014} 
-With the use of program transformations these extensions can be eliminated an a target program in the base language can be produced. \textit{"Many compilers first desugar a source program to a core language."}~\cite{Erdweg2014} For example the Haskell functional programming language defines for many constructs how they can be transformed to a kernel language~\cite{PeytonJones}. These pieces of \textit{syntactic sugar} are examples of language extensions.
+With the use of program transformations these extensions can be eliminated and a target program in the base language can be produced. \textit{"Many compilers first desugar a source program to a core language."}~\cite{Erdweg2014} For example the Haskell functional programming language defines for many constructs how they can be transformed to a kernel language~\cite{PeytonJones}. These pieces of \textit{syntactic sugar} are examples of language extensions.
 
-Language extensions are closely related to other forms of program transformations. There are (syntax) macros\cite{Leavenworth1966}, these are language extensions defined within the same source file and are expanded before compilation (examples are SweeterJS~\cite{Disney2014}, Syntax macros~\cite{Weise1993}). These \textit{"define syntactic abstractions over code fragments"}~\cite{Bravenboer2004}. Macro systems have several limitations. The transformations need to be present in the source file, macros are often restrained to a fixed invocation (through a macro identifier), and they often lack the expressiveness in their rewriting language\cite{Bravenboer2004}. There was an attempt to implement the ES6 specification through the use of syntax macros but the project\footnote{\url{https://github.com/jlongster/es6-macros}} is abandoned.
+Language extensions are closely related to other forms of program transformations. There are (syntax) macros\cite{Leavenworth1966}, these are language extensions defined within the same source file and are expanded before compilation (examples are SweeterJS~\cite{Disney2014}, Syntax macros~\cite{Weise1993}). These \textit{"define syntactic abstractions over code fragments"}~\cite{Bravenboer2004}. Macro systems have several limitations. The transformations need to be present in the source file, macros are often restrained to a fixed invocation (through a macro identifier), and they often lack the expressiveness in their rewriting language\cite{Bravenboer2004}. There was an attempt to implement the ES6 specification through the use of syntax macros\footnote{\url{https://github.com/jlongster/es6-macros}} but the project is abandoned.
 
-Most language extensions can be classified as syntactic sugar. As mentioned before there are several languages that before compilation are transformed to a core language (e.g. Haskell core language).  Language features classified as syntactic sugar, are features that can be expressed in the core language. But often benefit from improved human readability when notated with aid of the syntactic sugar. For example the assignment expression \lstinline$a += b$ is syntactic sugar notation for \lstinline$a = a + b$ of frequent occurrence in (c-style) programming languages.
+Most language extensions can be classified as syntactic sugar. As mentioned before there are several languages that before compilation are transformed to a core language (e.g. Haskell core language).  Language features classified as syntactic sugar, are features that can be expressed in the core language. But often benefit from improved human readability when notated with aid of the syntactic sugar. For example the assignment expression \lstinline$a += b$ is syntactic sugar notation for \lstinline$a = a + b$ this notation is often found in c-style programming languages.
 
 \subsection{Hygiene} \label{hygiene}
 Any program transformations that introduces new bindings in the target program risks the unintended shadow of user identifiers, or variable capture. When variable capture happens as a result of a program transformation, this transformation is unhygienic. Transformations that guarantee that no unintended variable capture will occur are called hygienic transformations. Hygienic program transformations are mostly studied in the context of macro expansions~\cite{Herman2010a,Herman2010,Disney2014}
@@ -105,7 +103,7 @@ The problem of variable capture can best be explained through the use of an exam
 \caption{A language extension swap is transformed to core JavaScript}
 \end{figure}
 
-This transformation rule introduces a new binding named \lstinline$tmp$ (at line \ref{hygiene-tmp}). Because of this introduction the transformation could possibly generate variable capture in the target program. When the \lstinline$swap$ statement is performed by the user, where one of the variables to swap is named \lstinline$tmp$ the transformation will shadow the users binding and not produce the expected result (see figure \ref{fig:unhygienic}).
+This transformation rule introduces a new binding named \lstinline$tmp$ (at line \ref{hygiene-tmp}). Because of this introduction the transformation could possibly generate variable capture in the target program. When one of the arguments of the \lstinline$swap$ statement is named \lstinline$tmp$ the transformation will shadow the users binding and not produce the expected result (see figure \ref{fig:unhygienic}).
 
 \begin{figure}[!h] 
 \label{fig:unhygienic}
@@ -127,13 +125,13 @@ This transformation rule introduces a new binding named \lstinline$tmp$ (at line
 \caption{Introduction of variable capture because the transformation binds non-free name}
 \end{figure}
 
-The unhygienic transformation as explained above can often introduce subtle bugs in target programs, which are hard to identify for the user of the program transformation. Especially in the context of real-world applications, because of the complexity of the source program, and the transformation suite. Many transformations suites fail to identify and solve variable capture in their program transformations, in a case study performed by Erdweg et. al. eight out of nine DSL implementations were prone to variable capture~\cite{Erdweg2014a}.
+The unhygienic transformation as explained above can often introduce subtle bugs in target programs, which are hard to identify for the user of the program transformation. Especially in the context of real-world applications, because of the complexity of the source program, and the transformation suite. Many transformations suites fail to identify and solve variable capture in their program transformations, in a case study performed by Erdweg et. al. eight out of nine implementations of a Domain Specific Language were prone to variable capture~\cite{Erdweg2014a}.
 
 \section{Program Representation} \label{program-representation}
 Before programs can be transformed they need a structured representation. Seldom are program transformations performed on the the textual input. Here we discuss several ways to represent programs.
 
 \paragraph{Parse Trees} 
-Parse trees represent a programs syntactic information in a tree. This tree includes layout information of the input program (e.g. white-space, comments). The parse tree is structured according to some context-free grammar, that defines how to parse textual input. The parse tree also deals with disambiguation of input and representation of parentheses. If the parser finds an ambiguity during the parse process the two (or more) alternatives are all inserted in the tree under an ambiguity node.
+Parse trees represent a program's syntactic information in a tree. This tree includes layout information of the input program (e.g. white-space, comments). The parse tree is structured according to some context-free grammar, that defines how to parse textual input.
 
 \paragraph{Abstract Syntax Tree}
 or AST is produced by removing layout information from a parse tree, only the core constructs of the language grammar remain as nodes in the tree. White-space layout, comments, and things like parentheses (these are implicitly implied by the structure of the AST) are removed. An AST is often the input for compiler pipelines, program transformations, and refactorings.
@@ -144,7 +142,7 @@ To represent not just a program's sub expression relations but also its variable
 \section{Parsing} \label{parsing}
 Before a program is represented in on of the previously defined tree formats, it is represented in textual form. To transform the stream of input characters to a tree a program called a parser is used. There are many different types of parser techniques, and a large body of research~\cite{Visser1997,VandenBrand2002,Salomon1989}
 
-The parsing of textual input often happens in two stages. First a \textit{scanner} performs the lexical analysis. Which identifies the tokens of our syntax (e.g. keywords, identifiers). With this identification the parser operates on the identified tokens. Usually the lexical syntax of a language is \textit{"specified by regular expression"}~\cite{Bravenboer2004}.
+The parsing of textual input often happens in two stages. First a \textit{scanner} performs the lexical analysis, which identifies the tokens of our syntax (e.g. keywords, identifiers). With this identification the parser operates on the identified tokens. Usually the lexical syntax of a language is \textit{"specified by regular expression"}~\cite{Bravenboer2004}.
 
 Scanners that do not have access to the parser, are also unaware of the context of lexical tokens. In case of JavaScript this can impose subtle difficulties in the implementation of a scanner. \textit{"due to ambiguities in how regular expression literals (such as /[0-9]*/) and the divide operator (/) should be lexed."}~\cite{Disney2014}. For this reason traditional JavaScript parsers are often intertwined with their lexer. Disney et. al. avoid this problem by introducing a separate reader stage in the parser. This problem can also be avoided by using scannerless parsing, \textit{"Scannerless parsing is a parsing technique that does not use a scanner to divide a string into lexical tokens. Instead lexical analysis is integrated in the context-free analysis of the entire string."}~\cite{Visser1997} these parsers preserve the lexical structure of the input characters, and make it possible to compose grammars~\cite{Visser1997}.
 
@@ -154,15 +152,13 @@ Scannerless parsing suffers form conflicts in the parse table~\cite{Visser1997},
 
 \section{Language Workbenches} \label{rascal}
 
-Language workbench is a term popularized by Martin Fowler and we can formulate his definition as follows:
+Language workbench is a term popularized by Martin Fowler and we can summarize his definition as follows:
 
-A language workbench makes it easy to build tools that match the best of modern IDEs, where the primary source of information is a persistent abstract representation. Its users can freely design new languages without a semantic barrier. With the result of language oriented programming becoming much more accessible.~\cite{Fowler2005}
+A language workbench makes it easy to build tools that match the best of modern IDEs, where the primary source of information is a persistent abstract representation. Its users can freely design new languages without a semantic barrier, with the result of language oriented programming becoming much more accessible.~\cite{Fowler2005}
 
-\blockquote[\cite{Fowler2005}]{Essentially the promise of language workbenches is that they provide the flexibility of external DSLs without a semantic barrier. Furthermore they make it easy to build tools that match the best of modern IDEs. The result makes language oriented programming much easier to build and support, lowering the barriers that have made language oriented programming so awkward for so many.}
+These workbenches improve the efficiency of language oriented programming~\cite{Ward1994} significantly, by giving programmers the the tools to define programming languages with an abstract representation.
 
-These workbenches improve the efficiency of language oriented programming\cite{Ward1994} significantly, by giving programmers the the tools to define programming languages with an abstract representation.
-
-The RASCAL\cite{Klint} meta-programming environment is a language workbench. It allows programmers to define context-free grammars, generate parsers for these grammars. The workbench integrates with the Eclipse development environment, which allows meta-programmers to integrate interactive language-specific IDE features and syntax highlighting. All language extensions presented in this thesis are implemented using the RASCAL meta-programming environment.
+The Rascal~\cite{Klinta} meta-programming environment is a language workbench. It allows programmers to define context-free grammars, generate parsers for these grammars. The workbench integrates with the Eclipse development environment, which allows meta-programmers to integrate interactive language-specific IDE features and syntax highlighting. All language extensions presented in this thesis are implemented using the Rascal meta-programming environment.
 
 \paragraph{Syntax definition}
 Syntax definitions in Rascal allows the definition of parsers for programming languages or domain-specific languages. Rascal generates scannerless parsers from the context-free syntax definition (see section \ref{parsing}). Rascal uses generalized parsing to avoid lack of look-ahead, when the parser detects an ambiguity in its parse table, two parsers are forked from the main parser. In case of ambiguity a parse forest is returned, in case of lack of look-ahead error this parser fails (see section \ref{parsing}).
@@ -172,9 +168,9 @@ A Rascal generated parser returns a parse tree (or forest), which is an ordered,
 \begin{itemize}
 	\item Preserving layout information encoded in the concrete-syntax tree
 	\item Avoiding the use of a pretty printer to output the transformed AST to a textual representation
-	\item Rewrite rules can use concrete syntax patterns for their definition, improving human readability
+	\item Rewrite rules can use concrete syntax patterns for their definition, improving human readability of transformation code
 \end{itemize}
-A concrete-syntax pattern may contain variables in the form of a grammars non-terminals, these variables are bound in the context of the current patterns use (e.g. functions body when used as a formal parameter) if the pattern is matched successful. A quoted concrete-syntax pattern starts with a non-terminal to define the desired syntactic type (e.g. Expression), and they ignore layout. 
+A concrete-syntax pattern may contain variables in the form of a grammars non-terminals, these variables are bound in the context of the current patterns use if the pattern is matched successful. A quoted concrete-syntax pattern starts with a non-terminal to define the desired syntactic type (e.g. Expression), and they ignore layout. 
 
 \begin{lstlisting}
 (Symbol)`Token1 Token2 ... Token3` := pt

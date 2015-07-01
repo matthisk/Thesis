@@ -7,19 +7,19 @@
 \lhead{Chapter 1. \emph{Introduction and Motivation}} 
 
 \section{Context}
-JavaScript is an implementation of the ECMAScript specification. Since the release of the  specification there have been five iterations (where version four was skipped). The current version of the specification is ECMAScript 6, which has recently left draft status. With this new specification come new (syntactic) language features, before these features can be used in the JavaScript run-time environment\footnotemark of choice, the vendors of these environments have to implement this new standard. It is possible to use these new features in current JavaScript run-times, and write future proof JavaScript code, through the use of program transformations.
-\footnotetext{JavaScript code run-times are primarily found in modern browsers, but there also exist run-times that run dedicated inside an operating system}
+JavaScript is an implementation of the ECMAScript (ES) specification. Since the release of the  specification there have been five iterations (where version four was skipped). The current version of the specification is ES 6, which has recently been approved as the new standard. With this new specification come new (syntactic) language features, before these features can be used in the JavaScript run-time environment\footnotemark of choice, the vendors of these environments have to implement this new standard. It is possible to use these new features in current JavaScript run-times, and write future proof JavaScript code, through the use of program transformations.
+\footnotetext{JavaScript code run-times are primarily found in modern browsers, but there also exist run-times that run dedicated inside an operating system (e.g. node.js)}
 
-In this work we study the extension of programming languages (through program transformations). The new ECMAScript specification presents an opportunity to research language extensions in context of a real-world problem. Using the RASCAL meta-programming environment\citep{Klint} we will implement the program transformations. Afterwards we perform an analysis on the resulting transformation suite to uncover the \emph{effectiveness} of our implementation.
+In this thesis we study the extension of programming languages (through program transformations). The new ES specification presents an opportunity to research language extensions in context of a real-world problem. Using the Rascal meta-programming environment~\cite{Klinta} we will implement the program transformations needed to eliminate ES 6 language constructs to an ES 5 compatible program. Afterwards we perform an analysis on the resulting transformation suite to uncover the \emph{effectiveness} of our implementation, with regards to the Rascal meta-programming environment.
 
-\textit{"Program transformations find ubiquitous application in compiler construction to realize desugaring, optimizers, and code generators"}\cite{Erdweg2014} 
+\textit{"Program transformations find ubiquitous application in compiler construction to realize desugaring, optimizers, and code generators"}~\cite{Erdweg2014} 
 in our research we will focus on the desugaring of (new) language constructs.  
 
-\textit{"The aim of program transformation is to increase programmer productivity by automating programming tasks, thus enabling programming at a higher-level of abstraction, and increasing maintainability"}\cite{Visser2001}
+\textit{"The aim of program transformation is to increase programmer productivity by automating programming tasks, thus enabling programming at a higher-level of abstraction, and increasing maintainability"}~\cite{Visser2001}
 
 \section{Problem definition}
-Program transformations are faced with multiple problems, in what order do we run the transformation rules, how do we represent the program (e.g. abstract syntax) to perform transformations on, what guarantee do we have for the validity of our transformations, how can a transformation introduce new bindings.  
-Some of these problems reoccur in every transformation that is created. These problems are identified as cross-cutting concerns. The goal of this thesis is to identify these concerns and separate them from the transformation code. 
+Program transformations are faced with multiple problems, in what order do we run the transformation rules, how do we represent the program to perform transformations on, what guarantee do we have for the validity of our transformations, how can a transformation introduce new bindings.  
+Some of these problems reoccur in every transformation that is created. These problems are identified as cross-cutting concerns. The goal of this thesis is to implement (a subset) program transformations to eliminate ES 6 language constructs to the ES 5 base language while identifying these concerns.
 
 \section{Scope}
 
@@ -27,20 +27,19 @@ Some of these problems reoccur in every transformation that is created. These pr
 This thesis will have the following results:
 \begin{itemize}
 	\item A taxonomy for language extensions
-	\item Language extension suite implementing (a subset of) the ES6 features
+	\item Language extension suite implementing (a subset of) the ES 6 features
 	\item Identification of cross-cutting concerns of our language extension suite
 	\item A set of compatibility tests, testing our implementation against the specification document
-	\item Eclipse integration (syntax highlighting \& declared at hyperlinks) for new language features
+	\item Eclipse IDE integration (syntax highlighting \& declared at hyperlinks) for new language features
 \end{itemize}
 \section{Research questions}
 The central research questions of this thesis are:
 
 \begin{enumerate}
-	\item 
 	\item Evaluate the language workbench for the task of program transformation suite
 	\item How can independent program transformations be categorized?
-	\item What are the cross-cutting concerns of any program transformations, and how can we take care of these concerns outside of the transformations themselves?
+	\item What are the cross-cutting concerns of any program transformations, and how can we take care of these concerns separate of the transformation code?
 \end{enumerate}
 
 \section{Outline}
-In chapter \ref{Chapter2} the background (program transformations, language workbench) is introduced. In chapter \ref{Chapter3} we present a taxonomy for language extensions (categorization according to this taxonomy of ES6 features is found in Appendix \ref{AppendixB}). In Chapter \ref{Chapter4} we evaluate our resulting transformation suite (against others). Finally, we conclude in Chapter \ref{Chapter5}.
+In chapter \ref{Chapter2} the background (program transformations, language workbench) is introduced. In chapter \ref{Chapter3} we present a taxonomy for language extensions (categorization according to this taxonomy of ES 6 features is found in Appendix \ref{AppendixB}). In Chapter \ref{Chapter4} we evaluate our resulting transformation suite. Finally we discuss related work and conclude in Chapter \ref{Chapter5}.

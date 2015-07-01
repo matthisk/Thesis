@@ -6,6 +6,8 @@
 
 \lhead{Chapter 4. \emph{Results and Comparison}}
 
+In this chapter we will evaluate our implementation of ES 6 specification as a transformation suite implemented using a language workbench. We will validate against several open-source projects that also implement such a transformation suite but instead of using a language workbench implement the transformations using JavaScript.
+
 \section{Evaluation}
 
 There are several criteria as to which we evaluate the resulting transformation suite. These criteria are described in the following table.
@@ -15,17 +17,17 @@ There are several criteria as to which we evaluate the resulting transformation 
 \caption{Evaluation criteria}
 \label{criteria}
 \begin{tabular}{rp{0.7\linewidth}}
-{\bf Correctness} & A language extension is performed correct if the target program is semantically similar to that of the language feature defined in the ECMAScript 6 specification\cite{SpecJS}. To test the correctness we use a test-suite created especially for this purpose\footnotemark\\
+{\bf Correctness} & A language extension is performed correct if the target program is semantically similar to that of the language feature defined in the ES 6 specification~\cite{SpecJS}. To test the correctness we use a test-suite created especially for this purpose\footnotemark\\
 {\bf Modularity}  & Is it possible separate and recombine the different language extensions.\\
-{\bf Size}        & How many lines of code are used to implement the transformation suite, if possible compared on a feature basis\\
-{\bf Output "noise"} & One of the challenges programmers face when using program transformations is the debugging of the generated program. During transformation the language extensions are eliminated from their code (and replaced by core language constructs). The more "noise" a transformation (suite) generates the harder it becomes for a programmer to debug generated code. An informal definition of noise is code added by a transformation that removes structure of the target program further away from the source program. \\
+{\bf Size}        & How many lines of code are used to implement the transformation suite, compared on a feature basis\\
+{\bf Output "noise"} & One of the challenges programmers face when using program transformations is the debugging of the generated program. During transformation the language extensions are eliminated from the code (and replaced by core language constructs). The more "noise" a transformation (suite) generates the harder it becomes for a programmer to debug generated code. \\
 {\bf Coverage}    & How many language features are implemented\\
 {\bf Performance} & What is the run time of the transformation code\\
 \end{tabular}
 \end{table}
 \footnotetext{\url{https://kangax.github.io/compat-table/es6/}}
 
-To evaluate our implementation of the transformation suite we validate against three open-source implementation of ECMAScript 6 language as a transformation suite (to ECMAScript 5). We selected the following \textit{transpilers} (these transformation suites categories themselves as transpilers a combination of compiler and transformer) to evaluate against:
+To evaluate our implementation of the transformation suite we validate against three open-source implementation of ES 6 language as a transformation suite (to ECMAScript 5). We selected the following \textit{transpilers} (these transformation suites categories themselves as transpilers a combination of compiler and transformer) to evaluate against:
 
 \begin{table}[h]
 \def\arraystretch{1.5}
@@ -33,8 +35,8 @@ To evaluate our implementation of the transformation suite we validate against t
 \label{transpilers}
 \begin{tabular}{rp{0.5\linewidth}p{0.1\linewidth}p{0.1\linewidth}}
  & \textbf{Description} & \textbf{Cont.} & \textbf{Com.} \\
-{\bf Babel JS\footnotemark[1]} & The most used ECMAScript 6 to 5 transpiler (was named 6to5 before). It is created using JavaScript and relies on the Acorn\footnotemark[4] JavaScript parser. & 105 & 4582 \\
-{\bf Traceur\footnotemark[2]} & This transpiler is produced by a team from Google. Written in JavaScript and includes its own parser. This transpiler relies more heavily on a run-time environment than the other transpilers. & 55 & 1584\\
+{\bf Babel JS\footnotemark[1]} & The most used ES 6 to 5 transpiler. It is created using JavaScript and relies on the Acorn\footnotemark[4] JavaScript parser. & 105 & 4582 \\
+{\bf Traceur\footnotemark[2]} & This transpiler is produced by a team from Google. Written in JavaScript and includes its own parser. This transpiler relies on a run-time environment. & 55 & 1584\\
 {\bf ES6-Transpiler\footnotemark[3]} & Apart form Traceur and Babel JS there only exist small individual projects that implement ES6 to 5 transpilers. This is the most feature complete of those transpilers. It relies on the ESPrima\footnotemark[5] JavaScript parser. & 5 & 250 \\
 \end{tabular}
 \end{table}
@@ -49,7 +51,7 @@ In table \ref{tab:compatibility} results of the compatibility tests. Four catego
 
 Not all tests can be satisfied by a transformation suite alone, some tests use the \textit{eval} function to evaluate a string as JavaScript in the current run-time. A transformation suite only has access to the static semantics during transformation it can not resolve the \textit{string} that is going to be evaluated during run-time. Because other transformation suites face the same issue we do not remove these tests from the set of tests. 
 
-Our implementation does not score as high as the big open-source projects, mainly because we do not implement generators and automatically fail twenty-two tests related to generators. ES6-transpiler scores lower than our implementation. The compatibility score indicates that our artifact could be used in a \textit{real-world} environment, as long as unimplemented features are avoided. For a full list of features implemented by our artifact consult appendix \ref{AppendixA}.
+Our implementation does not score as high as the big open-source projects, mainly because we do not implement generators and automatically fail twenty-two tests related to generators. ES6-transpiler scores lower than our implementation. The compatibility score indicates that our artifact could be used in a \textit{real-world} environment, as long as unimplemented features are avoided.
 
 \begin{table}[h]
 \centering
@@ -64,14 +66,51 @@ Our implementation does not score as high as the big open-source projects, mainl
 \end{tabular}
 \end{table}
 
+As discussed in section \ref{hygiene}, hygiene is an important aspect to determine the correctness of program transformations. We will present one example where we try to shadow an introduced binding by the transpiler and detect whether or not the tranpiler resolves the shadowed binding. For variable capture to happen we need to test a language extension that introduces bindings. In this example we use the arrow function extension and try to introduce variable capture because this extension has to bind \textit{this} from the lexical scope of the parent function (see appendix \ref{arrow}).
+
+\begin{lstlisting}[label=traceur-capture, caption=Example input to Traceur\protect\footnotemark]
+function f() {
+  var <Id> = null;
+  var x = () => this; 
+}
+\end{lstlisting}
+
+we replace \lstinline$<Id>$ with the variable name \textit{this} is bound to by the transpiler:
+
+Both ES6 Transpiler and Babel JS correctly resolve the shadowed variable (see appendix \ref{AppendixC} for examples). Traceur fails to correctly identify variable capture in this example:
+
+\begin{lstlisting}[caption=Variable capture in Traceur transpiler]
+function f() {
+    var $__0 = this;
+    var $__0 = null;
+    var a = (function() {
+      return $__0;
+	});
+}
+\end{lstlisting}
+
 \paragraph{Modularity}
+
+In our implementation all new language features are fully modularized, making it possible to only enable certain language extensions. Even when extensions rely on each other it is possible to use them in separation. For instance the destructuring language extension can use computed property names (see appendix \ref{object-literals}) to destructure an objects property. The computed property names are part of the object literal language extension, if both extensions are enabled then it is possible to use computed property names inside object destructurings, if only destructurings are enabled computed property names are not enabled.
+
+\begin{lstlisting}[caption=Example of computed property names inside object destructurings]
+function key() { return "k"; }
+
+var { [key()] : value } = obj;
+\end{lstlisting}
+
+Babel JS supports modularity through the \textit{--exclude} command line parameter through which language extensions can be disabled.
+
+Traceur allows enabling/disabling of extensions through a command line parameter per feature (i.e. \textit{--arrow-functions=false} disables the arrow functions language extension).
+
+ES6 Transpiler does not support modularity, the transformer always enables all language extensions.
 
 \paragraph{Size}
 In table \ref{tab:loc} we compare the size of all projects in lines of code, where our own artifact is named Rascal. Lines of code are measured using the \textit{cloc} tool\footnote{\url{http://cloc.sourceforge.net/}}, because \textit{cloc} has no built in support to measure lines of code of Rascal programs we forced \textit{cloc} to measure Rascal programs as if they where \textit{Java} code (Rascal comments are similar to those of Java).
 
 Our artifact is about five times smaller in size, compared to other implementations. 
 
-Our artifact relies on the Rascal parser generator and a Rascal syntax definition to define the ES 5 grammar, and ES 6 language extensions. Other implementations rely on open-source ECMAScript parsers implemented in JavaScript, or implement their own parser. The syntax definitions are about eight to ten times smaller in size than any of the JavaScript parsers. Rascal syntax definitions do impose some limitations that made it difficult or impossible to implement certain language grammar features, in appendix \ref{AppendixA} we elaborate on this.
+Our artifact relies on the Rascal parser generator and a Rascal syntax definition to define the ES 5 grammar, and ES 6 language extensions. Other implementations rely on open-source ES parsers implemented in JavaScript, or implement their own parser. The syntax definitions are about eight to ten times smaller in size than any of the JavaScript parsers. Rascal syntax definitions do impose some limitations that made it difficult or impossible to implement certain ES grammar features, in appendix \ref{AppendixA} we elaborate on this.
 
 \begin{table}[h]
 \caption{Lines of code - transformations \& parser} \label{tab:loc}
@@ -126,9 +165,10 @@ The main reason why Babel JS is able to reduce the size of their transformations
 \footnotetext{Not implemented by ES6 transpiler}
 
 \paragraph{Noise}
-To measure the amount of noise a transpiler produces we will compare the size of the input program (in characters) against the size of the output program. We use several example files given in Appendix \ref{AppendixC}. Several other indications of noise are the amount of (temporal) bindings introduced by the transformation, and the size of necessary run-time code needed for transformed JavaScript to function correctly.
+To measure the amount of noise a transpiler produces we will compare the size of the input program (in characters) against the size of the output program. We use several example files given in Appendix \ref{AppendixC}.
 
 \begin{table}
+\caption{Size (in characters) of transformed JavaScript per transpiler} \label{tab:noise1}
 \begin{tabular}{@{}lrrrrr@{}}
 \toprule
 {}                         & \textbf{Input} & \textbf{Babel JS} & \textbf{Traceur} & \textbf{ES6 transpiler} & \textbf{Rascal} \\ \midrule
@@ -139,10 +179,24 @@ To measure the amount of noise a transpiler produces we will compare the size of
 \end{tabular}
 \end{table}
 
-Noise experienced by the JavaScript programmer can also be reduced by outputting a mapping from target to source program, called a sourcemap. With this sourcemap JavaScript developer tool (i.e. debuggers) can present the written ES6 code to the programmer while the transformed ES5 code is actually being executed.
+Another measure to detect the amount of noise introduced by a program transformation, are the amount of newly introduced bindings.
+
+\begin{table}
+\caption{Introduced bindings by transpiler} \label{tab:noise2}
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+{}                         & \textbf{Babel JS} & \textbf{Traceur} & \textbf{ES6 transpiler} & \textbf{Rascal} \\ \midrule
+\textbf{Arrow functions}   & -               & -              & - & - \\
+\textbf{Destructuring}     & -               & -             & - & - \\ 
+\textbf{Object literals}   & -               & -              & - & - \\    
+\bottomrule
+\end{tabular}
+\end{table}
+
+Noise experienced by the JavaScript programmer can also be reduced by outputting a mapping from target to source program, called a sourcemap. With this sourcemap JavaScript developer tools (i.e. debuggers) can present the written ES6 code to the programmer while the transformed ES5 code is actually being executed.
 
 \paragraph{Coverage}
-In appendix \ref{AppendixA} we give an overview of ES6 features implemented by our transformation suite, with argumentation why several features are not implemented. Babel JS is them most feature complete with the exception of \textit{new.target} property (not implemented by any of the transpilers). Generators are transformed by Babel JS but the needed transformation is not implemented by the Babel JS developers (they use the \textit{regenerator} transformation suite to transform generators). Traceur lacks support for propert tail-calls and the \textit{new.target} property they do have their own implementation of generator transformations. ES6 Transpiler implements \textit{for of} loops in a variant to basic to categorize it as implemented (i.e. \textit{for of} loops can only iterate over lists, not strings, or iterables). ES6 transpiler also lacks support for generators, the \textit{new.target} property, and proper tail-calls.
+In appendix \ref{AppendixA} we give an overview of ES6 features implemented by our transformation suite, with argumentation why several features are not implemented. Babel JS is them most feature complete with the exception of \textit{new.target} property (not implemented by any of the transpilers). Generators are transformed by Babel JS but the needed transformation is not implemented by the Babel JS developers (they use the \textit{regenerator} transformation suite to transform generators). Traceur lacks support for proper tail-calls and the \textit{new.target} property they do have their own implementation of generator transformations. ES6 Transpiler implements \textit{for of} loops in a variant to basic to categorize it as implemented (i.e. \textit{for of} loops can only iterate over lists, not strings, or iterables). ES6 transpiler also lacks support for generators, the \textit{new.target} property, and proper tail-calls.
 
 \begin{table}[h!]
 \centering
@@ -182,12 +236,11 @@ In appendix \ref{AppendixA} we give an overview of ES6 features implemented by o
 
 \paragraph{Performance}
 
-\section{Related Work}
-Various research has been performed into the creation of tools to aid extension of programming languages and IDE's by meta-programmers. In Eelco Visser's paper~\cite{Visser20024} presents a system for language extension. In this system grammar's are defined using Syntax Definition Formalism and program transformations are implemented using the Stratego language. Visser ignores the cross-cutting concerns of program transformations (e.g. variable capture). Erdweg et. al.~\cite{Erdweg} present a system for extensible languages named Sugar*, which is agnostic from base language. The system can extend- syntax, editor support, and static analysis. In contrast to the system presented in this thesis, Sugar* relies on information from a compiler of the base language to operate correctly.  
-All of the work discussed above present minimal examples of actual language extensions implemented using their tools for extensible languages. The specific extension of the JavaScript programming language is studied by Disney et. al. in~\cite{Disney2014}, here JavaScript is extended through the use of syntax macros instead of separate language extensions as presented in this thesis.
+\section{On the expressive power of ECMAScript 6}
+Matthias Felleisen presents a rigorous mathematical framework to define the expressiveness of programming languages (as compared to each other) in his paper "On the expressive power of programming languages"\cite{Felleisen1990}. 
 
-In related work of our taxonomy of language extensions (section \ref{taxonomy}) we can identify several categorizations of program transformations. For example the Irvine program transformation catalog~\cite{Standish1976a} presents a categorization for program transformations for lower-level procedural programming languages (e.g. the C programming language). Visser~\cite{Visser2001} presents a taxonomy for program transformations, which we partly reuse in our taxonomy of language extensions. 
+The formal specification presented by Felleisen falls outside of the scope of this thesis. But we can summaries his findings informally: If a construct in language $A$ can be expressed in a construct in language $B$ by only performing local transformations (\textit{local-to-local}), then language $A$ is no more expressive than language $B$. And \textit{"By the definition of an expressible construct, programs in a less expressive language generally have a globally different structure from functionally equivalent programs in a more expressive language."}\cite{Felleisen1990} 
 
-Other aspects of program transformations have also received attention in the past. In this thesis we reuse the \textit{name-fix} algorithm presented by Erdweg et. al.~\cite{Erdweg2014}. Transformation hygiene has received a lot of attention in the domain of language macros~\cite{Kohlbecker1986,Herman2010a,Disney2014}
+This implies that every language extension transformed through a \textit{local-to-local} scoped transformation (see section \ref{taxonomy}), creates a language that is no more expressive than the original (core) language. In table \ref{full-table} the categorization of ECMAScript 6 language extensions is displayed. Ten of the twelve extensions can be transformed with the use of a \textit{local-to-local} transformation, the two exceptions are, the extension of binding constructs (see appendix \ref{let-const}). This extension requires a \textit{global-to-global} transformation. And the arrow function (see appendix \ref{arrow}) which requires a \textit{global-to-local} transformation, because the transformation depends on the context in which the arrow function is used (i.e. either the global scope or inside a function).
 
-\section{Conclusions}
+\textit{"Intuitively, a programming language is less expressive than another if the latter can express all the facilities the former can express in the language universe."}~\cite{Felleisen1990}. Thus ES6 is more expressive than ES5.

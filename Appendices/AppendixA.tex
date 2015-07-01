@@ -14,7 +14,7 @@ The code for language extensions is stored in \textit{src/extensions} here we wi
 
 \paragraph{Core}
 \textbf{Syntax} (\textit{src/core/Syntax.rsc}) \newline
-The core JavaScript syntax definition. There are two differences with the specification, semicolons are required (the ECMAScript 5 defines a functionality called automatic semicolon insertion or asi, with asi semicolons are not required and can be inferred by the parser). Because we use the Rascal syntax definition (and not a custom parser) we do not support asi. For the same reason there is no support for comma expression, the introduction of this expression causes ambiguities in the grammar.
+The core JavaScript syntax definition. There are two differences with the specification, semicolons are required (the ECMAScript 5 defines a functionality called automatic semicolon insertion or asi, with asi semicolons are not required and can be inferred by the parser). Because we use the Rascal syntax definition (and not a custom parser) we do not support asi. For the same reason there is no support for comma expression, the introduction of this expression causes ambiguities in the grammar, which are difficult to remove with the disambiguation tools present in Rascal's syntax definition.
 
 \paragraph{Function extensions}\mbox{}\\
 \textbf{Arrow functions} (\textit{src/extensions/arrow}) \newline
@@ -27,7 +27,7 @@ Full functionality.\textsuperscript{*} (i.e. basic support, support for extensio
 Full functionality.\textsuperscript{*}
 
 \textbf{Generators} (\textit{src/extensions/generators}) \newline
-No support. Due to the time constraint nature of the project this feature has not been implemented. 
+No support. Due to the time constraints set for this thesis the feature has not been implemented. 
 
 \paragraph{Syntax extensions}\mbox{}\\
 \textbf{Destructuring} (\textit{src/extensions/destructuring}) \newline
@@ -35,7 +35,7 @@ Near full functionality. There is no support for unbound match:
 \begin{lstlisting}
 var [,b] = [1,2]; // b == 2
 \end{lstlisting}
-This feature is not implemented because syntax definition for empty elements in a comma separated list is complex. Resulting in very unclear/cluttered/complicated transformation rules/code. To avoid this complexity we decided to refrain from implementation of this feature.
+This feature is not implemented because syntax definition for empty elements in a comma separated list is complex. Resulting in very unclear/cluttered/complicated transformation code.
 
 \textbf{For of loops} (\textit{src/extensions/forof}) \newline
 Full functionality.

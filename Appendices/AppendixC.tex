@@ -57,3 +57,22 @@ var obj = {
     [ 'prop_' + (() => 42)() ]: 42
 };
 \end{lstlisting}
+
+\begin{lstlisting}[caption=Babel JS]
+function f() {
+  var _this2 = this;
+  var _this = null;
+  
+  var a = function a() {
+    return _this2;
+  };
+}
+\end{lstlisting}
+
+\begin{lstlisting}[caption=ES6 Transpiler]
+function f() {
+	var this$1 = this;
+  	var this$0 = null;
+  	var a = function()  {return this$1}; 
+}
+\end{lstlisting}
