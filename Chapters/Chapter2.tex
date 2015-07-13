@@ -1,3 +1,4 @@
+% !TEX root = ../main.tex
 % Chapter Template
 
 \chapter{Background} % Main chapter title
@@ -7,20 +8,20 @@
 \lhead{Chapter 2. \emph{Background}}
 
 \section{ECMAScript}
-JavaScript\footnotemark is the programming language implemented from the ECMAScript specification\cite{SpecJS}. JavaScript is an interpreted, object-oriented, dynamically typed scripting language with functions as first-class citizens. It is mostly used inside the Web browser, but also available for non browser environments (e.g. node.js). In this section we will identify some of the key characteristics of the JavaScript programming language. 
+JavaScript\footnotemark is the programming language implemented from the ECMAScript specification\cite{SpecJS}. JavaScript is an interpreted, object-oriented, dynamically typed scripting language with functions as first-class citizens. It is mostly used inside the Web browser, but also available for non browser environments (e.g. node.js). In this section we will identify some of the key characteristics of the JavaScript programming language.
 \footnotetext{Documentation on the JavaScript programming language can be found at the \href{https://developer.mozilla.org/en-US/docs/Web/JavaScript}{Mozilla Developer Network}}
 
 \paragraph{Syntax} \label{javascript-syntax}
 One of the main concerns for program transformations is syntax. The syntax of the programming language is to be extended to support new language features/constructs. ECMAScript falls in the C-type family % TODO: citation
-of syntax definitions (i.e. it uses curly braces to delimit blocks of code). 
+of syntax definitions (i.e. it uses curly braces to delimit blocks of code).
 A program exists of a list of \textit{statements}. A \textit{statement} can be one of the language control flow constructs, a declaration, a function, or an \textit{expression}. Functions in JavaScript can be either defined as an \textit{expression} or as a \textit{statement} (see section \ref{javascript-functions}). The ES standard specifies automatic semicolon insertion (or ASI), this grammar feature makes it possible for programmers to omit the the trailing semicolon after statements and let the parser insert these automatically.
 
 \paragraph{Inhertiance \& Object orientation} \label{javascript-inheritance}
-JavaScript can be classified as an object oriented language without \textit{class} based inheritance model\footnote{Most popular object-oriented languages do have \textit{class} based inheritance (e.g. Java or C++)}. Instead of such a model JavaScript objects have a prototype chain that determine their inheritance. 
+JavaScript can be classified as an object oriented language without \textit{class} based inheritance model\footnote{Most popular object-oriented languages do have \textit{class} based inheritance (e.g. Java or C++)}. Instead of such a model JavaScript objects have a prototype chain that determine their inheritance.
 
-In the JavaScript run-time environment everything is an object with properties (even functions see section \ref{javascript-functions}), with the exception of primitive data-types (e.g. numbers). Every object has one special property called the \textit{prototype}, this prototype references another object (with yet another prototype) until finally one object has prototype \textit{null}. This chain of objects is called the \textit{prototype chain}. When performing a lookup on an object for a certain key $x$, the JavaScript interpreter will look for property $x$ on our object, if $x$ is not found it will look at the \textit{prototype} of our object. This iteration will continue until either prototype \textit{null} is found or an object with property $x$ is found in the prototype chain. 
+In the JavaScript run-time environment everything is an object with properties (even functions see section \ref{javascript-functions}), with the exception of primitive data-types (e.g. numbers). Every object has one special property called the \textit{prototype}, this prototype references another object (with yet another prototype) until finally one object has prototype \textit{null}. This chain of objects is called the \textit{prototype chain}. When performing a lookup on an object for a certain key $x$, the JavaScript interpreter will look for property $x$ on our object, if $x$ is not found it will look at the \textit{prototype} of our object. This iteration will continue until either prototype \textit{null} is found or an object with property $x$ is found in the prototype chain.
 
-To understand prototypal inheritance in comparison to class based inheritance, we can use an analogy. A class in a class based programming language can be seen as a blueprint from which to construct objects. When calling a function on an object created from such a blueprint the function is retrieved from the blueprint and not from the (constructed) object. So the object is related to the class (or blueprint) with an object-class relation. With prototypal inheritance there is no blueprint everything is an object. This is also how inheritance works, we do not reference a blueprint but we reference a fully build object as our prototype. This creates an object-object relation. 
+To understand prototypal inheritance in comparison to class based inheritance, we can use an analogy. A class in a class based programming language can be seen as a blueprint from which to construct objects. When calling a function on an object created from such a blueprint the function is retrieved from the blueprint and not from the (constructed) object. So the object is related to the class (or blueprint) with an object-class relation. With prototypal inheritance there is no blueprint everything is an object. This is also how inheritance works, we do not reference a blueprint but we reference a fully build object as our prototype. This creates an object-object relation.
 
 If we have an object Car which inherits from Vehicle we set the Car's object prototype to an instance of the Vehicle object. Where in class based inheritance there is a blueprint for Car which inherits from the Vehicle blueprint, to build a car we initialize from the blueprint.
 
@@ -32,11 +33,11 @@ Car.prototype = new Vehicle();
 \end{lstlisting}
 
 \paragraph{Scoping} \label{javascript-scoping}
-Most programming languages have some form of variable binding. These bindings are only bound in a certain context, such a context is often called a scope. There are two different ways to handle scope in a programming language, Lexical (or static) scoping and dynamic scoping. Lexical scoping is determined by the placing of a binding within the source program or its \textit{lexical context}. Variables bound in a dynamic scope are resolved through the program state or \textit{run-time context}. 
+Most programming languages have some form of variable binding. These bindings are only bound in a certain context, such a context is often called a scope. There are two different ways to handle scope in a programming language, Lexical (or static) scoping and dynamic scoping. Lexical scoping is determined by the placing of a binding within the source program or its \textit{lexical context}. Variables bound in a dynamic scope are resolved through the program state or \textit{run-time context}.
 
 In JavaScript bindings are determined through the use of lexical scoping, on a function level. Variables bound within a function's context are available throughout the entire lexical scope of the function, independent of their placement within this function (this is called hoisting).
 
-One exception on the lexical scoping is binding of the \textit{this} keyword. Similar to many other object oriented languages JavaScript makes use of a \textit{this} keyword. In most object oriented languages the current object is implicitly bound to \textit{this} inside functions of that object.\footnote{Sometimes \textit{this} is called \textit{self} (e.g. in the \href{http://ruby.org}{Ruby} programming language)} In JavaScript the value of \textit{this} can change between function calls. For this reason the \textit{this} binding has dynamic scoping (we can not determine the value of \textit{this} before run-time). 
+One exception on the lexical scoping is binding of the \textit{this} keyword. Similar to many other object oriented languages JavaScript makes use of a \textit{this} keyword. In most object oriented languages the current object is implicitly bound to \textit{this} inside functions of that object.\footnote{Sometimes \textit{this} is called \textit{self} (e.g. in the \href{http://ruby.org}{Ruby} programming language)} In JavaScript the value of \textit{this} can change between function calls. For this reason the \textit{this} binding has dynamic scoping (we can not determine the value of \textit{this} before run-time).
 
 \paragraph{Typing} \label{javascript-typing}
 JavaScript is a dynamically typed language without type annotations. Each object can be typecast without the use of special operator(s) and will be be converted automatically to correct type during execution. There are 5 primitive types, everything is else is an object:
@@ -71,7 +72,7 @@ Eelco Visser defines the aim of a program transformation as follows:
 There are many different types of program transformations. Programs can be transformed from a source to a target language. Where both can be the same or different. One can be a higher level language and one a lower level language. In this thesis we will focus on transformations in the category rephrasing~\cite{Visser2001}. Here a program in a source language is transformed to a different program in the same language.
 
 \section{Language Extensions} \label{lang-ext}
-\textit{"Language extensions augment a base language with additional language features."}~\cite{Erdweg2014} 
+\textit{"Language extensions augment a base language with additional language features."}~\cite{Erdweg2014}
 With the use of program transformations these extensions can be eliminated and a target program in the base language can be produced. \textit{"Many compilers first desugar a source program to a core language."}~\cite{Erdweg2014} For example the Haskell functional programming language defines for many constructs how they can be transformed to a kernel language~\cite{PeytonJones}. These pieces of \textit{syntactic sugar} are examples of language extensions.
 
 Language extensions are closely related to other forms of program transformations. There are (syntax) macros\cite{Leavenworth1966}, these are language extensions defined within the same source file and are expanded before compilation (examples are SweeterJS~\cite{Disney2014}, Syntax macros~\cite{Weise1993}). These \textit{"define syntactic abstractions over code fragments"}~\cite{Bravenboer2004}. Macro systems have several limitations. The transformations need to be present in the source file, macros are often restrained to a fixed invocation (through a macro identifier), and they often lack the expressiveness in their rewriting language\cite{Bravenboer2004}. There was an attempt to implement the ES6 specification through the use of syntax macros\footnote{\url{https://github.com/jlongster/es6-macros}} but the project is abandoned.
@@ -105,7 +106,7 @@ The problem of variable capture can best be explained through the use of an exam
 
 This transformation rule introduces a new binding named \lstinline$tmp$ (at line \ref{hygiene-tmp}). Because of this introduction the transformation could possibly generate variable capture in the target program. When one of the arguments of the \lstinline$swap$ statement is named \lstinline$tmp$ the transformation will shadow the users binding and not produce the expected result (see figure \ref{fig:unhygienic}).
 
-\begin{figure}[!h] 
+\begin{figure}[!h]
 \label{fig:unhygienic}
 \begin{minipage}{0.45\textwidth}
 	\begin{lstlisting}
@@ -130,7 +131,7 @@ The unhygienic transformation as explained above can often introduce subtle bugs
 \section{Program Representation} \label{program-representation}
 Before programs can be transformed they need a structured representation. Seldom are program transformations performed on the the textual input. Here we discuss several ways to represent programs.
 
-\paragraph{Parse Trees} 
+\paragraph{Parse Trees}
 Parse trees represent a program's syntactic information in a tree. This tree includes layout information of the input program (e.g. white-space, comments). The parse tree is structured according to some context-free grammar, that defines how to parse textual input.
 
 \paragraph{Abstract Syntax Tree}
@@ -170,7 +171,7 @@ A Rascal generated parser returns a parse tree (or forest), which is an ordered,
 	\item Avoiding the use of a pretty printer to output the transformed AST to a textual representation
 	\item Rewrite rules can use concrete syntax patterns for their definition, improving human readability of transformation code
 \end{itemize}
-A concrete-syntax pattern may contain variables in the form of a grammars non-terminals, these variables are bound in the context of the current patterns use if the pattern is matched successful. A quoted concrete-syntax pattern starts with a non-terminal to define the desired syntactic type (e.g. Expression), and they ignore layout. 
+A concrete-syntax pattern may contain variables in the form of a grammars non-terminals, these variables are bound in the context of the current patterns use if the pattern is matched successful. A quoted concrete-syntax pattern starts with a non-terminal to define the desired syntactic type (e.g. Expression), and they ignore layout.
 
 \begin{lstlisting}
 (Symbol)`Token1 Token2 ... Token3` := pt

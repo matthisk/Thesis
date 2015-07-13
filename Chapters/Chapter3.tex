@@ -1,3 +1,4 @@
+% !TEX root = ../main.tex
 % Chapter Template
 
 \chapter{Transforming ECMAScript 6} % Main chapter title
@@ -17,7 +18,7 @@ The following dimensions are identified and used to categorize every language ex
 One of the rephrasing categories defined by Eelco Visser~\cite{Visser2001}, rephrasings are program transformations where source and target program language are the same. Each category is explained in table \ref{table-rephrasing-categories}.
 
 \begin{longtable}{p{0.2\textwidth}p{0.75\textwidth}}
-\multicolumn{1}{l}{Normalization} & The reduction of a source program to a target program in a sub-language of the source program language.                                                                                                                                                                               
+\multicolumn{1}{l}{Normalization} & The reduction of a source program to a target program in a sub-language of the source program language.
 \\ \hline \\
 \multicolumn{1}{r}{\bf Desugaring}                  & a language construct (called syntactic sugar) is reduced to a core language.                                                    \\
 \multicolumn{1}{r}{\bf Simplification}              & this is a more generic form of normalization in which parts of the program are transformed to a standard form, with the goal of simplifying the program without changing the semantics. \\
@@ -31,7 +32,7 @@ One of the rephrasing categories defined by Eelco Visser~\cite{Visser2001}, reph
 \multicolumn{1}{l}{Other}         &                                                                                                                                                                               \\ \hline \\
 \multicolumn{1}{r}{\bf Refactoring}                 & "\textit{is a disciplined technique for restructuring an existing body of code, alteringits internal structure without changing its external behaviour.}"\footnotemark                 \\
 \multicolumn{1}{r}{\bf Obfuscation}                 & is a transformation that makes output code less (human) readable, while not changing any of the semantics.                                                                    \\
-\multicolumn{1}{r}{\bf Renovation}                  & is a special form of refactoring, "\textit{to repair an error or to bring it up to date with respect to changed requirements"}~\cite{Visser2001} \\                                               
+\multicolumn{1}{r}{\bf Renovation}                  & is a special form of refactoring, "\textit{to repair an error or to bring it up to date with respect to changed requirements"}~\cite{Visser2001} \\
 \caption{Rephrasing categories} \label{table-rephrasing-categories}
 \end{longtable}
 \footnotetext{\url{http://www.refactoring.com}}
@@ -40,12 +41,12 @@ One of the rephrasing categories defined by Eelco Visser~\cite{Visser2001}, reph
 Program transformations can be categorized by their abstraction level. There are four levels of abstraction (similar to those of macro expansions~\cite{Weise1993}), character-, token-, syntax-, or semantic-based. Character and token based transformations work on a program in textual representation. Syntactical transformations work on a program in its parsed representation (either as an AST or as a parse tree, see section \ref{program-representation}). In addition to the syntactic representation semantic transformations also have access to the static semantics of the input program (e.g. variable binding).
 
 \paragraph{Extension or Modification}
-Rephrasings try to say the same thing (i.e. no change in semantics) but using different words\cite{Visser2001}. Sometimes these different words are an extension on the core language, in this case we call the transformation a \textit{program extension}. In other cases the transformation uses only the words available in the core language, then we call the transformation a \textit{program modification}. Transformations that fall in the \textit{optimization} category (see table \ref{table-rephrasing-categories}) are program modifications. An example is tail call optimization in which a recursive function call in the \textit{return} statement is reduced to a loop to avoid a call-stack overflow error (see appendix \ref{tail-call-optimization}). 
+Rephrasings try to say the same thing (i.e. no change in semantics) but using different words\cite{Visser2001}. Sometimes these different words are an extension on the core language, in this case we call the transformation a \textit{program extension}. In other cases the transformation uses only the words available in the core language, then we call the transformation a \textit{program modification}. Transformations that fall in the \textit{optimization} category (see table \ref{table-rephrasing-categories}) are program modifications. An example is tail call optimization in which a recursive function call in the \textit{return} statement is reduced to a loop to avoid a call-stack overflow error (see appendix \ref{tail-call-optimization}).
 
 \paragraph{Scope}
 Program transformations performed on the abstraction level of context-free syntax (or semantics) receive the parse tree of the source program as their input. A transformation searches the parse tree for a specific type of node, the type of node to match on is defined by the transformation and can be any syntactical type defined in the source program's grammar. The node matched by a transformation and whether or not information from outside this node's scope is used during transformation determine the scope of a program transformation, there are four different scopes:
 
-When a program transformation matches on a sub-tree of the parse-tree and only transforms this matched sub-tree it is a \textit{(1) local-to-local} transformation. If the transformation needs information outside the context of the matched sub-tree, but only transforms the matched sub-tree it is \textit{(2) global-to-local}. When a transformation has no additional context from its local sub-tree but does alter the entire parse-tree it is called \textit{(3) local-to-global}. If the transformation transforms the input program in its entirety it is \textit{(4) global-to-global}.  
+When a program transformation matches on a sub-tree of the parse-tree and only transforms this matched sub-tree it is a \textit{(1) local-to-local} transformation. If the transformation needs information outside the context of the matched sub-tree, but only transforms the matched sub-tree it is \textit{(2) global-to-local}. When a transformation has no additional context from its local sub-tree but does alter the entire parse-tree it is called \textit{(3) local-to-global}. If the transformation transforms the input program in its entirety it is \textit{(4) global-to-global}.
 
 \paragraph{Syntactically type preserving}
 Program transformations performed on syntax elements can preserve the syntactical type of their input element or alter it. Two main syntactical types in JavaScript are Statement and Expression (see section \ref{javascript-syntax}). If a transformation matches on a Expression node but returns a Statement it is non syntactical type preserving.
@@ -63,7 +64,7 @@ When a program transformation does not alter the containing context of the match
 What are the preconditions that have to be met before execution of a transformation rule, to ensure validity of the transformation (e.g. all sub-terms have to be analyzed and transformed)
 
 \paragraph{Restrictions on sub-terms}
-Does the language extensions impose restrictions on the terms used inside of the language extension's non-terminals. For example we can only use identifiers in the sub-terms of our \lstinline$swap$ language extension (see section \ref{hygiene}). 
+Does the language extensions impose restrictions on the terms used inside of the language extension's non-terminals. For example we can only use identifiers in the sub-terms of our \lstinline$swap$ language extension (see section \ref{hygiene}).
 
 \paragraph{Analysis of sub-terms}
 Are the non-terminals of our language extension analyzed by the transformation rule. This is related to compositionality but differs because compositional transformations analyze \textit{and transform} sub-terms.
@@ -80,8 +81,8 @@ Is it possible to identify smaller transformation rules inside this language ext
 \afterpage{%
 	\clearpage
 	\thispagestyle{headings}
-	
-	\begin{landscape}		
+
+	\begin{landscape}
 		\centering
 
 		\begin{table}[h]
@@ -130,7 +131,7 @@ Is it possible to identify smaller transformation rules inside this language ext
 \caption*{$\bullet$: Yes, $\circ$: No, \textbf{D}: Desugaring, \textbf{U}: Undefined, \textbf{Opt}: Optimization, \textbf{CfS}: Context-free-syntax, \textbf{L2L}: local-to-local, \textbf{E}: Extension, \textbf{M}: Modification}
 	\end{table}
 
-		
+
 	\end{landscape}
 	\clearpage
 }
@@ -146,7 +147,7 @@ Many problems with transformations originate with name binding in source and tar
 \paragraph{Variable capture}
 In section \ref{hygiene} we have described the problem of variable capture in the context of program transformations. To solve this problem for our transformation suite we reuse the \textit{name-fix} algorithm presented by Erdweg et. al.~\cite{Erdweg2014}. The algorithm relies on a binding graph to identify variable capture, and uses string origins~\cite{Inostroza2014} to distinguish between synthesized identifiers (i.e. those identifiers introduced by the transformation) and identifiers originating from the source program.
 
-\textit{name-fix} analyses the \textit{name graph} of source and target program to identify variable capture. The name graph contains nodes for all identifiers in the program, a directed edge indicates a reference to a declaration. Because our source and target language are both JavaScript and thus have the same binding mechanism, we only generate the name graph for our target program. In the graph a distinction is made between synthesized and user bindings. To identify whether a binding originates from the source program or was synthesized during transformation, the \textit{name-fix} algorithm uses string origins~\cite{Inostroza2014}. 
+\textit{name-fix} analyses the \textit{name graph} of source and target program to identify variable capture. The name graph contains nodes for all identifiers in the program, a directed edge indicates a reference to a declaration. Because our source and target language are both JavaScript and thus have the same binding mechanism, we only generate the name graph for our target program. In the graph a distinction is made between synthesized and user bindings. To identify whether a binding originates from the source program or was synthesized during transformation, the \textit{name-fix} algorithm uses string origins~\cite{Inostroza2014}.
 
 In figure \ref{fig:name-graph} we use the target program from our \lstinline$swap$ language extension (see section \ref{hygiene}) to illustrate how these name graphs are constructed, and how \textit{name-fix} identifies variable capture. Each node contains a line number and the identifier it resembles from that line, a directed edge is a reference to a declaration. Nodes with a white background originate from the source program, nodes with a dark background are synthesized during transformation. Line numbers from synthesized identifiers are appended with a tick.
 
@@ -154,9 +155,9 @@ In figure \ref{fig:name-graph} we use the target program from our \lstinline$swa
 \centering
 \begin{minipage}{0.25\linewidth}
 \begin{lstlisting}
-	var x = 0, 
+	var x = 0,
 		tmp = 1;
-		
+
 	(function() {
 		var tmp = x;
 		x = tmp;
@@ -192,15 +193,15 @@ synthesized/.style={circle, draw=black, fill=gray!60, very thick, minimum size=1
 \caption{Target program generated by swap language extension and corresponding name graph} \label{fig:name-graph}
 \end{figure}
 
-Node \textit{7:t} and \textit{6:t} originate from the source program but reference a synthesized declaration. Node \textit{5:t} shadows the original declaration \textit{2:t}. \textit{name-fix} adds node \textit{5:t} to the list of declarations to be renamed. After the entire name graph is analyzed/generated all declarations from this list are rebound under free names (i.e. names not yet bound in the target program). Since \textit{7:t} and \textit{6:t} are not correct references of \textit{5:t} they are not renamed. The resulting name graph and target program are presented in figure \ref{fig:name-graph-fixed}  
+Node \textit{7:t} and \textit{6:t} originate from the source program but reference a synthesized declaration. Node \textit{5:t} shadows the original declaration \textit{2:t}. \textit{name-fix} adds node \textit{5:t} to the list of declarations to be renamed. After the entire name graph is analyzed/generated all declarations from this list are rebound under free names (i.e. names not yet bound in the target program). Since \textit{7:t} and \textit{6:t} are not correct references of \textit{5:t} they are not renamed. The resulting name graph and target program are presented in figure \ref{fig:name-graph-fixed}
 
 \begin{figure}[h]
 \centering
 \begin{minipage}{0.25\linewidth}
 \begin{lstlisting}
-	var x = 0, 
+	var x = 0,
 		tmp = 1;
-		
+
 	(function() {
 		var tmp$0 = x;
 		x = tmp;
@@ -252,7 +253,7 @@ for(var [a,b] of [ [1,2], [3,4] ]) {
 The for-of loop needs a dependency on the destructuring assignment syntax definition, to be able to create the statement syntax to allow an assignment pattern (i.e. either an array or object destructuring) inside the for-of loop:
 
 \begin{lstlisting}
-syntax Statement 
+syntax Statement
 	= "for" "(" "var" AssignmentPattern "of" Expression ")" Statement;
 \end{lstlisting}
 
@@ -266,11 +267,10 @@ syntax ForBinding
 // For-of loop language extension
 syntax Statement
 	= "for" "(" "var" ForBinding "of" Expression ")" Statement;
-	
+
 // Destructuring language extension
 syntax ForBinding
 	= AssignmentPattern;
 \end{lstlisting}
 
 Designing language extensions in this way makes the entire suite of language extensions more modular, because we can combine language extensions that depend on each other for full functionality. Or use them separately to get only their independent functionality.
-

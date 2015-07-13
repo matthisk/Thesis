@@ -1,3 +1,4 @@
+% !TEX root = ../main.tex
 % Chapter Template
 
 \chapter{Results and Comparison} % Main chapter title
@@ -47,9 +48,9 @@ To evaluate our implementation of the transformation suite we validate against t
 \footnotetext[5]{\url{http://esprima.org/}}
 
 \paragraph{Correctness} \label{sec:correctness}
-In table \ref{tab:compatibility} results of the compatibility tests. Four categories are of interest because they provide tests for the new language features of ES 6, and not tests for new standard-library functionality introduced by ES 6. Syntax depicts the category testing all language features that introduce new syntactical elements. Tests regarding the new binding mechanisms fall under the category Bindings. Tests for the new function types (i.e. generators, arrow functions, and classes) fall under the Function category. 
+In table \ref{tab:compatibility} results of the compatibility tests. Four categories are of interest because they provide tests for the new language features of ES 6, and not tests for new standard-library functionality introduced by ES 6. Syntax depicts the category testing all language features that introduce new syntactical elements. Tests regarding the new binding mechanisms fall under the category Bindings. Tests for the new function types (i.e. generators, arrow functions, and classes) fall under the Function category.
 
-Not all tests can be satisfied by a transformation suite alone, some tests use the \textit{eval} function to evaluate a string as JavaScript in the current run-time. A transformation suite only has access to the static semantics during transformation it can not resolve the \textit{string} that is going to be evaluated during run-time. Because other transformation suites face the same issue we do not remove these tests from the set of tests. 
+Not all tests can be satisfied by a transformation suite alone, some tests use the \textit{eval} function to evaluate a string as JavaScript in the current run-time. A transformation suite only has access to the static semantics during transformation it can not resolve the \textit{string} that is going to be evaluated during run-time. Because other transformation suites face the same issue we do not remove these tests from the set of tests.
 
 Our implementation does not score as high as the big open-source projects, mainly because we do not implement generators and automatically fail twenty-two tests related to generators. ES6-transpiler scores lower than our implementation. The compatibility score indicates that our artifact could be used in a \textit{real-world} environment, as long as unimplemented features are avoided.
 
@@ -71,7 +72,7 @@ As discussed in section \ref{hygiene}, hygiene is an important aspect to determi
 \begin{lstlisting}[label=traceur-capture, caption=Example input to Traceur\protect\footnotemark]
 function f() {
   var <Id> = null;
-  var x = () => this; 
+  var x = () => this;
 }
 \end{lstlisting}
 
@@ -108,7 +109,7 @@ ES6 Transpiler does not support modularity, the transformer always enables all l
 \paragraph{Size}
 In table \ref{tab:loc} we compare the size of all projects in lines of code, where our own artifact is named Rascal. Lines of code are measured using the \textit{cloc} tool\footnote{\url{http://cloc.sourceforge.net/}}, because \textit{cloc} has no built in support to measure lines of code of Rascal programs we forced \textit{cloc} to measure Rascal programs as if they where \textit{Java} code (Rascal comments are similar to those of Java).
 
-Our artifact is about five times smaller in size, compared to other implementations. 
+Our artifact is about five times smaller in size, compared to other implementations.
 
 Our artifact relies on the Rascal parser generator and a Rascal syntax definition to define the ES 5 grammar, and ES 6 language extensions. Other implementations rely on open-source ES parsers implemented in JavaScript, or implement their own parser. The syntax definitions are about eight to ten times smaller in size than any of the JavaScript parsers. Rascal syntax definitions do impose some limitations that made it difficult or impossible to implement certain ES grammar features, in appendix \ref{AppendixA} we elaborate on this.
 
@@ -139,9 +140,9 @@ Our artifact relies on the Rascal parser generator and a Rascal syntax definitio
 \end{minipage}
 \end{table}
 
-In table \ref{tab:loc-feature} we analyze the size of each transpiler on a feature basis, where only the size of actual transformation code for an extension is measured. Rascal's implementation and that of Babel JS have simlilar sizes for transformations. Traceur and ES6 transpiler's size difference as compared to Rascal's implementation are similar to that of the size different of the projects as a whole. 
+In table \ref{tab:loc-feature} we analyze the size of each transpiler on a feature basis, where only the size of actual transformation code for an extension is measured. Rascal's implementation and that of Babel JS have simlilar sizes for transformations. Traceur and ES6 transpiler's size difference as compared to Rascal's implementation are similar to that of the size different of the projects as a whole.
 
-The main reason why Babel JS is able to reduce the size of their transformations is because of the architecture of the project. Many concerns are extracted from transformation code and solved separately in different modules/files. Some examples: creating new bindings (\textit{src/babel/traversal/scope/binding.js}), pattern matching on parse tree nodes (\textit{src/babel/traversal} LOC: 2456), creating new abstract syntax (\textit{src/babel/transformations/templates} LOC: 456). 
+The main reason why Babel JS is able to reduce the size of their transformations is because of the architecture of the project. Many concerns are extracted from transformation code and solved separately in different modules/files. Some examples: creating new bindings (\textit{src/babel/traversal/scope/binding.js}), pattern matching on parse tree nodes (\textit{src/babel/traversal} LOC: 2456), creating new abstract syntax (\textit{src/babel/transformations/templates} LOC: 456).
 
 \begin{table}[h!]
 \centering
@@ -173,8 +174,8 @@ To measure the amount of noise a transpiler produces we will compare the size of
 \toprule
 {}                         & \textbf{Input} & \textbf{Babel JS} & \textbf{Traceur} & \textbf{ES6 transpiler} & \textbf{Rascal} \\ \midrule
 \textbf{Arrow functions}   & 409            & 580               & 688              & 498 & - \\
-\textbf{Destructuring}     & 188            & 455               & 1134             & 294 & - \\ 
-\textbf{Object literals}   & 116            & 193               & 607              & 251 & - \\    
+\textbf{Destructuring}     & 188            & 455               & 1134             & 294 & - \\
+\textbf{Object literals}   & 116            & 193               & 607              & 251 & - \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -187,8 +188,8 @@ Another measure to detect the amount of noise introduced by a program transforma
 \toprule
 {}                         & \textbf{Babel JS} & \textbf{Traceur} & \textbf{ES6 transpiler} & \textbf{Rascal} \\ \midrule
 \textbf{Arrow functions}   & -               & -              & - & - \\
-\textbf{Destructuring}     & -               & -             & - & - \\ 
-\textbf{Object literals}   & -               & -              & - & - \\    
+\textbf{Destructuring}     & -               & -             & - & - \\
+\textbf{Object literals}   & -               & -              & - & - \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -204,14 +205,14 @@ In appendix \ref{AppendixA} we give an overview of ES6 features implemented by o
 \begin{tabular}{@{}l|cccc@{}}
 \toprule
 {} & \textbf{Babel JS} & \textbf{Traceur} & \textbf{ES6 Transpiler} & \textbf{Rascal} \\ \midrule
-{\bf Function extensions} & & & & \\ 
+{\bf Function extensions} & & & & \\
 {Arrow functions}   & $\bullet$ & $\bullet$ & $\bullet$ & $\bullet$ \\
 {Class declaration} & $\bullet$ & $\bullet$ & $\bullet$ & $\bullet$ \\
 {Super}             & $\bullet$ & $\bullet$ & $\bullet$ & $\bullet$ \\
 {Generators}        & $\circ$ & $\bullet$ & $\circ$ & $\circ$ \\
 {New.target}        & $\circ$ & $\circ$ & $\circ$ & $\circ$ \\ \midrule
 
-{\bf Syntax extensions} & & & & \\ 
+{\bf Syntax extensions} & & & & \\
 {Destructuring}            & $\bullet$ & $\bullet$ & $\bullet$ & $\bullet$ \\
 {For of loops}             & $\bullet$ & $\bullet$ & $\circ$ & $\bullet$ \\
 {Binary \& Octal literals} & $\bullet$ & $\bullet$ & $\bullet$ & $\bullet$ \\
@@ -223,7 +224,7 @@ In appendix \ref{AppendixA} we give an overview of ES6 features implemented by o
 {Unicode Escape Points}    & $\bullet$ & $\bullet$ & $\bullet$ & $\circ$ \\
 {RegExp "y" and "u" flag}  & $\bullet$ & $\bullet$ & $\bullet$ & $\circ$ \\ \midrule
 
-{\bf Binding extensions} & & & & \\ 
+{\bf Binding extensions} & & & & \\
 {Let}     & $\bullet$ & $\bullet$ & $\bullet$ & $\bullet$ \\
 {Const}   & $\bullet$ & $\bullet$ & $\bullet$ & $\bullet$ \\
 {Modules} & $\bullet$ & $\bullet$ & $\circ$ & $\circ$ \\ \midrule
@@ -237,9 +238,9 @@ In appendix \ref{AppendixA} we give an overview of ES6 features implemented by o
 \paragraph{Performance}
 
 \section{On the expressive power of ECMAScript 6}
-Matthias Felleisen presents a rigorous mathematical framework to define the expressiveness of programming languages (as compared to each other) in his paper "On the expressive power of programming languages"\cite{Felleisen1990}. 
+Matthias Felleisen presents a rigorous mathematical framework to define the expressiveness of programming languages (as compared to each other) in his paper "On the expressive power of programming languages"\cite{Felleisen1990}.
 
-The formal specification presented by Felleisen falls outside of the scope of this thesis. But we can summaries his findings informally: If a construct in language $A$ can be expressed in a construct in language $B$ by only performing local transformations (\textit{local-to-local}), then language $A$ is no more expressive than language $B$. And \textit{"By the definition of an expressible construct, programs in a less expressive language generally have a globally different structure from functionally equivalent programs in a more expressive language."}\cite{Felleisen1990} 
+The formal specification presented by Felleisen falls outside of the scope of this thesis. But we can summaries his findings informally: If a construct in language $A$ can be expressed in a construct in language $B$ by only performing local transformations (\textit{local-to-local}), then language $A$ is no more expressive than language $B$. And \textit{"By the definition of an expressible construct, programs in a less expressive language generally have a globally different structure from functionally equivalent programs in a more expressive language."}\cite{Felleisen1990}
 
 This implies that every language extension transformed through a \textit{local-to-local} scoped transformation (see section \ref{taxonomy}), creates a language that is no more expressive than the original (core) language. In table \ref{full-table} the categorization of ECMAScript 6 language extensions is displayed. Ten of the twelve extensions can be transformed with the use of a \textit{local-to-local} transformation, the two exceptions are, the extension of binding constructs (see appendix \ref{let-const}). This extension requires a \textit{global-to-global} transformation. And the arrow function (see appendix \ref{arrow}) which requires a \textit{global-to-local} transformation, because the transformation depends on the context in which the arrow function is used (i.e. either the global scope or inside a function).
 

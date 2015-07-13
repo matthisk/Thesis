@@ -1,3 +1,4 @@
+% !TEX root = ../main.tex
 % Appendix A
 
 \chapter{Artifact Description} % Main appendix title
@@ -27,7 +28,7 @@ Full functionality.\textsuperscript{*} (i.e. basic support, support for extensio
 Full functionality.\textsuperscript{*}
 
 \textbf{Generators} (\textit{src/extensions/generators}) \newline
-No support. Due to the time constraints set for this thesis the feature has not been implemented. 
+No support. Due to the time constraints set for this thesis the feature has not been implemented.
 
 \paragraph{Syntax extensions}\mbox{}\\
 \textbf{Destructuring} (\textit{src/extensions/destructuring}) \newline
@@ -55,7 +56,7 @@ Basic functionality.
 \textbf{Spread operator} (\textit{src/extensions/spread}) \newline
 Near full functionality. (i.e. no support for spread operator with generators, because we do not implement generators)
 
-\textbf{Template Literals} (\textit{src/extensions/template}) 
+\textbf{Template Literals} (\textit{src/extensions/template})
 Full functionality (i.e. tagged template literals and normal template literals)
 
 \textbf{Unicode Escape Points}
@@ -71,7 +72,7 @@ Full functionality. (i.e. support for renaming of function scoped clashes of blo
 \textbf{Const} (\textit{src/extensions/letconst}) \newline
 Full functionality. (i.e. same as let)
 
-\textbf{Modules} (\textit{src/extensions/modules}) 
+\textbf{Modules} (\textit{src/extensions/modules})
 No support.
 
 \textsuperscript{*}These features make use of the ES6 \textit{new.target} property. This newly introduced property is an implicit parameters. Implicit parameters are those parameters that are set during every function execution but not explicitly passed as an argument by the caller. It is used to refer to the constructor function when a function is invoked with the use of the \textit{new} keyword.
@@ -81,7 +82,7 @@ Our implementation does not support the \textit{new.target} property. It is poss
 
 The compatibility tests as discussed in section \ref{sec:correctness} are stored in \textit{input/compatibility} and can be invoked from the Rascal module at \textit{src/test/Compatibility.rsc}
 
-Our implementation of the \textit{name-fix}\citep{Erdweg2014a} algorithm resides in \textit{src/core/resolver}. 
+Our implementation of the \textit{name-fix}\citep{Erdweg2014a} algorithm resides in \textit{src/core/resolver}.
 
 \paragraph{Getting the artifact}
 The latest version of the artifact is available at \url{https://github.com/matthisk/ESarmonia} as a git repository. The repository page includes information on how to run the artifact inside the Eclipse IDE\footnote{\url{http://eclipse.org}}.

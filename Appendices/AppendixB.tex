@@ -1,3 +1,4 @@
+% !TEX root = ../main.tex
 % Appendix A
 
 \chapter{Language feature categorization} % Main appendix title
@@ -49,14 +50,14 @@ var f = () => {
 
 \begin{lstlisting}[caption={Incorrect renaming of this in nested arrow function}]
 var f = (function(_this,_arguments) {
-	return function() {	
+	return function() {
 		() => _this;
 	};
 })(this,arguments);
 \end{lstlisting}
 
 \section{Classes}
-Class definitions\cite[14.5]{SpecJS} are introduced in ECMAScript 6 as a new feature to standardize the inheritance model. 
+Class definitions\cite[14.5]{SpecJS} are introduced in ECMAScript 6 as a new feature to standardize the inheritance model.
 This new style of inheritance is still based on the prototypal inheritance (see section \ref{javascript-inheritance}).
 
 \paragraph{Category}
@@ -69,9 +70,9 @@ There are two types of class declarations, a direct declaration as a Statement, 
 Several features of the class declaration as described in the specification use some run-time functions. This to avoid unnecessary "noise" in the generated program. The following features use a run-time function
 
 \begin{itemize}
-	\item \textit{(\_classCallCheck)}: Check if constructor was called with \textit{new} 
-	\item \textit{(\_createClass)}: Add method as non-enumerable property to prototype of class. 
-	\item \textit{(\_inherits)}: Inherit from the prototype of the parent class. 
+	\item \textit{(\_classCallCheck)}: Check if constructor was called with \textit{new}
+	\item \textit{(\_createClass)}: Add method as non-enumerable property to prototype of class.
+	\item \textit{(\_inherits)}: Inherit from the prototype of the parent class.
 	\item \textit{(\_get)}: Retrieve properties or constructor of the parent class.
 \end{itemize}
 
@@ -94,7 +95,7 @@ The destructuring language feature is eliminated by translating it into core lan
 Yes
 
 \paragraph{Dependencies}
-Object destructuring supports the computed property notation of extended object literals (as discussed in Appendix \ref{object-literals}): 
+Object destructuring supports the computed property notation of extended object literals (as discussed in Appendix \ref{object-literals}):
 
 \begin{lstlisting}
 var qux = "key";
@@ -104,7 +105,7 @@ var { [qux] : a } = obj;
 Destructuring thus has a dependency on extended object literal notation for this feature to work properly.
 
 \paragraph{Decomposable}
-This language features consists of two types of destructuring, object destructurings, and array destructurings. These two different features can be transformed separately. 
+This language features consists of two types of destructuring, object destructurings, and array destructurings. These two different features can be transformed separately.
 
 \section{Extended object literals} \label{object-literals}
 Literal object notation receives three new features in the ECMAScript 6 standard\cite[12.2.5]{SpecJS}. Shorthand property notation, shorthand method notation, and computed property names.
@@ -117,7 +118,7 @@ One run-time function is used by the transformation suite, to set properties wit
 \footnotetext{For more information on this function see the \href{https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperty}{Mozilla Developer Network documentation}}
 
 \paragraph{Decomposable}
-All three extensions of the object literal can be transformed separately. 
+All three extensions of the object literal can be transformed separately.
 
 \section{For of loop}
 The ECMAScript 6 standard introduces iterators, and a shorthand \textit{for-loop} notation to loop over these iterators. This loop is called the \textit{for of} loop\cite[13.6.4]{SpecJS}. Previous versions of the ECMAScript standard had default for loops, and \textit{for in} loops (which iterate over all enumerable properties of an object and those inherited from its constructor's prototype).
@@ -129,10 +130,10 @@ This construct can be eliminated by transformation to a \textit{for-loop} using 
 No constraints any $<Statement>$ can be used within the body of a for-of loop.
 
 \begin{lstlisting}{language=Java}
-syntax Statement 
+syntax Statement
 	= "for" "(" Declarator ForBinding "of" Expression ")" Statement;
 \end{lstlisting}
-    
+
 \paragraph{Dependencies}
 The for-of loop binding can be declared with the let declarator (see Appendix \ref{let-const}).
 
@@ -145,7 +146,7 @@ for( let x of arr ) <Statement>
 ECMAScript 6 introduces a new unary operator named spread\cite[12.3.6.1]{SpecJS}. This operator is used to expand an expression in places where multiple arguments (i.e. function calls) or multiple elements (i.e. array literals) are expected.
 
 \paragraph{Category}
-This unary operator can be expressed using core concepts of the ECMAScript 5 language. In case the operator appears in a place where multiple arguments are expected, a call of member function \textit{apply}\footnotemark on our function can be used to supply arguments as an array. In case it appears in a place where multiple elements are expected the prototype function \textit{concat} of arrays can be used to interleave the supplied argument to the operator with the rest of the array. 
+This unary operator can be expressed using core concepts of the ECMAScript 5 language. In case the operator appears in a place where multiple arguments are expected, a call of member function \textit{apply}\footnotemark on our function can be used to supply arguments as an array. In case it appears in a place where multiple elements are expected the prototype function \textit{concat} of arrays can be used to interleave the supplied argument to the operator with the rest of the array.
 
 \footnotetext{For more information see \href{https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/apply}{Mozilla Developer Network documentation}}
 
@@ -280,7 +281,7 @@ Figure \ref{lst:transformed-tail-call} illustrates how a function with tail recu
 The ECMAScript 6 standard introduces a new function type, generators\cite[14.4]{SpecJS}. These are functions that can be exited and later re-entered, when leaving the function through $yielding$ their context (i.e. variable bindings) is saved and restored upon re-entering the function. A generator function is declared through \lstinline$function*$ and returns a Generator object (which inherits from $Iterator$)
 
 \paragraph{Category}
-A generator can be implemented as a state machine function wrapped in a little run-time returning a Generator object. It does categorize as syntactic sugar, however the transformation is complex (because of identification of control flow of body statement, see Analysis of sub-terms). 
+A generator can be implemented as a state machine function wrapped in a little run-time returning a Generator object. It does categorize as syntactic sugar, however the transformation is complex (because of identification of control flow of body statement, see Analysis of sub-terms).
 
 \paragraph{Scope}
 Including a run-time the transformation can be managed local-to-local.
@@ -290,7 +291,7 @@ Including a run-time the transformation can be managed local-to-local.
 \lstinline$<Expression>$ to \lstinline$<Expression>$
 
 \paragraph{Analysis of sub-terms}
-The control flow of the functions body has to be identified. The control flow graph can be interpreted as a state machine with several leaps, entry points, and exit points that result from the use of different control-flow constructs (e.g. $yielding$, $returning$, $breaking$, etc.). After transformation this state machine can be represented in a \lstinline$switch$ statement. All bindings of the function body have to be hoisted outside of this state machine, and only to be assigned through an assignment expression in the state machine. 
+The control flow of the functions body has to be identified. The control flow graph can be interpreted as a state machine with several leaps, entry points, and exit points that result from the use of different control-flow constructs (e.g. $yielding$, $returning$, $breaking$, etc.). After transformation this state machine can be represented in a \lstinline$switch$ statement. All bindings of the function body have to be hoisted outside of this state machine, and only to be assigned through an assignment expression in the state machine.
 
 \paragraph{Preconditions}
 The \lstinline$<GeneratorBody>$ has to be transformed before transformation of the Generator function starts.
@@ -328,7 +329,7 @@ var x = 1;
 x == 0; // false
 \end{lstlisting}
 
-Thus $let$ declarations can be desugared if every block is transformed to a \lstinline$closure$ with the help of IIFE's. This does however imply a serious performance overhead on the transformed program (instead of normal block execution the interpreter has to create a closure for every block). This also breaks the standard control-flow of our program when the block uses any control-flow statement keywords (e.g. \lstinline$return$). 
+Thus $let$ declarations can be desugared if every block is transformed to a \lstinline$closure$ with the help of IIFE's. This does however imply a serious performance overhead on the transformed program (instead of normal block execution the interpreter has to create a closure for every block). This also breaks the standard control-flow of our program when the block uses any control-flow statement keywords (e.g. \lstinline$return$).
 
 There is another way to transform \lstinline$let$ declarations, for this implementation we need full name analysis of a program. The previous example can also be transformed by renaming the rebinding of \lstinline$x$:
 
@@ -358,7 +359,7 @@ The transformation of \lstinline$let$ (or \lstinline$const$) bindings is not com
 {
 	let x = 1;
 }
-\end{lstlisting} 
+\end{lstlisting}
 
 Once these \lstinline$let$ bindings are transformed to \lstinline$var$ bindings without renaming they would be declared in the same lexical scope. Whereas they are not at the moment. For a transformation to \lstinline$var$ bindings to work one of these bindings and its uses has to be renamed.
 
