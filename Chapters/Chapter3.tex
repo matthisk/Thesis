@@ -77,9 +77,6 @@ Is the API of the transformed code compatible with the ECMAScript 6 specificatio
 \paragraph{Decomposable}
 Is it possible to identify smaller transformation rules inside this language extension, that can be performed independently from one another.
 
-\afterpage{%
-	\clearpage
-	\thispagestyle{headings}
 	
 	\begin{landscape}		
 		\centering
@@ -132,8 +129,7 @@ Is it possible to identify smaller transformation rules inside this language ext
 
 		
 	\end{landscape}
-	\clearpage
-}
+
 
 \section{Implementation}
 Each transformation is defined as a rewrite rule. It has a concrete syntax pattern which matches part of a parse-tree. The result is a concrete piece of syntax, using only constructs from the core syntax definition (i.e. ES 5).
@@ -273,4 +269,3 @@ syntax ForBinding
 \end{lstlisting}
 
 Designing language extensions in this way makes the entire suite of language extensions more modular, because we can combine language extensions that depend on each other for full functionality. Or use them separately to get only their independent functionality.
-
