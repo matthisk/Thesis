@@ -175,6 +175,7 @@
 \newcommand*{\subject}[1]{\def\subjectname{#1}}
 \newcommand*{\keywords}[1]{\def\keywordnames{#1}}
 \newcommand*{\host}[1]{\def\host{#1}}
+\newcommand*{\theprojectname}[1]{\def\projectname{#1}}
 
 %----------------------------------------------------------------------------------------
 %	DOCUMENT VARIABLES
@@ -184,7 +185,7 @@
 %	defined as \examname above so you cite it as \examname
 %----------------------------------------------------------------------------------------
 
-\thesistitle{Syntactic language extensions for ECMAScript} % Your thesis title - this is used in the title and abstract
+\thesistitle{Extending JavaScript inside the language workbench} % Your thesis title - this is used in the title and abstract
 %-------------------------------------------------  
 \supervisor{dr. Tijs van der \textsc{Storm}} % You supervisor's name - this is used in the title page
 %-------------------------------------------------   
@@ -217,6 +218,8 @@
 \faculty{Faculteit der Natuurwetenschappen, Wiskunde en Informatica}
 %-------------------------------------------------                
 \FACULTY{FACULTEIT DER NATUURWETENSCHAPPEN, WISKUNDE en INFORMATICA}
+%----------------------------------------------------------------------------------------    
+\theprojectname{RMonia}
 %----------------------------------------------------------------------------------------    
 
 % The default title page, this is not used in this www.latextemplates.com version            

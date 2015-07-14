@@ -29,6 +29,8 @@
 
 \graphicspath{{Pictures/}} % Specifies the directory where pictures are stored
 
+\usepackage{wasysym}
+\usepackage{subcaption}
 \usepackage{adjustbox}
 \usepackage{pdflscape}
 \usepackage{afterpage}
@@ -71,7 +73,7 @@
 
 
 \lstdefinelanguage{JavaScript}{
-  keywords={break, case, catch, continue, debugger, default, delete, do, else, false, finally, for, function, if, in, instanceof, new, null, return, switch, this, throw, true, try, typeof, var, let, const void, while, with, swap},
+  keywords={break, case, catch, continue, debugger, default, delete, do, else, false, finally, for, function, if, in, instanceof, new, null, return, switch, this, throw, true, try, typeof, var, let, const void, while, with, swap, log},
   morecomment=[l]{//},
   morecomment=[s]{/*}{*/},
   morestring=[b]',
@@ -113,7 +115,7 @@
 \textsc{\Large Master Thesis}\\[0.5cm] % Thesis type
 
 \HRule \\[0.4cm] % Horizontal line
-{\Huge \bfseries \ttitle}\\[0.4cm] % Thesis title
+{\Huge \bfseries \ttitle}\\ % Thesis title
 \HRule \\[1.5cm] % Horizontal line
  
 \begin{minipage}{0.4\textwidth}
@@ -235,8 +237,8 @@ The acknowledgements and the people to thank go here, don't forget to include yo
 \input{Chapters/Chapter3}
 \input{Chapters/Chapter4} 
 \input{Chapters/Chapter5} 
-%\input{Chapters/Chapter6} 
-%\input{Chapters/Chapter7} 
+\input{Chapters/Chapter6} 
+\input{Chapters/Chapter7} 
 
 %----------------------------------------------------------------------------------------
 %	THESIS CONTENT - APPENDICES

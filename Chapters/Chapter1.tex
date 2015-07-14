@@ -22,25 +22,12 @@ in our research we will focus on the desugaring of (new) language constructs.
 Program transformations are faced with multiple problems, in what order do we run the transformation rules, how do we represent the program to perform transformations on, what guarantee do we have for the validity of our transformations, how can a transformation introduce new bindings.
 Some of these problems reoccur in every transformation that is created. These problems are identified as cross-cutting concerns. The goal of this thesis is to implement (a subset) program transformations to eliminate ES 6 language constructs to the ES 5 base language while identifying these concerns.
 
-\section{Scope}
-
-\subsection{Expected results}
-This thesis will have the following results:
-\begin{itemize}
-	\item A taxonomy for language extensions
-	\item Language extension suite implementing (a subset of) the ES 6 features
-	\item Identification of cross-cutting concerns of our language extension suite
-	\item A set of compatibility tests, testing our implementation against the specification document
-	\item Eclipse IDE integration (syntax highlighting \& declared at hyperlinks) for new language features
-\end{itemize}
-\section{Research questions}
-The central research questions of this thesis are:
-
-\begin{enumerate}
-	\item Evaluate the language workbench for the task of program transformation suite
-	\item How can independent program transformations be categorized?
-	\item What are the cross-cutting concerns of any program transformations, and how can we take care of these concerns separate of the transformation code?
-\end{enumerate}
-
 \section{Outline}
+\ref{Chapter2}
+\ref{Chapter3}
+\ref{Chapter4}
+\ref{Chapter5}
+\ref{Chapter6}
+\ref{Chapter7}
+
 In chapter \ref{Chapter2} the background (program transformations, language workbench) is introduced. In chapter \ref{Chapter3} we present a taxonomy for language extensions (categorization according to this taxonomy of ES 6 features is found in Appendix \ref{AppendixB}). In Chapter \ref{Chapter4} we evaluate our resulting transformation suite. Finally we discuss related work and conclude in Chapter \ref{Chapter5}.

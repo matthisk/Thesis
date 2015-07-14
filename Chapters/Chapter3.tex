@@ -1,272 +1,222 @@
 % !TEX root = ../main.tex
 % Chapter Template
 
-\chapter{Transforming ECMAScript 6} % Main chapter title
+\chapter{Background} % Main chapter title
 
 \label{Chapter3}
 
-\lhead{Chapter 3. \emph{Transforming ECMAScript 6}}
+\lhead{Chapter 3. \emph{Background}}
 
-\section{Taxonomy of language extensions} \label{taxonomy}
+\section{ECMAScript} \label{javascript}
+JavaScript\footnotemark is the programming language implemented from the ECMAScript specification\cite{SpecJS}. JavaScript is an interpreted, object-oriented, dynamically typed scripting language with functions as first-class citizens. It is mostly used inside the Web browser, but also available for non browser environments (e.g. node.js). In this section we will identify some of the key characteristics of the JavaScript programming language.
+\footnotetext{Documentation on the JavaScript programming language can be found at the \href{https://developer.mozilla.org/en-US/docs/Web/JavaScript}{Mozilla Developer Network}}
 
-Every language extension has several properties which can be identified and categorized along certain dimensions. In this chapter we present a taxonomy for language extensions. In appendix \ref{AppendixB} we categorize ES6 language features according to this taxonomy.
+\paragraph{Syntax} \label{javascript-syntax}
+One of the main concerns for program transformations is syntax. The syntax of the programming language is to be extended to support new language features/constructs. ECMAScript falls in the C-type family % TODO: citation
+of syntax definitions (i.e. it uses curly braces to delimit blocks of code).
+A program exists of a list of \textit{statements}. A \textit{statement} can be one of the language control flow constructs, a declaration, a function, or an \textit{expression}. Functions in JavaScript can be either defined as an \textit{expression} or as a \textit{statement} (see section \ref{javascript-functions}). The ES standard specifies automatic semicolon insertion (or ASI), this grammar feature makes it possible for programmers to omit the the trailing semicolon after statements and let the parser insert these automatically.
 
-\subsection{Dimensions}
-The following dimensions are identified and used to categorize every language extension.
+\paragraph{Inhertiance \& Object orientation} \label{javascript-inheritance}
+JavaScript can be classified as an object oriented language without \textit{class} based inheritance model\footnote{Most popular object-oriented languages do have \textit{class} based inheritance (e.g. Java or C++)}. Instead of such a model JavaScript objects have a prototype chain that determine their inheritance.
 
-\paragraph{Category}
-One of the rephrasing categories defined by Eelco Visser~\cite{Visser2001}, rephrasings are program transformations where source and target program language are the same. Each category is explained in table \ref{table-rephrasing-categories}.
+In the JavaScript run-time environment everything is an object with properties (even functions see section \ref{javascript-functions}), with the exception of primitive data-types (e.g. numbers). Every object has one special property called the \textit{prototype}, this prototype references another object (with yet another prototype) until finally one object has prototype \textit{null}. This chain of objects is called the \textit{prototype chain}. When performing a lookup on an object for a certain key $x$, the JavaScript interpreter will look for property $x$ on our object, if $x$ is not found it will look at the \textit{prototype} of our object. This iteration will continue until either prototype \textit{null} is found or an object with property $x$ is found in the prototype chain.
 
-\begin{longtable}{p{0.2\textwidth}p{0.75\textwidth}}
-\multicolumn{1}{l}{Normalization} & The reduction of a source program to a target program in a sub-language of the source program language.
-\\ \hline \\
-\multicolumn{1}{r}{\bf Desugaring}                  & a language construct (called syntactic sugar) is reduced to a core language.                                                    \\
-\multicolumn{1}{r}{\bf Simplification}              & this is a more generic form of normalization in which parts of the program are transformed to a standard form, with the goal of simplifying the program without changing the semantics. \\
-\multicolumn{1}{r}{\bf Weaving}                     & this transformation injects functionality in a source program, without modifying the code. It is used in aspect-oriented programming, where cross-cutting concerns are separated from the main code and later 'weaved' with the main program through a aspect weaver.)                                                                                                                                                                               \\
-\\
-\multicolumn{1}{l}{Optimization}  & These transformations help improve the run-time and/or space performance of a program                                                                                         \\ \hline \\
-\multicolumn{1}{r}{\bf Specialization}              & Code specialization deals with code that runs with a fixed set of parameters. When it is known that some function will run with some parameters fixed the function can be optimized for these values before run-time. (e.g. compiling a regular expression before execution).                                                                                                                                                                               \\
-\multicolumn{1}{r}{\bf Inlining}                    & Transform code to inline a certain (standard) function within your function body, instead of calling the function from the (standard) library. This produces a slight performance increase because we avoid an additional function call. (this technique is more common in lower level programming languages e.g. C or C++)                                                                                                                                                                              \\
-\multicolumn{1}{r}{\bf Fusion}                      & Fusion merges two bodies of loops (or recursive code) that do not share references and loop over the same range, with the goal to reduce run-time of the program.                                                                                                                                                                               \\
-\\
-\multicolumn{1}{l}{Other}         &                                                                                                                                                                               \\ \hline \\
-\multicolumn{1}{r}{\bf Refactoring}                 & "\textit{is a disciplined technique for restructuring an existing body of code, alteringits internal structure without changing its external behaviour.}"\footnotemark                 \\
-\multicolumn{1}{r}{\bf Obfuscation}                 & is a transformation that makes output code less (human) readable, while not changing any of the semantics.                                                                    \\
-\multicolumn{1}{r}{\bf Renovation}                  & is a special form of refactoring, "\textit{to repair an error or to bring it up to date with respect to changed requirements"}~\cite{Visser2001} \\
-\caption{Rephrasing categories} \label{table-rephrasing-categories}
-\end{longtable}
-\footnotetext{\url{http://www.refactoring.com}}
+To understand prototypal inheritance in comparison to class based inheritance, we can use an analogy. A class in a class based programming language can be seen as a blueprint from which to construct objects. When calling a function on an object created from such a blueprint the function is retrieved from the blueprint and not from the (constructed) object. So the object is related to the class (or blueprint) with an object-class relation. With prototypal inheritance there is no blueprint everything is an object. This is also how inheritance works, we do not reference a blueprint but we reference a fully build object as our prototype. This creates an object-object relation.
 
-\paragraph{Abstraction level}
-Program transformations can be categorized by their abstraction level. There are four levels of abstraction (similar to those of macro expansions~\cite{Weise1993}), character-, token-, syntax-, or semantic-based. Character and token based transformations work on a program in textual representation. Syntactical transformations work on a program in its parsed representation (either as an AST or as a parse tree, see section \ref{program-representation}). In addition to the syntactic representation semantic transformations also have access to the static semantics of the input program (e.g. variable binding).
+If we have an object Car which inherits from Vehicle we set the Car's object prototype to an instance of the Vehicle object. Where in class based inheritance there is a blueprint for Car which inherits from the Vehicle blueprint, to build a car we initialize from the blueprint.
 
-\paragraph{Extension or Modification}
-Rephrasings try to say the same thing (i.e. no change in semantics) but using different words\cite{Visser2001}. Sometimes these different words are an extension on the core language, in this case we call the transformation a \textit{program extension}. In other cases the transformation uses only the words available in the core language, then we call the transformation a \textit{program modification}. Transformations that fall in the \textit{optimization} category (see table \ref{table-rephrasing-categories}) are program modifications. An example is tail call optimization in which a recursive function call in the \textit{return} statement is reduced to a loop to avoid a call-stack overflow error (see appendix \ref{tail-call-optimization}).
-
-\paragraph{Scope}
-Program transformations performed on the abstraction level of context-free syntax (or semantics) receive the parse tree of the source program as their input. A transformation searches the parse tree for a specific type of node, the type of node to match on is defined by the transformation and can be any syntactical type defined in the source program's grammar. The node matched by a transformation and whether or not information from outside this node's scope is used during transformation determine the scope of a program transformation, there are four different scopes:
-
-When a program transformation matches on a sub-tree of the parse-tree and only transforms this matched sub-tree it is a \textit{(1) local-to-local} transformation. If the transformation needs information outside the context of the matched sub-tree, but only transforms the matched sub-tree it is \textit{(2) global-to-local}. When a transformation has no additional context from its local sub-tree but does alter the entire parse-tree it is called \textit{(3) local-to-global}. If the transformation transforms the input program in its entirety it is \textit{(4) global-to-global}.
-
-\paragraph{Syntactically type preserving}
-Program transformations performed on syntax elements can preserve the syntactical type of their input element or alter it. Two main syntactical types in JavaScript are Statement and Expression (see section \ref{javascript-syntax}). If a transformation matches on a Expression node but returns a Statement it is non syntactical type preserving.
-
-\paragraph{Introduction of bindings}
-Does the transformation introduce new bindings. Transformations that do not introduce bindings are guaranteed to be hygienic (see section \ref{hygiene}), where binding introducing transformations can cause variable capture from synthesized bindings to source bindings.
-
-\paragraph{Depending on bindings (i.e. run-time code)}
-Will the target program produced by the transformation depend on context not introduced by the transformation (e.g. global variables, external libraries).
-
-\paragraph{Compositional}
-When a program transformation does not alter the containing context of the matched parse-tree node, it is said to be compositional. The main concern of compositionality of program transformations is if the transformation can be reversed or not.
-
-\paragraph{Preconditions}
-What are the preconditions that have to be met before execution of a transformation rule, to ensure validity of the transformation (e.g. all sub-terms have to be analyzed and transformed)
-
-\paragraph{Restrictions on sub-terms}
-Does the language extensions impose restrictions on the terms used inside of the language extension's non-terminals. For example we can only use identifiers in the sub-terms of our \lstinline$swap$ language extension (see section \ref{hygiene}).
-
-\paragraph{Analysis of sub-terms}
-Are the non-terminals of our language extension analyzed by the transformation rule. This is related to compositionality but differs because compositional transformations analyze \textit{and transform} sub-terms.
-
-\paragraph{Dependency on other extensions}
-Can the language extensions be performed stand-alone or is there a dependency on one of the other extensions.
-
-\paragraph{Backwards compatible}
-Is the API of the transformed code compatible with the ECMAScript 6 specification (i.e. can we import a transformed module in ECMAScript 6 and use it properly).
-
-\paragraph{Decomposable}
-Is it possible to identify smaller transformation rules inside this language extension, that can be performed independently from one another.
-
-	
-	\begin{landscape}		
-		\centering
-
-		\begin{table}[h]
-		\caption{ES6 features transformation dimensions}
-		\label{full-table}
-
-\begin{tabular}{rcccccc}
-\hline
-& {\bf Arrow Functions} & {\bf Classes} & {\bf Destructuring} & {\bf Object literals} & {\bf For of loop} & {\bf Spread operator} \\ \hline
-{\bf Category} & D. & D. & D. & D. & D. & D. \\
-{\bf Abstraction level} & CfS. & CfS. & CfS. & CfS. & CfS. & CfS. \\
-{\bf Scope} & G2L & L2L & L2L & L2L & L2L & L2L \\
-{\bf Extension or Modification} & E. & E. & E. & E. & E. & E. \\
-{\bf Syntactically type preserving} & $\bullet$ & $\bullet$ & $\circ$ & $\bullet$ & $\bullet$ & $\bullet$ \\
-{\bf Introducing bindings} & $\bullet$ & $\circ$ & $\bullet$ & $\circ$ & $\circ$ & $\bullet$ \\
-{\bf Depending on bindings} & $\circ$ & $\bullet$ & $\bullet$ & $\circ$ & $\circ$ & $\bullet$ \\
-{\bf Compositional} & $\bullet$ & $\bullet$ & $\bullet$ & $\bullet$ & $\bullet$ & $\bullet$ \\
-{\bf Analysis of subterms} & $\bullet$ & $\bullet$ & $\bullet$ & $\circ$ & $\circ$ & $\bullet$  \\
-{\bf Constraints on subterms} & $\circ$ & $\bullet$ & $\circ$ & $\circ$ & $\circ$ & $\circ$   \\
-{\bf Preconditions} & $\bullet$ & $\bullet$ & $\circ$ & $\circ$ & $\circ$ & $\circ$   \\
-{\bf Dependencies}  & $\circ$ & $\circ$ & $\bullet$ & $\circ$ & $\bullet$ & $\circ$   \\
-{\bf Backwards compatible} & $\bullet$ & $\bullet$ & $\bullet$ & $\bullet$ & $\bullet$ & $\bullet$  \\
-{\bf Decomposable} & $\circ$ & $\circ$ & $\bullet$ & $\bullet$ & $\bullet$ & $\bullet$  \\ \hline
-\end{tabular}
-\vspace*{0.5cm}
-\newline
-
-\begin{tabular}{rcccccc}
-\hline
-& {\bf Default parameters} & {\bf Rest parameters} & {\bf Template Literals} & {\bf Generators} & {\bf Let Const} & {\bf Tail call} \\ \hline
-{\bf Category} & D. & D. & D. & D. & U. & Opt. \\
-{\bf Abstraction level} & CfS. & CfS. & CfS. & CfS. & S. & CfS. \\
-{\bf Scope} & L2L & L2L & L2L & L2L & G2G & L2L \\
-{\bf Extension or Modification} & E. & E. & E. & E. & E. & M. \\
-{\bf Syntactically type preserving} & $\bullet$ & $\bullet$ & $\bullet$ & $\bullet$ & $\bullet$  & $\bullet$      \\
-{\bf Introducing bindings} & $\circ$ & $\circ$ & $\circ$ & $\circ$ & $\bullet$ & $\circ$ \\
-{\bf Depending on bindings} & $\circ$ & $\circ$ & $\circ$ & $\bullet$ & $\circ$ & $\circ$ \\
-{\bf Compositional} & $\bullet$ & $\bullet$ & $\bullet$ & $\bullet$ & $\circ$ & $\circ$ \\
-{\bf Analysis of subterms} & $\circ$ & $\circ$ & $\circ$ & $\bullet$ & $\bullet$ & $\bullet$ \\
-{\bf Constraints on subterms} & $\circ$ & $\circ$ & $\circ$ & $\circ$ & $\circ$ & $\circ$ \\
-{\bf Preconditions} & $\circ$ & $\circ$ & $\circ$ & $\bullet$ & $\bullet$ & $\circ$ \\
-{\bf Dependencies} & $\circ$ & $\circ$ & $\circ$ & $\circ$ & $\circ$ & $\circ$ \\
-{\bf Backwards compatible} & $\bullet$ & $\bullet$ & $\bullet$ & $\bullet$ & $\circ$ & $\bullet$ \\
-{\bf Decomposable} & $\circ$ & $\circ$ & $\circ$ & $\circ$ & $\bullet$ & $\circ$ \\ \hline
-\end{tabular}
-\caption*{$\bullet$: Yes, $\circ$: No, \textbf{D}: Desugaring, \textbf{U}: Undefined, \textbf{Opt}: Optimization, \textbf{CfS}: Context-free-syntax, \textbf{L2L}: local-to-local, \textbf{E}: Extension, \textbf{M}: Modification}
-	\end{table}
-
-		
-	\end{landscape}
-
-
-\section{Implementation}
-Each transformation is defined as a rewrite rule. It has a concrete syntax pattern which matches part of a parse-tree. The result is a concrete piece of syntax, using only constructs from the core syntax definition (i.e. ES 5).
-The rewrite rules are exhaustively applied on the input parse-tree until no more rewrite rules match any sub-trees of the input. Application of rewrite rules to the parse-tree is done bottom-up, because several rewrite rules (e.g. arrow function) demand their sub-terms to be transformed to guarantee successful completion.
-
-\subsection{cross-cutting concerns}
-Each transformation rule has to deal with similar issues, can we identify these issues and solve them in a standalone (language agnostic) fashion?
-Many problems with transformations originate with name binding in source and target language.
-
-\paragraph{Variable capture}
-In section \ref{hygiene} we have described the problem of variable capture in the context of program transformations. To solve this problem for our transformation suite we reuse the \textit{name-fix} algorithm presented by Erdweg et. al.~\cite{Erdweg2014}. The algorithm relies on a binding graph to identify variable capture, and uses string origins~\cite{Inostroza2014} to distinguish between synthesized identifiers (i.e. those identifiers introduced by the transformation) and identifiers originating from the source program.
-
-\textit{name-fix} analyses the \textit{name graph} of source and target program to identify variable capture. The name graph contains nodes for all identifiers in the program, a directed edge indicates a reference to a declaration. Because our source and target language are both JavaScript and thus have the same binding mechanism, we only generate the name graph for our target program. In the graph a distinction is made between synthesized and user bindings. To identify whether a binding originates from the source program or was synthesized during transformation, the \textit{name-fix} algorithm uses string origins~\cite{Inostroza2014}.
-
-In figure \ref{fig:name-graph} we use the target program from our \lstinline$swap$ language extension (see section \ref{hygiene}) to illustrate how these name graphs are constructed, and how \textit{name-fix} identifies variable capture. Each node contains a line number and the identifier it resembles from that line, a directed edge is a reference to a declaration. Nodes with a white background originate from the source program, nodes with a dark background are synthesized during transformation. Line numbers from synthesized identifiers are appended with a tick.
-
-\begin{figure}[h]
-\centering
-\begin{minipage}{0.25\linewidth}
 \begin{lstlisting}
-	var x = 0,
-		tmp = 1;
+var Vehicle = function() {...};
+var Car = function() {...};
 
+Car.prototype = new Vehicle();
+\end{lstlisting}
+
+\paragraph{Scoping} \label{javascript-scoping}
+Most programming languages have some form of variable binding. These bindings are only bound in a certain context, such a context is often called a scope. There are two different ways to handle scope in a programming language, Lexical (or static) scoping and dynamic scoping. Lexical scoping is determined by the placing of a binding within the source program or its \textit{lexical context}. Variables bound in a dynamic scope are resolved through the program state or \textit{run-time context}.
+
+In JavaScript bindings are determined through the use of lexical scoping, on a function level. Variables bound within a function's context are available throughout the entire lexical scope of the function, independent of their placement within this function (this is called hoisting).
+
+One exception on the lexical scoping is binding of the \textit{this} keyword. Similar to many other object oriented languages JavaScript makes use of a \textit{this} keyword. In most object oriented languages the current object is implicitly bound to \textit{this} inside functions of that object.\footnote{Sometimes \textit{this} is called \textit{self} (e.g. in the \href{http://ruby.org}{Ruby} programming language)} In JavaScript the value of \textit{this} can change between function calls. For this reason the \textit{this} binding has dynamic scoping (we can not determine the value of \textit{this} before run-time).
+
+\paragraph{Typing} \label{javascript-typing}
+JavaScript is a dynamically typed language without type annotations. Each object can be typecast without the use of special operator(s) and will be be converted automatically to correct type during execution. There are 5 primitive types, everything is else is an object:
+
+\begin{itemize}
+	\item \textit{Boolean}
+	\item \textit{null}
+	\item \textit{undefined}
+	\item \textit{Number}
+	\item \textit{String}
+\end{itemize}
+
+\paragraph{Functions} \label{javascript-functions}
+in JavaScript functions are objects. Because of this functions are automatically promoted to first-class citizens (i.e. they can be used anywhere and in anyway normal bindings can be used). This presents the possibility to supply functions as arguments to functions, and calling member functions of the function object. Every function object inherits from the \textit{Function.prototype}\footnote{For more information see \href{https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/prototype}{Mozilla Developer Network}} which contains functions that allow the overriding of this binding (see section \ref{javascript-scoping}).
+
+Another common pattern is JavaScript related to functions, is that of the immediately invoking function expression (IIFE). Functions in JavaScript can be defined either in a statement or in an expression. When a function is defined as an expression it is possible to immediately invoke the created function:
+
+\begin{lstlisting}[title=IIFE,caption={Immediately invoking function expression}]
+(function() {
+	<Statement* body>
+})()
+\end{lstlisting}
+
+\paragraph{Asynchronous}
+JavaScript is a single-threaded language, this means that concurrency through the use of processes, threads, or similar concurrency constructs is not possible.
+
+\section{Program Transformations}
+Eelco Visser defines the aim of a program transformation as follows:
+
+\blockquote[\cite{Visser2001}]{\textit{The aim of program transformation is to increase programmer productivity by automating programming tasks, thus enabling programming at a higher-level of abstraction, and increasing maintainability}}
+
+There are many different types of program transformations. Programs can be transformed from a source to a target language. Where both can be the same or different. One can be a higher level language and one a lower level language. In this thesis we will focus on transformations in the category rephrasing~\cite{Visser2001}. Here a program in a source language is transformed to a different program in the same language.
+
+\section{Language Extensions} \label{lang-ext}
+\textit{"Language extensions augment a base language with additional language features."}~\cite{Erdweg2014}
+With the use of program transformations these extensions can be eliminated and a target program in the base language can be produced. \textit{"Many compilers first desugar a source program to a core language."}~\cite{Erdweg2014} For example the Haskell functional programming language defines for many constructs how they can be transformed to a kernel language~\cite{PeytonJones}. These pieces of \textit{syntactic sugar} are examples of language extensions.
+
+Language extensions are closely related to other forms of program transformations. There are (syntax) macros\cite{Leavenworth1966}, these are language extensions defined within the same source file and are expanded before compilation (examples are SweeterJS~\cite{Disney2014}, Syntax macros~\cite{Weise1993}). These \textit{"define syntactic abstractions over code fragments"}~\cite{Bravenboer2004}. Macro systems have several limitations. The transformations need to be present in the source file, macros are often restrained to a fixed invocation (through a macro identifier), and they often lack the expressiveness in their rewriting language\cite{Bravenboer2004}. There was an attempt to implement the ES6 specification through the use of syntax macros\footnote{\url{https://github.com/jlongster/es6-macros}} but the project is abandoned.
+
+Most language extensions can be classified as syntactic sugar. As mentioned before there are several languages that before compilation are transformed to a core language (e.g. Haskell core language).  Language features classified as syntactic sugar, are features that can be expressed in the core language. But often benefit from improved human readability when notated with aid of the syntactic sugar. For example the assignment expression \lstinline$a += b$ is syntactic sugar notation for \lstinline$a = a + b$ this notation is often found in c-style programming languages.
+
+\subsection{Hygiene} \label{hygiene}
+Any program transformations that introduces new bindings in the target program risks the unintended shadow of user identifiers, or variable capture. When variable capture happens as a result of a program transformation, this transformation is unhygienic. Transformations that guarantee that no unintended variable capture will occur are called hygienic transformations. Hygienic program transformations are mostly studied in the context of macro expansions~\cite{Herman2010a,Herman2010,Disney2014}
+
+The problem of variable capture can best be explained through the use of an example. Here we use a language extension called \textit{swap}, that can swap the values of two bindings with the use of a single statement. The transformation eliminates the \lstinline$swap$ statement and introduces an immediately invoking function expression (see section \ref{javascript-functions}) to swap out the values. In the body of this function we bind the value of one of the input variables to a temporary binding:
+
+\begin{figure}[!h]
+\begin{minipage}{0.45\textwidth}
+	\begin{lstlisting}
+	swap x y;
+	\end{lstlisting}
+\end{minipage}
+\hfill
+\begin{minipage}{0.45\textwidth}
+	\begin{lstlisting}
+	(function() {
+		var tmp = x; (*@\label{hygiene-tmp}@*)
+		x = y;
+		y = tmp;
+	})();
+	\end{lstlisting}
+\end{minipage}
+
+\caption{A language extension swap is transformed to core JavaScript}
+\end{figure}
+
+This transformation rule introduces a new binding named \lstinline$tmp$ (at line \ref{hygiene-tmp}). Because of this introduction the transformation could possibly generate variable capture in the target program. When one of the arguments of the \lstinline$swap$ statement is named \lstinline$tmp$ the transformation will shadow the users binding and not produce the expected result (see figure \ref{fig:unhygienic}).
+
+\begin{figure}[!h]
+\label{fig:unhygienic}
+\begin{minipage}{0.45\textwidth}
+	\begin{lstlisting}
+	swap x tmp;
+	\end{lstlisting}
+\end{minipage}
+\hfill
+\begin{minipage}{0.45\textwidth}
+	\begin{lstlisting}
 	(function() {
 		var tmp = x;
 		x = tmp;
 		tmp = tmp;
 	})();
-\end{lstlisting}
+	\end{lstlisting}
 \end{minipage}
-\hfill
-\begin{minipage}{0.65\linewidth}
-\begin{tikzpicture}[
-source/.style={circle, draw=black, fill=white, very thick, minimum size=10mm},
-synthesized/.style={circle, draw=black, fill=gray!60, very thick, minimum size=10mm}
-]
-\node[source](x_dec){1:x};
-\node[source](tmp_dec)[right=of x_dec]{2:t};
-\node[synthesized](tmp_dec_2)[right=of tmp_dec]{5':t};
-
-\node[source](x_ref)[below=of x_dec,xshift=7mm]{5:x};
-\node[source](x_ref_2)[below=of x_dec,xshift=-7mm]{6:x};
-\node[source](tmp_ref)[below=of tmp_dec_2,xshift=-7mm]{6:t};
-\node[synthesized](tmp_ref_2)[below=of tmp_dec_2,xshift=7mm]{7':t};
-
-\node[source](tmp_ref_3)[below=of tmp_dec]{7:t};
-
-\draw[->] (x_ref.north) -- (x_dec.south);
-\draw[->] (x_ref_2.north) -- (x_dec.south);
-\draw[->] (tmp_ref.north) -- (tmp_dec_2.south);
-\draw[->] (tmp_ref_2.north) -- (tmp_dec_2.south);
-\draw[->] (tmp_ref_3.north) -- (tmp_dec_2.south);
-\end{tikzpicture}
-\end{minipage}
-
-\caption{Target program generated by swap language extension and corresponding name graph} \label{fig:name-graph}
+\caption{Introduction of variable capture because the transformation binds non-free name} \label{fig:unhygienic}
 \end{figure}
 
-Node \textit{7:t} and \textit{6:t} originate from the source program but reference a synthesized declaration. Node \textit{5:t} shadows the original declaration \textit{2:t}. \textit{name-fix} adds node \textit{5:t} to the list of declarations to be renamed. After the entire name graph is analyzed/generated all declarations from this list are rebound under free names (i.e. names not yet bound in the target program). Since \textit{7:t} and \textit{6:t} are not correct references of \textit{5:t} they are not renamed. The resulting name graph and target program are presented in figure \ref{fig:name-graph-fixed}
+The second type of variable capture that can be introduced during a transformation, can happen in transformations that do not introduce new bindings in the target program. Instead they rely on a certain binding from the source program (or a global binding) not to be overridden within the source program. The \lstinline$log$ language extension transforms a \lstinline$log$ statement to a call of log on the global console object:
 
-\begin{figure}[h]
-\centering
-\begin{minipage}{0.25\linewidth}
-\begin{lstlisting}
-	var x = 0,
-		tmp = 1;
-
-	(function() {
-		var tmp$0 = x;
-		x = tmp;
-		tmp = tmp$0;
-	})();
-\end{lstlisting}
+\begin{figure}[!h]
+\begin{minipage}{0.45\textwidth}
+	\begin{lstlisting}
+	log "statement";
+	\end{lstlisting}
 \end{minipage}
 \hfill
-\begin{minipage}{0.65\linewidth}
-\begin{tikzpicture}[
-source/.style={circle, draw=black, fill=white, very thick, minimum size=10mm},
-synthesized/.style={circle, draw=black, fill=gray!60, very thick, minimum size=10mm}
-]
-\node[source](x_dec){1:x};
-\node[source](tmp_dec)[right=of x_dec,xshift=7mm]{2:t};
-\node[synthesized](tmp_dec_2)[right=of tmp_dec]{5':t'};
-
-\node[source](x_ref)[below=of x_dec,xshift=7mm]{5:x};
-\node[source](x_ref_2)[below=of x_dec,xshift=-7mm]{6:x};
-\node[source](tmp_ref)[below=of tmp_dec,xshift=7mm]{6:t};
-\node[synthesized](tmp_ref_2)[below=of tmp_dec_2]{7':t'};
-
-\node[source](tmp_ref_3)[below=of tmp_dec,xshift=-7mm]{7:t};
-
-\draw[->] (x_ref.north) -- (x_dec.south);
-\draw[->] (x_ref_2.north) -- (x_dec.south);
-\draw[->] (tmp_ref.north) -- (tmp_dec.south);
-\draw[->] (tmp_ref_2.north) -- (tmp_dec_2.south);
-\draw[->] (tmp_ref_3.north) -- (tmp_dec.south);
-\end{tikzpicture}
+\begin{minipage}{0.45\textwidth}
+	\begin{lstlisting}
+	console.log("statement");
+	\end{lstlisting}
 \end{minipage}
-
-\caption{Target program and name graph after \textit{name-fix} algorithm} \label{fig:name-graph-fixed}
+\caption{A log language extension}
 \end{figure}
 
-\textit{name-fix} does apply a \textit{"a closed-world assumption to infer that all unbound variables are indeed free, and thus can be renamed at will."}~\cite{Erdweg2014}. This means that global variables defined by the user (or a third-party library) that are included within the same run-time as our target program, could possibly be shadowed by the renamed bindings. However there is no way for \textit{name-fix} to know what bindings will be taken by other bindings than those bound in the source program.
+If the console object is redefined in the source program the reference to the original global object is captured and the target program will not behave as expected:
 
-\paragraph{Combined language extensions} \label{par:combined-extensions}
-Language extensions can depend upon other language extensions to work correctly, this dependency makes a collection of language extensions less modular because the depended extension always needs to be used in combination with it's dependency. It would be preferable if the two extensions could be used in separation where functionality which relies on both extensions working together is only enabled in a situation where the two language extensions are used.
+\begin{figure}[!h]
+\begin{minipage}{0.45\textwidth}
+	\begin{lstlisting}
+	var console = ...;	
+	log "statement";
+	\end{lstlisting}
+\end{minipage}
+\hfill
+\begin{minipage}{0.45\textwidth}
+	\begin{lstlisting}
+	var console = ...;	
+	console.log("statement");
+	\end{lstlisting}
+\end{minipage}
+\caption{Variable capture with the log language extension}
+\end{figure}
 
-An example of such overlapping functionality in the ES 6 specification is that of destructuring assignment (see appendix \ref{destructuring}) inside for-of loops (see appendix \ref{for-of}).
+The unhygienic transformations as explained above can often introduce subtle bugs in target programs which are hard to identify for the user of the program transformation. Especially in the context of real-world applications because of the complexity of the source program and the transformation suite. Many transformations suites fail to identify and solve variable capture in their program transformations, in a case study performed by Erdweg et. al. eight out of nine implementations of a domain-specific language were prone to variable capture~\cite{Erdweg2014a}.
+
+\section{Program Representation} \label{program-representation}
+Before programs can be transformed they need a structured representation. Seldom are program transformations performed on the the textual input. Here we discuss several ways to represent programs.
+
+\paragraph{Parse Trees}
+Parse trees represent a program's syntactic information in a tree. This tree includes layout information of the input program (e.g. white-space, comments). The parse tree is structured according to some context-free grammar, that defines how to parse textual input.
+
+\paragraph{Abstract Syntax Tree}
+or AST is produced by removing layout information from a parse tree, only the core constructs of the language grammar remain as nodes in the tree. White-space layout, comments, and things like parentheses (these are implicitly implied by the structure of the AST) are removed. An AST is often the input for compiler pipelines, program transformations, and refactorings.
+
+\paragraph{Higher Order Syntax Trees (HOAS)}
+To represent not just a program's sub expression relations but also its variable binding we can use a Higher Order Syntax Tree (HOAS)\cite{Pfenning1988}. In a HOAS the variable bindings are made explicit (just as the sub expression relations are made explicit in an AST). Every variable has a binding-site and possibly uses throughout the rest of the tree. \textit{"In addition to dealing with the problem of variable capture, HOAS provides higher-order matching which synthesizes new function for higher-order  variables. One of the problems of higher-order matching is that there can be many matches for a pattern"}~\cite{Visser2001}
+
+\section{Parsing} \label{parsing}
+Before a program is represented in on of the previously defined tree formats, it is represented in textual form. To transform the stream of input characters to a tree a program called a parser is used. There are many different types of parser techniques, and a large body of research~\cite{Visser1997,VandenBrand2002,Salomon1989}
+
+The parsing of textual input often happens in two stages. First a \textit{scanner} performs the lexical analysis, which identifies the tokens of our syntax (e.g. keywords, identifiers). With this identification the parser operates on the identified tokens. Usually the lexical syntax of a language is \textit{"specified by regular expression"}~\cite{Bravenboer2004}.
+
+Scanners that do not have access to the parser, are also unaware of the context of lexical tokens. In case of JavaScript this can impose subtle difficulties in the implementation of a scanner. \textit{"due to ambiguities in how regular expression literals (such as /[0-9]*/) and the divide operator (/) should be lexed."}~\cite{Disney2014}. For this reason traditional JavaScript parsers are often intertwined with their lexer. Disney et. al. avoid this problem by introducing a separate reader stage in the parser. This problem can also be avoided by using scannerless parsing, \textit{"Scannerless parsing is a parsing technique that does not use a scanner to divide a string into lexical tokens. Instead lexical analysis is integrated in the context-free analysis of the entire string."}~\cite{Visser1997} these parsers preserve the lexical structure of the input characters, and make it possible to compose grammars~\cite{Visser1997}.
+
+There exist different types of parsers, where some can handle more grammars than others. Examples of parser types are LR (left to right), SLR (simple left to right), LALR (look-ahed left to right), or CLR (canonical left to right). Each of these parsers uses a parse table which contains all the knowledge of the grammar that has to be parsed. Now the parser is a loop over the input using the parse table to identify possible next symbols.
+
+Scannerless parsing suffers form conflicts in the parse table~\cite{Visser1997}, there are two causes for these conflicts, either there exists an ambiguity in the grammar, or lack of look-ahead. This second case occurs when a choice from the parse table is incorrect, but this can not be determined by the parser inside its current look-ahead window. Generalized parsers solve this problem by foking new parsers for each conflict found in the parse table, when all forked parsers finish correctly the parser outputs a parse forest (instead of a parse tree). When conflict arose from lack of look-ahead the forked parser for this conflict will fail.
+
+\section{Language Workbenches} \label{rascal}
+
+Language workbench is a term popularized by Martin Fowler and we can summarize his definition as follows:
+
+A language workbench makes it easy to build tools that match the best of modern IDEs, where the primary source of information is a persistent abstract representation. Its users can freely design new languages without a semantic barrier, with the result of language oriented programming becoming much more accessible.~\cite{Fowler2005}
+
+These workbenches improve the efficiency of language oriented programming~\cite{Ward1994} significantly, by giving programmers the the tools to define programming languages with an abstract representation.
+
+The Rascal~\cite{Klinta} meta-programming environment is a language workbench. It allows programmers to define context-free grammars, generate parsers for these grammars. The workbench integrates with the Eclipse development environment, which allows meta-programmers to integrate interactive language-specific IDE features and syntax highlighting. All language extensions presented in this thesis are implemented using the Rascal meta-programming environment.
+
+\paragraph{Syntax definition}
+Syntax definitions in Rascal allows the definition of parsers for programming languages or domain-specific languages. Rascal generates scannerless parsers from the context-free syntax definition (see section \ref{parsing}). Rascal uses generalized parsing to avoid lack of look-ahead, when the parser detects an ambiguity in its parse table, two parsers are forked from the main parser. In case of ambiguity a parse forest is returned, in case of lack of look-ahead error this parser fails (see section \ref{parsing}).
+
+\paragraph{Concrete syntax}
+A Rascal generated parser returns a parse tree (or forest), which is an ordered, rooted tree that represents the syntactic structure of a string according to the formal grammar used to specify the parser. Most transformation systems would implode this concrete syntax tree to an AST and perform program transformations on this tree. Rascal gives the possibility to perform program transformation directly on the concrete syntax tree through the use of concrete-syntax patterns. This has multiple advantages over an AST based solution:
+\begin{itemize}
+	\item Preserving layout information encoded in the concrete-syntax tree
+	\item Avoiding the use of a pretty printer to output the transformed AST to a textual representation
+	\item Rewrite rules can use concrete syntax patterns for their definition, improving human readability of transformation code
+\end{itemize}
+A concrete-syntax pattern may contain variables in the form of a grammars non-terminals, these variables are bound in the context of the current patterns use if the pattern is matched successful. A quoted concrete-syntax pattern starts with a non-terminal to define the desired syntactic type (e.g. Expression), and they ignore layout.
 
 \begin{lstlisting}
-for(var [a,b] of [ [1,2], [3,4] ]) {
-	// ... do something with a and b
-}
+(Symbol)`Token1 Token2 ... Token3` := pt
 \end{lstlisting}
 
-The for-of loop needs a dependency on the destructuring assignment syntax definition, to be able to create the statement syntax to allow an assignment pattern (i.e. either an array or object destructuring) inside the for-of loop:
+Where a token can be a lexical token, typed variable pattern: \lstinline$<Type Var>$, or a bound variable pattern \lstinline$<Var>$ (where \lstinline$Var$ is already bound in the current context, resolved and used as a pattern). And \lstinline$Symbol$ is a non-terminal.
+
+Rascal supports a shorthand notation to parse a string starting from a non-terminal: (where \lstinline$"..."$ is any string)
 
 \begin{lstlisting}
-syntax Statement
-	= "for" "(" "var" AssignmentPattern "of" Expression ")" Statement;
+[Symbol]"..."
 \end{lstlisting}
-
-Shared language extensions need to have a non-terminal defined in the base-language which can be extended in both language extensions. In case of the for-of loop we can introduce a new non-terminal \textit{ForBinding} which can be extended in the destructuring assignment language extension.
-
-\begin{lstlisting}
-// Core syntax definition
-syntax ForBinding
-	= Id;
-
-// For-of loop language extension
-syntax Statement
-	= "for" "(" "var" ForBinding "of" Expression ")" Statement;
-
-// Destructuring language extension
-syntax ForBinding
-	= AssignmentPattern;
-\end{lstlisting}
-
-Designing language extensions in this way makes the entire suite of language extensions more modular, because we can combine language extensions that depend on each other for full functionality. Or use them separately to get only their independent functionality.
