@@ -209,7 +209,7 @@ A Rascal generated parser returns a parse tree (or forest), which is an ordered,
 \end{itemize}
 A concrete-syntax pattern may contain variables in the form of a grammars non-terminals, these variables are bound in the context of the current patterns use if the pattern is matched successful. A quoted concrete-syntax pattern starts with a non-terminal to define the desired syntactic type (e.g. Expression), and they ignore layout.
 
-\begin{lstlisting}
+\begin{lstlisting}[language=rascal]
 (Symbol)`Token1 Token2 ... Token3` := pt
 \end{lstlisting}
 
@@ -217,6 +217,6 @@ Where a token can be a lexical token, typed variable pattern: \lstinline$<Type V
 
 Rascal supports a shorthand notation to parse a string starting from a non-terminal: (where \lstinline$"..."$ is any string)
 
-\begin{lstlisting}
+\begin{lstlisting}[language=rascal]
 [Symbol]"..."
 \end{lstlisting}

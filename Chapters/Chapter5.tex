@@ -10,7 +10,7 @@ The rewrite rules are exhaustively applied on the input parse-tree until no more
 \section{Basics}
 To get a better understanding of the inner working of our rewrite rule system we discuss the implementation of the \lstinline$swap$ language extension (see section \ref{hygiene}). The language extension introduces a new statement 
 
-\begin{lstlisting}[caption=Core syntax]
+\begin{lstlisting}[caption=Core syntax,language=rascal]
 module core::Syntax
 
 syntax Statement 
@@ -21,7 +21,7 @@ syntax Statement
 
 To extend the list of possible statements we create a new Rascal module that extends the core syntax definition and defines a new syntax rule for \textit{Statement} named \textit{swap}. With this new syntax rule our parser is able to correctly parse \lstinline$swap$ statements.
 
-\begin{lstlisting}[caption=Swap statement syntax]
+\begin{lstlisting}[caption=Swap statement syntax,language=rascal]
 extend core::Syntax;
 
 syntax Statement = swap: "swap" Id Id;
@@ -30,19 +30,21 @@ syntax Statement = swap: "swap" Id Id;
 To desugar the new syntax construct to JavaScript code we overload the desugar function with a pattern match on 
 \textit{Statement} to match the use of the \lstinline$swap$ statement and translate it to an IIFE in which we rebind both supplied identifiers to each other.
 
-\begin{lstlisting}[caption=Swap statement desugar overload]
-Statement desugar( (Statement)`swap <Id x> <Id y>` )
-	= (Statement)
-			`(function() {
-			'	var tmp = x;
-			'	<Id x> = y;
-			'	<Id y> = tmp;
-			'})();`
-\end{lstlisting}
+% \CAT{Keyword}{syntax} Statement = \CAT{Constant}{"swap"} Id Id;
+
+\begin{rascal}
+Statement desugar( (Statement)`\CAT{Keyword}{swap} \CAT{MetaVariable}{\textless{}Id x\textgreater{}} \CAT{MetaVariable} {\textless{}Id y\textgreater{}}` )
+    = (Statement)
+            `(\CAT{Keyword}{function}() \{{}
+            	\CAT{Keyword}{var} tmp = x;
+            	\CAT{MetaVariable}{\textless{}Id x\textgreater{}} = y;
+            	\CAT{MetaVariable}{\textless{}Id y\textgreater{}} = tmp;
+            \}{})();`;
+\end{rascal}
 
 A default desugar function for statements is defined which is the id function on a statement. To desugar an entire parse tree we only have to visit each node (bottom up) and invoke the desugar function for each statement that is found by the visitor.
 
-\begin{lstlisting}[caption=Desugar visitor]
+\begin{lstlisting}[caption=Desugar visitor, language=rascal]
 default Statement desugar( Statement s ) = s;
 
 Source runDesugar( Source pt ) {
@@ -60,7 +62,7 @@ In \textit{\projectname} we implement a large subset of ES6 features as language
 \subsection{Visitor}
 The visitor from our basic example is almost identical in \projectname. Differences are we also match on expressions, functions, and the source node (root node) this final match can be used by transformations that are performed global-to-local or global-to-global. If we have multiple language extensions performing a global-to-local or global-to-global transformation or if a language extension's transformation introduces a language construct that should be desugared either by itself or another language extension, one pass over the parse tree is not enough. For extensions with these kind of transformations we need to revisit the tree until no more changes are applied by desugar functions. The final desugar visitor is as follows, where \textit{solve} will make sure we revisit the tree until all desugarings are performed:
 
-\begin{lstlisting}[caption=Final desugar visitor]
+\begin{lstlisting}[caption=Final desugar visitor, language=rascal]
 Source runDesugar( Source pt ) {
 	return solve(pt) {
 		pt = visit(pt) {
@@ -126,14 +128,14 @@ for(var [a,b] of [ [1,2], [3,4] ]) {
 
 The for-of loop needs a dependency on the destructuring assignment syntax definition, to be able to create the statement syntax to allow an assignment pattern (i.e. either an array or object destructuring) inside the for-of loop:
 
-\begin{lstlisting}
+\begin{lstlisting}[language=rascal]
 syntax Statement
 	= "for" "(" "var" AssignmentPattern "of" Expression ")" Statement;
 \end{lstlisting}
 
 Shared language extensions need to have a non-terminal defined in the base-language which can be extended in both language extensions. In case of the for-of loop we can introduce a new non-terminal \textit{ForBinding} which can be extended in the destructuring assignment language extension.
 
-\begin{lstlisting}
+\begin{lstlisting}[language=rascal]
 // Core syntax definition
 syntax ForBinding
 	= Id;

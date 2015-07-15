@@ -141,6 +141,8 @@
 \usepackage{csquotes} % Use package csquotes for block quotations
 \SetBlockEnvironment{quotation}
 \usepackage{lstpatch}
+\usepackage{langs}
+\usepackage{rascal}
 \lstset{captionpos=b,
         frame=tb,
         basicstyle=\scriptsize\ttfamily,

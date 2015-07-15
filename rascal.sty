@@ -1,0 +1,54 @@
+\usepackage{xspace}
+\usepackage{xstring}
+\usepackage{mdframed}
+\usepackage{xcolor}
+\usepackage{setspace}
+%\usepackage[scaled=0.8]{beramono}
+
+
+\definecolor{lightgray}{rgb}{.9,.9,.9}
+\definecolor{darkgray}{rgb}{.4,.4,.4}
+\definecolor{purple}{rgb}{0.65, 0.12, 0.82}
+
+\definecolor{Rkeyword}{RGB}{123,0,82}
+\definecolor{Rconstant}{RGB}{139,0,139}
+\definecolor{Rcomment}{RGB}{82, 141, 115}
+\definecolor{Rmetavariable}{RGB}{41, 95, 148}
+\definecolor{Rmetaskipped}{RGB}{82, 141, 115}
+
+\definecolor{shadecolor}{rgb}{.9,.9,.9}
+
+\mdfdefinestyle{rascalstyle}{
+	leftline=false,
+	rightline=false,
+	innerbottommargin=0pt,
+	innerleftmargin=0pt,
+	innerrightmargin=0pt,
+	backgroundcolor=lightgray
+}
+
+\newenvironment{rascal}
+	{ 
+		\parindent=0pt
+		\ttfamily\vspace{0.8em}
+		
+		\begin{mdframed}[style=rascalstyle]
+		\small		
+		\obeyspaces\obeylines
+		\begingroup\lccode`~=`\^^M
+		\lowercase{\endgroup\def~}{\par\leavevmode} %
+		\linespread{0}\selectfont
+	}
+	{
+		\end{mdframed}
+	}
+	%{\ignorespacesafterend}
+	
+\newcommand{\CAT}[2]{%
+	\IfStrEqCase{#1} { %
+	{Keyword} {\textcolor{Rkeyword}{\textbf{#2}}} %
+	{Comment} {\textcolor{Rcomment}{\textit{#2}}} %
+	{MetaSkipped} {\textcolor{Rmetaskipped}{textit{#2}}} %
+	{Constant} {\textcolor{Rconstant}{#2}} %
+	{MetaVariable} {\textcolor{Rmetavariable}{\textit{#2}}}}[#2]%
+}

@@ -1,0 +1,120 @@
+\ProvidesPackage{langs}
+\RequirePackage{listings}
+\RequirePackage{xspace}
+\RequirePackage{xcolor}
+%\RequirePackage{bold-extra}
+
+
+\def\mylisting#1#2{%
+\lstdefinelanguage{#1}{%
+% numbers=left,%
+ morekeywords={#2},
+ sensitive=true,%
+ morecomment=[l]{//},%
+ morestring=[b]",%
+ commentstyle=\rmfamily,%
+ keywordstyle=\bfseries,%
+ basicstyle=\sffamily\small,%
+ showstringspaces=false,%
+ columns=fullflexible,%
+ escapeinside={(*@}{@*)},%
+}
+}
+
+
+%----------------------------------------------------------------------------------------
+%	SETUP LISTINGS PACKAGE
+%----------------------------------------------------------------------------------------
+
+\definecolor{lightgray}{rgb}{.9,.9,.9}
+\definecolor{darkgray}{rgb}{.4,.4,.4}
+\definecolor{purple}{rgb}{0.65, 0.12, 0.82}
+
+\definecolor{Rkeyword}{RGB}{123,0,82}
+\definecolor{Rconstant}{RGB}{139,0,139}
+\definecolor{Rcomment}{RGB}{82, 141, 115}
+\definecolor{Rmetavariable}{RGB}{41, 95, 148}
+\definecolor{Rmetaskipped}{RGB}{82, 141, 115}
+
+\lstdefinelanguage{JavaScript}{
+  keywords={break, case, catch, continue, debugger, default, delete, do, else, false, finally, for, function, if, in, instanceof, new, null, return, switch, this, throw, true, try, typeof, var, let, const void, while, with, swap, log},
+  morecomment=[l]{//},
+  morecomment=[s]{/*}{*/},
+  morestring=[b]',
+  morestring=[b]",
+  ndkeywords={class, export, boolean, throw, implements, import, this},
+  keywordstyle=\color{blue}\bfseries,
+  ndkeywordstyle=\color{darkgray}\bfseries,
+  identifierstyle=\color{black},
+  commentstyle=\color{purple}\ttfamily,
+  stringstyle=\color{red}\ttfamily,
+  sensitive=true
+}
+
+\lstdefinelanguage{rascal}%
+  {morekeywords={if,else,void,rel,lrel,loc,str,module,import,for,while,do,in,notin,has,is,insert,append,syntax,case,it,list,set,return,default,node,switch,when,top-down,top,down,break,bottom,up,start,visit,tuple,map,assert,int,data,alias,bool,o,any,all,set},%
+   sensitive=true,%
+ commentstyle=\color{Rcomment}\rmfamily,%
+ keywordstyle=\color{Rkeyword}\bfseries,%
+ stringstyle=\color{Rconstant}\ttfamily,% 
+ basicstyle=\small\ttfamily,%
+ showstringspaces=false,%
+ %literate={{=>}{{$\Rightarrow$}}1{=>}{{$\Rightarrow$}}1{<-}{{$\leftarrow$}}1{<=}{{$\leq$}}1{>=}{{$\geq$}}1{!=}{{$\neq$}}1{<==>}{{$\Leftrightarrow$}}1},%
+ columns=fullflexible,%
+   morecomment=[l]//,%
+   morecomment=[l]\#\#,%
+   morecomment=[s]{=BEGIN}{=END},%
+   morestring=[b]',%
+   morestring=[b]",%
+   mathescape=true,%
+  }[keywords,comments,strings]%
+
+\lstdefinelanguage{rascalLessKeywords}%
+  {morekeywords={if,else,void,rel,lrel,loc,str,module,import,for,while,do,in,notin,has,is,append,syntax,case,it,list,return,default,node,switch,when,top-down,top,down,break,bottom,up,start,visit,tuple,map,assert,int,data,alias,bool,o,any,all},%
+   sensitive=true,%
+ commentstyle=\rmfamily,%
+ keywordstyle=\bfseries,%
+ basicstyle=\sffamily,%
+ showstringspaces=false,%
+ literate={{=>}{{$\Rightarrow$}}1{=>}{{$\Rightarrow$}}1{<-}{{$\leftarrow$}}1{<=}{{$\leq$}}1{>=}{{$\geq$}}1{!=}{{$\neq$}}1{<==>}{{$\Leftrightarrow$}}1},%
+ columns=fullflexible,%
+   morecomment=[l]//,%
+   morecomment=[l]\#\#,%
+   morecomment=[s]{=BEGIN}{=END},%
+   morestring=[b]',%
+   morestring=[b]",%
+   mathescape=true,%
+  }[keywords,comments,strings]%
+
+
+\lstdefinelanguage{rascalNoComments}%
+  {morekeywords={if,else,void,rel,lrel,loc,str,module,import,for,while,do,in,notin,has,is,insert,append,syntax,case,it,list,set,return,default,when,top-down,top,down,break,bottom,up,start,visit,tuple,map,assert,int,data,alias,bool,o,any,all,set},%
+   sensitive=true,%
+ commentstyle=\rmfamily,%
+ keywordstyle=\bfseries,%
+ basicstyle=\sffamily,%
+ showstringspaces=false,%
+ literate={{=>}{{$\Rightarrow$}}1{=>}{{$\Rightarrow$}}1{<-}{{$\leftarrow$}}1{<=}{{$\leq$}}1{>=}{{$\geq$}}1{!=}{{$\neq$}}1{<==>}{{$\Leftrightarrow$}}1},%
+ columns=fullflexible,%
+   morestring=[b]',%
+   morestring=[b]",%
+   mathescape=true,%
+  }[keywords,comments,strings]%
+
+\lstdefinelanguage{smallrascal}%
+  {morekeywords={if,else,void,rel,lrel,loc,str,module,import,for,while,do,in,notin,has,is,insert,append,syntax,case,it,list,set,return,default,when,top-down,top,down,break,bottom,up,start,visit,tuple,map,assert,int,data,alias,bool,o,any,all,set},%
+   sensitive=true,%
+ commentstyle=\rmfamily,%
+ keywordstyle=\bfseries,%
+ basicstyle=\scriptsize\ttfamily,%
+ showstringspaces=false,%
+ literate={{=>}{{$\Rightarrow$}}1{<-}{{$\leftarrow$}}1},%
+ columns=fullflexible,%
+   morecomment=[l]\\,%
+   morecomment=[l]\#\#,%
+   morecomment=[s]{=BEGIN}{=END},%
+   morestring=[b]',%
+   morestring=[b]",%
+   mathescape=true,%
+  }[keywords,comments,strings]%
+
