@@ -232,9 +232,12 @@ This implies that every language extension transformed through a \textit{local-t
 
 \section{Engineering trade-offs}
 
-With an implementation of ES6 as program transformations in a language workbench and a comparison to other implementations, we try to identify the engineering trade-offs of implementing language extensions with the help of a language workbench.
+With an implementation of ES6 inside a language workbench and a comparison to other implementations, we try to identify the engineering trade-offs of implementing language extensions with the help of a language workbench.
 
 \subsection{Benefits}
+
+\paragraph{Increased productivity}
+With the data we gathered it seems that implementation of the transformation suite inside the language workbench made the meta-programmer more productive. We needed less lines of code to express transformations that are evenly compatible with the specification as other transpilers. 
 
 \paragraph{IDE integration}
 Building language extensions inside the language workbench allows meta-programmers to immediately implement IDE features to help programmers while creating language extensions. Transpilers implemented outside of the language workbench will always need additional programming to integrate their solution with IDEs and deliver additional support to programmers using their transpiler. The language workbench made it possible to integrate, hyperlink referenced bindings, displaying errors for use of undeclared variables, and previewing parts of target program. 
@@ -255,3 +258,4 @@ By using a language workbench \projectname is bound to be used inside the IDE of
 \subsection{Problems}
 
 \paragraph{Hygiene of program transformations}
+Hygiene is identified as a problem of program transformations and a solution to solve this issue is reused. The case study reveals that other transformation suites do not always solve such issues. Something that is inline with a case study performed by Erdweg et. al.~\cite{Erdweg2014a}.

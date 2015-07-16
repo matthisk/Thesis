@@ -248,7 +248,7 @@ synthesized/.style={circle, draw=black, fill=gray!60, very thick, minimum size=1
 \textit{name-fix} does apply a \textit{"a closed-world assumption to infer that all unbound variables are indeed free, and thus can be renamed at will."}~\cite{Erdweg2014}. This means that global variables defined by the user (or a third-party library) that are included within the same run-time as our target program, could possibly be shadowed by the renamed bindings. However there is no way for \textit{name-fix} to know what bindings will be taken by other bindings than those bound in the source program.
 
 \subsection{Block binding}
-To desugar the new block binding introduced in ES6 there are two approaches. First, replace all block binding by a \textit{try catch} block where we throw the binding inside of try and catch the binding in the catch block.
+To desugar the new block binding introduced in ES6 (see appendix \ref{let-const}) there are two approaches. First, replace all block binding by a \textit{try catch} block where we throw the binding inside of try and catch the binding in the catch block.
 
 \begin{minipage}{0.45\linewidth}
 \begin{lstlisting}
@@ -267,7 +267,7 @@ try {
 \end{lstlisting}
 \end{minipage}
 
-The problem with this implementation is that \textit{try catch} blocks can not be optimized by the interpreter and thus the performance of transformed code could be much worse than that of the original code. Second, the block binding could be achieved through the renaming of bindings to avoid the use of \textit{let} defined bindings outside of their block scope.
+The problem with this implementation is that \textit{try catch} blocks can not be optimized by the interpreter and thus the performance of transformed code could be much worse than that of the source program. Second, the block binding could be achieved through the renaming of bindings to avoid reference of \textit{let} defined bindings outside of their block scope.
 
 \begin{minipage}{0.45\linewidth}
 \begin{lstlisting}
@@ -289,7 +289,7 @@ x;
 \end{lstlisting}
 \end{minipage}
 
-To resolve the naming needed for the emulation of block scope in ES5 we also use a \textit{name-graph} as described in the previous section. To identify illegal references in the name graph we compare a name graph with block binding against a name graph without block binding, the two graphs are as follows for the above example:
+To resolve the naming needed for the emulation of block scope in ES5 we also use a \textit{name-graph} as described in the previous section. To identify illegal references in the name graph we compare a name graph with block binding against a name graph without block binding, the two graphs for the example are depicted below:
 
 \begin{figure}
 \begin{subfigure}{.45\textwidth}
@@ -330,7 +330,84 @@ synthesized/.style={circle, draw=black, fill=gray!60, very thick, minimum size=1
 \end{subfigure}
 \end{figure}
 
-The first name graph is that created using a block binding mechanism where \textit{const} and \textit{let} declarations are block bound. In the second name graph all declarations are bound in a function scope. Now we identify the reference from \textit{5:x} to the declaration \textit{2:x} as illegal, because it exists in our function scoped name graph but does not occur in the block bound name graph. Declaration \textit{2:x} is marked to be renamed. After the entire name graph is build and all illegal references are identified, all declarations and their references according to the block bound name graph are renamed.
+The first name graph is that created using a block binding mechanism where \textit{const} and \textit{let} declarations are block bound. In the second name graph all declarations are bound in their lexical enclosing function's scope. Now we identify the reference from \textit{5:x} to the declaration \textit{2:x} as illegal, because it exists in our function scoped name graph but does not occur in the block bound name graph. Declaration \textit{2:x} is marked to be renamed. After the entire name graph is build and all illegal references are identified, all declarations and their references according to the block bound name graph are renamed.
+
+\paragraph{implementation}
+For the implementation of the block binding resolver we use a special type of scope graph, consisting of three types of nodes. First, a root node created for the root (or global) scope of an input parse tree. This node contains an environment consisting of names with the location of their declaration. Second, each function scope is identified by a closure node. This node consists of an \lstinline$Env$ containing all function scoped definitions (i.e. declarations of functions or using \lstinline$var$ declarator). It also contains a \lstinline$LEnv$ which is the name-graph created where all bindings are function scoped (i.e. also declarations using \lstinline$let$ or \lstinline$const$ declarators). Third, a node block is created for each block of statements, containing all block-scoped declarations in an environment.
+
+\begin{lstlisting}[caption=Data structure for scope graph,language=rascal]
+alias LEnv = lrel[str name, loc def];
+alias Env = map[str name,loc def];
+
+data Scope 
+	= block( Env environment, Scope parent )
+	| closure( Env environment, LEnv closureEnvironment, Scope parent )
+	| root( Env environment );
+\end{lstlisting}
+
+A resolver visits the parse-tree while building a scope trees for the current path. All declaration in a function's scope are hoisted, because these declarations can be referenced throughout the entire lexical scope of the function, even before their actual declaration. Usage of an identifier by reference are resolved through a function named \lstinline$lookup$:
+
+\begin{lstlisting}[language=rascal]
+set[loc] lookup(str name, loc use, Scope scope);
+\end{lstlisting}
+
+This function visits the scope tree (top-down, the root of the tree is the current scope). For block and root nodes the location of declaration of the binding is returned if it is present in the environment of that scope. If no declaration is found in block scopes and we visit a closure node we first identify whether any \textit{illegal} references are possible to declarations in other block scopes not accesible from our scope. Then we lookup whether a declaration exists in the current closure and return this declaration if it exists.
+
+\begin{lstlisting}[language=rascal]
+case closure( Env env, LEnv cl, _ ) : {
+	if(name in cl) 
+		for( loc def <- cl[name] ) {
+			toRename[def] = name;
+		}
+	refs = lookupEnv(env, name, use);
+			
+	if(size(refs) > 0) return refs;
+}
+\end{lstlisting}
+
+
+\begin{lstlisting}[language=rascal]
+case block( Env env, _ ) : {
+	refs = lookupEnv(env, name, use);
+			
+	if(size(refs) > 0) return refs;
+}
+\end{lstlisting}
+
+\begin{lstlisting}[language=rascal]
+case root( Env env ) : {
+	refs = lookupEnv(env, name, use);
+			
+	if(size(refs) > 0) return refs;
+}
+\end{lstlisting}
+
+\begin{lstlisting}[language=rascal]
+set[loc] lookupEnv(Env env, str name, loc use) {
+  if(name in env) {
+	 return {env[name]};
+  }
+    
+  return {};
+}
+\end{lstlisting}
 
 \subsection{IDE integration}
 Because the features described in the previous two sections need name graph analysis we can perform some static analysis on these graphs and integrate the resulting data with the IDE. First, the name graph gives us information of all references in the source file, with this information we create hyperlinks from references to declarations. Second, we can also identify a reference to an undefined binding and mark this reference with an error inside the IDE. Finally, bindings created by let (or const) are not allowed to be re-declared in the same scope, illegal redeclarations can be identified and marked with an error in the IDE.
+
+\begin{figure}
+\centering
+
+\begin{subfigure}{.49\textwidth}
+	\centering
+	\includegraphics[width=\textwidth]{undeclared.png}
+	\subcaption{Reference of undeclared bindings}
+\end{subfigure}\hfill%
+\begin{subfigure}{.49\textwidth}
+	\centering	
+	\includegraphics[width=\textwidth]{declared-at.png}
+	\subcaption{Declared at hyperlink}
+\end{subfigure}
+
+\caption{IDE support}
+\end{figure}
