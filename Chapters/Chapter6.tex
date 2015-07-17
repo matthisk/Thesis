@@ -230,6 +230,11 @@ This implies that every language extension transformed through a \textit{local-t
 
 \textit{"Intuitively, a programming language is less expressive than another if the latter can express all the facilities the former can express in the language universe."}~\cite{Felleisen1990}. Thus ES6 is more expressive than ES5.
 
+\section{Reflecting on the taxonomy}
+With an implementation, evaluation, and categorization of ES6 language features, we reflect on the taxonomy and what predictions we can make about the implementation of language extensions given their categorization.
+
+First, any transformation that introduces new bindings is exposed to the possibility of introducing variable capture. This implies that any transformation not introducing new bindings is also safe from variable capture. Second language extensions that have to analyze sub-terms are more complex to implement than transformations that do not have to perform such an analysis. 
+
 \section{Engineering trade-offs}
 
 With an implementation of ES6 inside a language workbench and a comparison to other implementations, we try to identify the engineering trade-offs of implementing language extensions with the help of a language workbench.
@@ -242,20 +247,24 @@ With the data we gathered it seems that implementation of the transformation sui
 \paragraph{IDE integration}
 Building language extensions inside the language workbench allows meta-programmers to immediately implement IDE features to help programmers while creating language extensions. Transpilers implemented outside of the language workbench will always need additional programming to integrate their solution with IDEs and deliver additional support to programmers using their transpiler. The language workbench made it possible to integrate, hyperlink referenced bindings, displaying errors for use of undeclared variables, and previewing parts of target program. 
 
-\paragraph{Readability of transformation code}
+\paragraph{Expressive transformations}
 Because the language workbench allows the use of concrete syntax fragments inside transformation code the resulting transformations are more readable than code constructing abstract syntax trees. The JavaScript programmer can understand the concrete syntax fragments inside of the transformation code.
 
-\paragraph{Modularity of extensions}
+\paragraph{Modular language extensions}
+Because language extensions in Rascal are nothing more than an extension of a module defining some base syntax, it is possible to extend language extensions. By good design it is possible to implement all ES6 language extensions without direct dependencies on each-other, only on the base grammar. But it can be seen as a serious limitation of other implementations that it is not possible to extend any of the defined language extensions. 
+
+\paragraph{Grammar extension}
+The language workbench allows us to define a base grammar and extend this grammar with language extensions. Other implementations of ES6 described above take a different approach. They rely on a full parser capable of parsing ES6 source programs. To introduce new features they have to extend this parser, separating the parsing implementation from the rest of their language extension's transformation code.
 
 \subsection{Limitations}
 
 \paragraph{Syntax definition}
 The syntax definition of a language workbench can make the implementation of language extensions significantly easier/faster. It also imposes a limitation on our expressiveness, a meta-programmer can only work with the tools for solving ambiguity, defining syntax, supplied by the syntax definition of the language workbench. Some grammars do not lend themselves very well to be defined within these constraints (e.g. the automatic inference of semi-colons of a JavaScript grammar).
 
-\paragraph{Bound to the language workbench IDE}
+\paragraph{Portability}
 By using a language workbench \projectname is bound to be used inside the IDE of the language workbench. Where on one hand this is an advantage for easier integration with the tools of a developer. It can be a limitation in the build step of a project using language extensions. Other transpilers can integrate with known build-pipelines for front-end technology. But \projectname is only available from inside the Eclipse IDE. 
 
 \subsection{Problems}
 
 \paragraph{Hygiene of program transformations}
-Hygiene is identified as a problem of program transformations and a solution to solve this issue is reused. The case study reveals that other transformation suites do not always solve such issues. Something that is inline with a case study performed by Erdweg et. al.~\cite{Erdweg2014a}.
+Hygiene is identified as a problem of program transformations and a solution to solve this issue is reused. The case study reveals that other transformation suites do not always solve such issues.
