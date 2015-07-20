@@ -87,6 +87,12 @@ function f() {
 
 \paragraph{Modularity}
 
+Modularity can be measured in several different ways. First, how easy (if at all possible) is it to extend any of the language extensions present, and to add new extensions to the base language. Second, is it possible to run the transformer with a subset of the available extensions. And finally, how do extensions depend on each-other (i.e. can you combine extensions). 
+
+The extending of language extensions or creating new extensions on top of the base language is hard for all other implementations discussed in this section. The issue lies in the fact that these implementations rely on a separate parser for parsing source programs. Thus to create a new language extension the parser code needs to be extended. In \projectname a language extension is capable of defining extended syntax on top of the base language, thus making it possible to create language extensions without knowledge of the underlying parser technology.
+
+Babel JS supports selection of enabled extensions through the \textit{--exclude} command line parameter through which language extensions can be disabled. Traceur allows enabling/disabling of extensions through a command line parameter per feature (i.e. \textit{--arrow-functions=false} disables the arrow functions language extension). ES6 Transpiler does not support the enabling/disabling of extensions, the transformer always enables all language extensions.
+
 In our implementation all new language features are fully modularized, making it possible to only enable certain language extensions. Even when extensions rely on each other it is possible to use them in separation. For instance the destructuring language extension can use computed property names (see appendix \ref{object-literals}) to destructure an objects property. The computed property names are part of the object literal language extension, if both extensions are enabled then it is possible to use computed property names inside object destructurings, if only destructurings are enabled computed property names are not enabled.
 
 \begin{lstlisting}[caption=Example of computed property names inside object destructurings]
@@ -94,12 +100,6 @@ function key() { return "k"; }
 
 var { [key()] : value } = obj;
 \end{lstlisting}
-
-Babel JS supports modularity through the \textit{--exclude} command line parameter through which language extensions can be disabled.
-
-Traceur allows enabling/disabling of extensions through a command line parameter per feature (i.e. \textit{--arrow-functions=false} disables the arrow functions language extension).
-
-ES6 Transpiler does not support modularity, the transformer always enables all language extensions.
 
 \paragraph{Size}
 In table \ref{tab:loc} we compare the size of all projects in lines of code, where our own artifact is named Rascal. Lines of code are measured using the \textit{cloc} tool\footnote{\url{http://cloc.sourceforge.net/}}, because \textit{cloc} has no built in support to measure lines of code of Rascal programs we forced \textit{cloc} to measure Rascal programs as if they where \textit{Java} code (Rascal comments are similar to those of Java).
@@ -237,7 +237,7 @@ First, any transformation that introduces new bindings is exposed to the possibi
 
 \section{Engineering trade-offs}
 
-With an implementation of ES6 inside a language workbench and a comparison to other implementations, we try to identify the engineering trade-offs of implementing language extensions with the help of a language workbench.
+With an implementation of ES6 inside a language workbench and a comparison to other implementations we identify the engineering trade-offs of implementing language extensions with the help of a language workbench.
 
 \subsection{Benefits}
 
@@ -245,16 +245,16 @@ With an implementation of ES6 inside a language workbench and a comparison to ot
 With the data we gathered it seems that implementation of the transformation suite inside the language workbench made the meta-programmer more productive. We needed less lines of code to express transformations that are evenly compatible with the specification as other transpilers. 
 
 \paragraph{IDE integration}
-Building language extensions inside the language workbench allows meta-programmers to immediately implement IDE features to help programmers while creating language extensions. Transpilers implemented outside of the language workbench will always need additional programming to integrate their solution with IDEs and deliver additional support to programmers using their transpiler. The language workbench made it possible to integrate, hyperlink referenced bindings, displaying errors for use of undeclared variables, and previewing parts of target program. 
+Building language extensions inside the language workbench allows meta-programmers to immediately implement IDE features to help programmers while creating language extensions. Transpilers implemented outside of the language workbench will always need additional programming to integrate their solution with IDEs and deliver additional support to programmers using their transpiler. The language workbench made it possible to integrate, hyperlink referenced bindings, displaying errors for use of undeclared variables and illegal redeclarations, and previewing parts of target program. 
 
 \paragraph{Expressive transformations}
-Because the language workbench allows the use of concrete syntax fragments inside transformation code the resulting transformations are more readable than code constructing abstract syntax trees. The JavaScript programmer can understand the concrete syntax fragments inside of the transformation code.
+Because the language workbench allows the use of concrete syntax fragments inside transformation code the resulting transformations are more readable than code constructing abstract syntax trees. The JavaScript programmer can easily understand the concrete syntax fragments inside of the transformation code.
 
 \paragraph{Modular language extensions}
-Because language extensions in Rascal are nothing more than an extension of a module defining some base syntax, it is possible to extend language extensions. By good design it is possible to implement all ES6 language extensions without direct dependencies on each-other, only on the base grammar. But it can be seen as a serious limitation of other implementations that it is not possible to extend any of the defined language extensions. 
+Because language extensions in Rascal are nothing more than an extension of a module defining a base syntax, it is possible to extend and compose language extensions. By good design it is possible to implement all ES6 language extensions without direct dependencies on each-other, only on the base grammar. But it can be seen as a serious limitation of other implementations that it is not possible to extend any of the defined language extensions. 
 
 \paragraph{Grammar extension}
-The language workbench allows us to define a base grammar and extend this grammar with language extensions. Other implementations of ES6 described above take a different approach. They rely on a full parser capable of parsing ES6 source programs. To introduce new features they have to extend this parser, separating the parsing implementation from the rest of their language extension's transformation code.
+The language workbench allows us to define a base grammar and extend this grammar with language extensions. Other implementations of ES6 described above take a different approach, they rely on a full parser capable of parsing ES6 source programs. To introduce new features they have to extend this parser, separating the parsing implementation from the rest of their language extension's transformation code.
 
 \subsection{Limitations}
 

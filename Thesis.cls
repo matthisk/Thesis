@@ -296,7 +296,6 @@
     {\huge{\textit{Abstract}} \par}
     \bigskip
     {\normalsize \facname \par} % Faculty name
-    {\normalsize \deptname \par} % Department name
     \bigskip
     {\normalsize \degreename\par} % Degree name
     \bigskip
