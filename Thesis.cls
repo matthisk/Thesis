@@ -177,7 +177,7 @@
 \newcommand*{\subject}[1]{\def\subjectname{#1}}
 \newcommand*{\keywords}[1]{\def\keywordnames{#1}}
 \newcommand*{\host}[1]{\def\host{#1}}
-\newcommand*{\theprojectname}[1]{\def\projectname{#1 }}
+\newcommand*{\theprojectname}[1]{\def\projectname{#1}}
 \newcommand*{\thevfix}[1]{\def\vfix{#1}}
 
 %----------------------------------------------------------------------------------------
@@ -188,7 +188,7 @@
 %	defined as \examname above so you cite it as \examname
 %----------------------------------------------------------------------------------------
 
-\thesistitle{Tool aided extensible programming languages} % Your thesis title - this is used in the title and abstract
+\thesistitle{Tool-supported language extensions for JavaScript} % Your thesis title - this is used in the title and abstract
 %-------------------------------------------------  
 \supervisor{dr. Tijs van der \textsc{Storm}} % You supervisor's name - this is used in the title page
 %-------------------------------------------------   

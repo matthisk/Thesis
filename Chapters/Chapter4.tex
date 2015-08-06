@@ -7,32 +7,58 @@
 
 \lhead{Chapter 4. \emph{Taxonomy}} \label{taxonomy}
 
-Every language extension has several properties which can be identified and categorized along certain dimensions. In this chapter we present a taxonomy for language extensions. In appendix \ref{AppendixB} we categorize ES6 language features according to this taxonomy.
+Every language extension has several properties which can be identified and categorized along certain dimensions. In this chapter we present a taxonomy for language extensions, such a taxonomy can be used for several purposes. The taxonomy helps identifying the following aspects of language extensions, (1) implementation intricacies of language extensions, (2) Implementation type (e.g. through the use of a program transformation), (3) What is the relation between language extensions. In appendix \ref{AppendixB} we categorize ES6 language features according to this taxonomy.
+
+\section{Structure}
+
+The several dimensions of the taxonomy give insight in the answer to three questions specific to a language extension.
+
+\textit{How can the language extension be implemented?}\\1
+There are multiple ways to implement a language extension (e.g. a program transformation or a compiler extension). Sometimes one solution is preferable over another, the following dimensions help in selecting an implementation type for a language extensions:
+
+Category, abstraction level, extension or modification, dependencies, and decomposable.
+
+\textit{What information does transformation of a language extension require?}\\
+Transformations rely on information in the source program to be able to perform transformations. Some require more information than others, this additional information required can make implementation of the language extension more complex. The following dimensions help in identifying the amount of context needed for a language extension to be transformed:
+
+Category, compositionality, analysis of subterms, and scope.
+
+\textit{What are guarantees can we give of the target program produced by a language extension?}\\
+Transformation of a language extension produces a target program different from the source program. The following dimensions help identifying to what extend target and source program differ from each other, giving insight into the inner working of a transformation:
+
+Syntactically type preserving, Introduction of bindings, depending on bindings, backwards compatible.
 
 \section{Dimensions}
-The following dimensions are identified and used to categorize every language extension.
+The following dimensions are identified and used to categorize every language extension. Each of the following paragraphs investigates a relevant question to language extensions and provides insight into answering these question with the use of examples.
 
 \paragraph{Category}
-One of the rephrasing categories defined by Eelco Visser~\cite{Visser2001}, rephrasings are program transformations where source and target program language are the same. Each category is explained in table \ref{table-rephrasing-categories}.
+One of the rephrasing categories defined by Eelco Visser~\cite{Visser2001}, rephrasings are program transformations where source and target program language are the same. Here we discuss each category.
 
-\begin{longtable}{p{0.2\textwidth}p{0.75\textwidth}}
-\multicolumn{1}{l}{Normalization} & The reduction of a source program to a target program in a sub-language of the source program language.
-\\ \hline \\
-\multicolumn{1}{r}{\bf Desugaring}                  & a language construct (called syntactic sugar) is reduced to a core language.                                                    \\
-\multicolumn{1}{r}{\bf Simplification}              & this is a more generic form of normalization in which parts of the program are transformed to a standard form with the goal of simplifying the program without changing the semantics. \\
-\multicolumn{1}{r}{\bf Weaving}                     & this transformation injects functionality in a source program, without modifying the code. It is used in aspect-oriented programming, where cross-cutting concerns are separated from the main code and later 'weaved' with the main program through an aspect weaver.)                                                                                                                                                                               \\
-\\
-\multicolumn{1}{l}{Optimization}  & These transformations help improve the run-time and/or space performance of a program                                                                                         \\ \hline \\
-\multicolumn{1}{r}{\bf Specialization}              & Code specialization deals with code that runs with a fixed set of parameters. When it is known that some function will run with some parameters fixed the function can be optimized for these values before run-time. (e.g. compiling a regular expression before execution).                                                                                                                                                                               \\
-\multicolumn{1}{r}{\bf Inlining}                    & Transform code to inline a certain (standard) function within your function body instead of calling the function from the (standard) library. This produces a slight performance increase because we avoid an additional function call. (this technique is more common in lower level programming languages e.g. C or C++)                                                                                                                                                                              \\
-\multicolumn{1}{r}{\bf Fusion}                      & Fusion merges two bodies of loops (or recursive code) that do not share references and loop over the same range, with the goal to reduce run-time of the program.                                                                                                                                                                               \\
-\\
-\multicolumn{1}{l}{Other}         &                                                                                                                                                                               \\ \hline \\
-\multicolumn{1}{r}{\bf Refactoring}                 & "\textit{is a disciplined technique for restructuring an existing body of code, alteringits internal structure without changing its external behaviour.}"\footnotemark                 \\
-\multicolumn{1}{r}{\bf Obfuscation}                 & is a transformation that makes output code less (human) readable, while not changing any of the semantics.                                                                    \\
-\multicolumn{1}{r}{\bf Renovation}                  & is a special form of refactoring, "\textit{to repair an error or to bring it up to date with respect to changed requirements"}~\cite{Visser2001} \\
-\caption{Rephrasing categories} \label{table-rephrasing-categories}
-\end{longtable}
+\textbf{Normalization}
+The reduction of a source program to a target program in a sub-language of the source program language.
+
+\begin{description}[font=\normalfont,align=right,leftmargin=!, labelwidth=\widthof{{\bfseries Specialization}},labelsep=2em]
+	\item[Desugaring] a language construct (called syntactic sugar) is reduced to a core language.
+	\item[Simplification] this is a more generic form of normalization in which parts of the program are transformed to a standard form with the goal of simplifying the program without changing the semantics.
+	\item[Weaving] this transformation injects functionality in a source program, without modifying the code. It is used in aspect-oriented programming, where cross-cutting concerns are separated from the main code and later 'weaved' with the main program through an aspect weaver.)                                                                                                                                                                              
+\end{description}
+
+\textbf{Optimization}
+These transformations help improve the run-time and/or space performance of a program                                                                                        
+
+\begin{description}[font=\normalfont,align=right,leftmargin=!, labelwidth=\widthof{{\bfseries Specialization}},labelsep=2em]
+	\item[Specialization] Code specialization deals with code that runs with a fixed set of parameters. When it is known that some function will run with some parameters fixed the function can be optimized for these values before run-time. (e.g. compiling a regular expression before execution).                                                                                                                                                                              
+	\item[Inlining] Transform code to inline a certain (standard) function within your function body instead of calling the function from the (standard) library. This produces a slight performance increase because we avoid an additional function call. (this technique is more common in lower level programming languages e.g. C or C++)                                                                                                                                                                             
+	\item[Fusion] Fusion merges two bodies of loops (or recursive code) that do not share references and loop over the same range, with the goal to reduce running time of the program.                                                                                                                                                                              
+\end{description}
+
+\textbf{Other}
+
+\begin{description}[font=\normalfont,align=right,leftmargin=!, labelwidth=\widthof{{\bfseries Specialization}},labelsep=2em]
+	\item[Refactoring] is a disciplined technique for restructuring an existing body of code, alteringits internal structure without changing its external behaviour.\footnotemark   
+	\item[Obfuscation] is a transformation that makes output code less (human) readable, while not changing any of the semantics.
+	\item[Renovation] is a special form of refactoring, to repair an error or to bring it up to date with respect to changed requirements~\cite{Visser2001}
+\end{description}
 \footnotetext{\url{http://www.refactoring.com}}
 
 \paragraph{Abstraction level}
@@ -44,34 +70,44 @@ Rephrasings try to say the same thing (i.e. no change in semantics) but using di
 \paragraph{Scope}
 Program transformations performed on the abstraction level of context-free syntax (or semantics) receive the parse tree of the source program as their input. A transformation searches the parse tree for a specific type of node, the type of node to match on is defined by the transformation and can be any syntactical type defined in the source program's grammar. The node matched by a transformation and whether or not information from outside this node's scope is used during transformation determine the scope of a program transformation, there are four different scopes:
 
-When a program transformation matches on a sub-tree of the parse-tree and only transforms this matched sub-tree it is a \textit{(1) local-to-local} transformation. If the transformation needs information outside the context of the matched sub-tree, but only transforms the matched sub-tree it is \textit{(2) global-to-local}. When a transformation has no additional context from its local sub-tree but does alter the entire parse-tree it is called \textit{(3) local-to-global}. If the transformation transforms the input program in its entirety it is \textit{(4) global-to-global}.
+\begin{enumerate}
+	\item When a program transformation matches on a sub-tree of the parse-tree and only transforms this matched sub-tree it is a \textit{local-to-local} transformation. 
+	\item If the transformation needs information outside the context of the matched sub-tree, but only transforms the matched sub-tree it is \textit{global-to-local}. 
+	\item When a transformation has no additional context from its local sub-tree but does alter the entire parse-tree it is called \textit{local-to-global}. 
+	\item If the transformation transforms the input program in its entirety it is \textit{global-to-global}.
+\end{enumerate}
 
 \paragraph{Syntactically type preserving}
-Program transformations performed on syntax elements can preserve the syntactical type of their input element or alter it. Two main syntactical types in JavaScript are Statement and Expression (see section \ref{javascript-syntax}). If a transformation matches on a Expression node but returns a Statement it is non syntactical type preserving.
+Program transformations performed on syntax elements can preserve the syntactical type of their input element or alter it. Two main syntactical types in JavaScript are Statement and Expression (see section \ref{javascript-syntax}). If a transformation matches on a Expression node but returns a Statement it is not syntactically type preserving.
 
 \paragraph{Introduction of bindings}
-Does the transformation introduce new bindings. Transformations that do not introduce bindings are guaranteed to be hygienic (see section \ref{hygiene}), where binding introducing transformations can cause variable capture from synthesized bindings to source bindings.
+Transformations that do not introduce bindings are guaranteed to be hygienic (see section \ref{hygiene}), where binding introducing transformations can cause variable capture from synthesized bindings to source bindings.
 
-\paragraph{Depending on bindings (i.e. run-time code)}
+\paragraph{Depending on bindings (i.e. runtime system)}
 Will the target program produced by the transformation depend on context not introduced by the transformation (e.g. global variables, external libraries).
 
 \paragraph{Compositional}
 When a program transformation does not alter the containing context of the matched parse-tree node, it is said to be compositional. The main concern of compositionality of program transformations is if the transformation can be reversed or not.
 
 \paragraph{Preconditions}
+
+...
+
 What are the preconditions that have to be met before execution of a transformation rule, to ensure validity of the transformation (e.g. all sub-terms have to be analyzed and transformed)
 
 \paragraph{Restrictions on sub-terms}
 Does the language extensions impose restrictions on the terms used inside of the language extension's non-terminals. For example we can only use identifiers in the sub-terms of our \lstinline$swap$ language extension (see section \ref{hygiene}).
 
 \paragraph{Analysis of sub-terms}
-Are the non-terminals of our language extension analyzed by the transformation rule. This is related to compositionality but differs because compositional transformations analyze \textit{and transform} sub-terms.
+Are the non-terminals of our language extension analyzed by the transformation rule. This is related to compositionality but differs because non-compositional transformations analyze \textit{and transform} sub-terms.
 
 \paragraph{Dependency on other extensions}
 Can the language extensions be performed stand-alone or is there a dependency on one of the other extensions.
 
 \paragraph{Backwards compatible}
-Is the API of the transformed code compatible with the ECMAScript 6 specification (i.e. can we import a transformed module in ECMAScript 6 and use it properly).
+Will the API of a transformed language extension work correctly as source program for our extended programming language. 
+
+Take for example the generator language extension (see appendix \ref{generators}), this extension introduces a new type of function the generator function. If we transform a generator function (called \textit{g}) to ES5 JavaScript code and then use this code as a source program. In this source program we create a second generator called \textit{h} which delegates a yield to the generator \textit{g} through the \lstinline$yield*$ keyword\footnote{\url{https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/yield*}}. If \lstinline$yield*$ can be correctly used on a previously transformed generator than the transformation is backwards compatible otherwise it is not.
 
 \paragraph{Decomposable}
 Is it possible to identify smaller transformation rules inside this language extension, that can be performed independently from one another.

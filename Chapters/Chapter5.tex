@@ -1,14 +1,14 @@
-\chapter{Implementation} % Main chapter title
+\chapter{Implementation \projectname} % Main chapter title
 
 \label{Chapter5}
 
-\lhead{Chapter 5. \emph{Implementation}}
+\lhead{Chapter 5. \emph{Implementation} {\projectname}}
 
-Each transformation is defined as a rewrite rule. It has a concrete syntax pattern which matches part of a parse-tree. The result is a concrete piece of syntax, using only constructs from the core syntax definition (i.e. ES 5).
+Each transformation is defined as one or more rewrite rules. It has a concrete syntax pattern which matches part of a parse-tree. The result is a concrete piece of syntax, using only constructs from the core syntax definition (i.e. ES 5).
 The rewrite rules are exhaustively applied on the input parse-tree until no more rewrite rules match any sub-trees of the input. Application of rewrite rules to the parse-tree is done bottom-up because several rewrite rules (e.g. arrow function) demand their sub-terms to be transformed to guarantee successful completion.
 
 \section{Basics}
-To get a better understanding of the inner working of our rewrite rule system we discuss the implementation of the \lstinline$swap$ language extension (see section \ref{hygiene}). The language extension introduces a new statement 
+To get a better understanding of the inner working of \projectname we discuss the implementation of the \lstinline$swap$ language extension (see section \ref{hygiene}). The language extension introduces a new statement 
 
 \begin{lstlisting}[caption=Core syntax,language=rascal]
 module core::Syntax
@@ -22,27 +22,12 @@ syntax Statement
 To extend the list of possible statements we create a new Rascal module that extends the core syntax definition and defines a new syntax rule for \textit{Statement} named \textit{swap}. With this new syntax rule our parser is able to correctly parse \lstinline$swap$ statements.
 
 \begin{lstlisting}[caption=Swap statement syntax,language=rascal]
-extend core::Syntax;
+extends core::Syntax;
 
-syntax Statement = swap: "swap" Id Id;
+syntax Statement = swap: "swap" Id Id ";";
 \end{lstlisting}
 
-To desugar the new syntax construct to JavaScript code we overload the desugar function with a pattern match on 
-\textit{Statement} to match the use of the \lstinline$swap$ statement and translate it to an IIFE in which we rebind both supplied identifiers to each other.
-
-% \CAT{Keyword}{syntax} Statement = \CAT{Constant}{"swap"} Id Id;
-
-\begin{rascal}
-Statement desugar( (Statement)`\CAT{Keyword}{swap} \CAT{MetaVariable}{\textless{}Id x\textgreater{}} \CAT{MetaVariable} {\textless{}Id y\textgreater{}}` )
-    = (Statement)
-            `(\CAT{Keyword}{function}() \{{}
-            	\CAT{Keyword}{var} tmp = x;
-            	\CAT{MetaVariable}{\textless{}Id x\textgreater{}} = \CAT{MetaVariable}{\textless{}Id x\textgreater{}};
-            	\CAT{MetaVariable}{\textless{}Id y\textgreater{}} = \CAT{MetaVariable}{\textless{}Id y\textgreater{}};
-            \}{})();`;
-\end{rascal}
-
-A default desugar function for statements is defined which is the id function on a statement. To desugar an entire parse tree we only have to visit each node (bottom up) and invoke the desugar function for each statement that is found by the visitor.
+Before we create a function that transforms the \lstinline$swap$ statement to JavaScript code we introduce a simple visitor and default desugar function. A default desugar function for statements is defined which is the id function on a statement. To desugar an entire parse tree we only have to visit each node (bottom up) and invoke the desugar function for each statement that is found by the visitor.
 
 \begin{lstlisting}[caption=Desugar visitor, language=rascal]
 default Statement desugar( Statement s ) = s;
@@ -54,11 +39,35 @@ Source runDesugar( Source pt ) {
 }
 \end{lstlisting}
 
+To desugar the new syntax construct to JavaScript code we overload the previously defined desugar function with a pattern match on 
+\textit{Statement} to match the use of the \lstinline$swap$ statement and translate it to an immediately invoking function expression (IIFE) in which we rebind both supplied identifiers to each other.
+
+% \CAT{Keyword}{syntax} Statement = \CAT{Constant}{"swap"} Id Id;
+
+\begin{rascal}
+Statement desugar( (Statement)`\CAT{Keyword}{swap} \CAT{MetaVariable}{\textless{}Id x\textgreater{}} \CAT{MetaVariable}{\textless{}Id y\textgreater{}}` )
+    = (Statement)
+            `(\CAT{Keyword}{function}() \{{}
+            	\CAT{Keyword}{var} tmp = \CAT{MetaVariable}{\textless{}Id x\textgreater{}};
+            	\CAT{MetaVariable}{\textless{}Id x\textgreater{}} = \CAT{MetaVariable}{\textless{}Id y\textgreater{}};
+            	\CAT{MetaVariable}{\textless{}Id y\textgreater{}} = tmp;
+            \}{})();`;
+\end{rascal}
+
+The argument of desugar is a pattern match on parse-tree nodes of the type \lstinline$Statement$ matching on \lstinline$swap$ statements, if a match is found the identifiers supplied to the statement are bound respectively to \lstinline$x$ and \lstinline$y$. The function returns a piece of concrete syntax which in turn is of the type \lstinline$Statement$ where the supplied identifiers are rebound to each other. Remember that the supplied identifiers to the \lstinline$swap$ statement could have any name, what would happen if one of the identifiers was name \lstinline$tmp$?
+
 \section{\projectname}
 In \textit{\projectname} we implement a large subset of ES6 features as language extensions on top of a core syntax describing ES5. Here we discuss several parts of interest from our implementation. Everything with the exception of let-const is based on the simple example described in the previous section. 
 
 \subsection{Visitor}
-The visitor from our basic example is almost identical in \projectname. Differences are we also match on expressions, functions, and the source node (root node) this final match can be used by transformations that are performed global-to-local or global-to-global. If we have multiple language extensions performing a global-to-local or global-to-global transformation or if a language extension's transformation introduces a language construct that should be desugared either by itself or another language extension, one pass over the parse tree is not enough. For extensions with these kind of transformations we need to revisit the tree until no more changes are applied by desugar functions. The final desugar visitor is as follows, where \textit{solve} will ensure we revisit the tree until no more desugarings are performed:
+In our basic example we used a function \lstinline$runDesugar$, this is the visitor of the parse-tree and is in principle how the visitor of {\projectname} works. Differences are we also match on expressions, functions, and the source node (root node) this final match can be used by transformations that are performed global-to-local or global-to-global. If we have multiple language extensions performing a global-to-local or global-to-global transformation or if a language extension's transformation introduces a language construct that should be desugared either by itself or another language extension, one pass over the parse tree is not enough. For extensions with these kind of transformations we need to revisit the tree until no more changes are applied by desugar functions. The final desugar visitor and default desugar functions are as follows, where \textit{solve} will ensure we revisit the tree until no more desugarings are performed:
+
+\begin{lstlisting}[caption=Identity desugar functions, language=rascal]
+default Source desugar( Source s ) = s;
+default Function desugar( Function s ) = s;
+default Statement desugar( Statement s ) = s;
+default Expression desugar( Expression s ) = s;
+\end{lstlisting}
 
 \begin{lstlisting}[caption=Final desugar visitor, language=rascal]
 Source runDesugar( Source pt ) {
@@ -73,7 +82,7 @@ Source runDesugar( Source pt ) {
 }
 \end{lstlisting}
 
-An example of a language extension that relies on a global-to-local transformation is the arrow function. Arrow function's that reside directly in the global scope, not inside another function, are desugared differently. See appendix \ref{arrow}
+An example of a language extension that relies on a global-to-local transformation is the arrow function. Arrow function's that reside directly in the global scope, are desugared differently from locally defined arrow functions. See appendix \ref{arrow}
 
 \subsection{Introducing bindings}
 Some language extensions need to introduce new bindings in the target program to work properly. There are multiple ways for a transformation to introduce bindings in JavaScript. When a transformation is performed on an expression an IIFE can be used to introduce new bindings only accesible in the scope of this expression.
@@ -92,7 +101,7 @@ Some language extensions need to introduce new bindings in the target program to
 \end{lstlisting}
 \end{minipage}
 
-When a transformation is performed on a statement a block statement can be used in combination with variables declared through the \textit{let} declarator, to introduce variables only accessible in the scope of the statement:
+When a transformation is performed on a statement a block statement can be used in combination with variables declared through the \textit{let} declarator, to introduce variables only accessible in the scope of the statement. \textit{Let} declarations are however not part of ES5 JavaScript but introduced by ES6, this assumes there is a language extension for \textit{let} present (see appendix \ref{let-const}).
 
 \begin{minipage}{0.45\linewidth}
 \begin{lstlisting}
@@ -111,12 +120,12 @@ When a transformation is performed on a statement a block statement can be used 
 \end{lstlisting}
 \end{minipage}
 
-In the case of a statement an IIFE can not be used to introduce new bindings because the control-flow of the target program would break if the desugared statement contains a control-flow construct (e.g. it returns a value), now this value is returned in our IIFE and not its lexical enclosing function.
+In the case of a statement an IIFE can not be used to introduce new bindings because the control flow of the target program would break if the desugared statement contains a non-local control flow construct, such as \lstinline$return$ or \lstinline$break$. 
 
-\subsection{Combined language extensions} \label{par:combined-extensions}
-Language extensions can depend upon other language extensions to work correctly, this dependency makes a collection of language extensions less modular because the depended extension always needs to be used in combination with it's dependency. It would be preferable if the two extensions could be used in separation where functionality which relies on both extensions working together is only enabled in a situation where the two language extensions are used.
+\subsection{Mutually dependent language extensions} \label{par:combined-extensions}
+Language extensions can depend upon other language extensions to work correctly, this dependency makes a collection of language extensions less modular because the dependent extension always needs to be used in combination with its dependency. It would be preferable if the two extensions could be used in separation where functionality which relies on both extensions working together is only enabled in a situation where the two language extensions are used.
 
-An example of such overlapping functionality in the ES 6 specification is that of destructuring assignment (see appendix \ref{destructuring}) inside for-of loops (see appendix \ref{for-of}).
+An example of language extension with mutually dependent functionality in the ES 6 specification is that of destructuring assignment (see appendix \ref{destructuring}) inside for-of loops (see appendix \ref{for-of}).
 
 \begin{lstlisting}
 for(var [a,b] of [ [1,2], [3,4] ]) {
@@ -147,13 +156,45 @@ syntax ForBinding
 	= AssignmentPattern;
 \end{lstlisting}
 
-Designing language extensions in this way makes the entire suite of language extensions more modular, because we remove unnecessary dependencies between extensions. We can combine language extensions that depend on each other for full functionality. Or use them separately to get only their independent functionality.
+How are the transformations of both extensions affected by the fact that they are mutually dependent on each other? Before this question can be answered we need insight in how a \textit{for-of} loop is desugared, this is explained in appendix \ref{for-of}. For this example we just assume a \textit{for-of} loop is desugared to a traditional \textit{for} loop over the length property of the input array (ignoring some of the intricacies of \textit{for-of} loop language extension). The following example presents the wanted desugaring where the assignment pattern binding is moved to the body of the loop. 
+
+\begin{minipage}{0.45\linewidth}
+\begin{lstlisting}
+for(var [a,b] of arr) {
+	<Statement* body>
+}
+\end{lstlisting}
+\end{minipage}
+\hfill
+\begin{minipage}{0.5\linewidth}
+\begin{lstlisting}
+for(var i = 0; i < arr.length; i++) 
+{	
+	var [a,b] = arr[i];
+	<Statement* body>
+}
+\end{lstlisting}
+\end{minipage}
+
+The complexity in the desugar function of a \textit{for-of} loop lies in the fact that the \lstinline$ForBinding$ non-terminal can consist either of an \lstinline$Identifier$ or an \lstinline$AssignmentPattern$ non-terminal. The \textit{for-of} loop language extension is however unaware of the existence of the second option, because it is created by the \textit{destructuring} language extension, and thus unable to correctly desugar in this case. To solve this issue we introduce a function that can be overloaded in the \textit{destructuring} language extension to help transform the \lstinline$ForBinding$ to a \lstinline$VariableDeclaration$, this function is named \textit{declareBinding}.
+
+\begin{lstlisting}[caption=default \textit{declareBinding} function from \textit{for-of} language extension,language=rascal]
+VariableDeclaration declareBinding( (ForBinding)`<Id id>`, Expression e )
+	= (VariableDeclaration)`<Id id> = <Expression e>`;
+\end{lstlisting}
+
+\begin{lstlisting}[caption=overloaded \textit{declareBinding} function from \textit{destructuring} language extension,language=rascal]
+VariableDeclaration declareBinding( (ForBinding)`<AssignmentPattern p>`, Expression e )
+	= (VariableDeclaration)`<AssignmentPattern p> = <Expression e>`;
+\end{lstlisting}
+
+Designing language extensions in this way makes the entire suite of language extensions more modular. Language extensions can be mutually dependent instead of having explicit dependencies on one another. This presents the possibility of selecting only the needed language extensions without being required to depend on unneeded language extensions. And at the same time it reduces the amount of code needed for the implementation of language extensions that are mutually dependent. In case of our example above if we had an explicit dependency from \textit{destructuring} to \textit{for-of} the desugaring function for \textit{for-of} loops had to be overridden in the \textit{destructuring} language extension.
 
 \subsection{Variable capture}
 In section \ref{hygiene} we have described the problem of variable capture in the context of program transformations. 
-Here we discuss the code reused to solve variable capture in \projectname, the algorithm reused is name \textit{\vfix}. The algorithm relies on a binding graph to identify variable capture, and uses string origins~\cite{Inostroza2014} to distinguish between synthesized identifiers (i.e. those identifiers introduced by the transformation) and identifiers originating from the source program.
+Here we discuss the algorithm reused to solve variable capture in \projectname, the algorithm reused is named \textit{\vfix}. The algorithm relies on a binding graph to identify variable capture, and uses string origins~\cite{Inostroza2014} to distinguish between synthesized identifiers (i.e. those identifiers introduced by the transformation) and identifiers originating from the source program.
 
-\textit{\vfix} analyses the \textit{name graph} of source and target program to identify variable capture. The name graph contains nodes for all identifiers in the program, a directed edge indicates a reference to a declaration. Because our source and target language are both JavaScript and thus have the same binding mechanism, we only generate the name graph for our target program. In the graph a distinction is made between synthesized and user bindings. To identify whether a binding originates from the source program or was synthesized during transformation, the \textit{\vfix} algorithm uses string origins~\cite{Inostroza2014}.
+\textit{\vfix} analyses the \textit{name graph} of generated program to identify variable capture. The name graph contains nodes for all identifiers in the program, a directed edge indicates a reference to a declaration. Because our source and target language are both JavaScript and thus have the same binding mechanism, we only generate the name graph for our target program. In the graph a distinction is made between synthesized and user bindings. To identify whether a binding originates from the source program or was synthesized during transformation, the \textit{\vfix} algorithm uses origin tracking~\cite{Inostroza2014} to identify the origin of identifier (either from the source program or introduced by a transformation).
 
 In figure \ref{fig:name-graph} we use the target program from our \lstinline$swap$ language extension (see section \ref{hygiene}) to illustrate how these name graphs are constructed, and how \textit{\vfix} identifies variable capture. Each node contains a line number and the identifier it resembles from that line, a directed edge is a reference to a declaration. Nodes with a white background originate from the source program, nodes with a dark background are synthesized during transformation. Line numbers from synthesized identifiers are appended with a tick.
 
@@ -196,10 +237,10 @@ synthesized/.style={circle, draw=black, fill=gray!60, very thick, minimum size=1
 \end{tikzpicture}
 \end{minipage}
 
-\caption{Target program generated by swap language extension and corresponding name graph} \label{fig:name-graph}
+\caption{Target program generated by swap language extension and corresponding name graph; where \textit{t} stands for \textit{tmp}} \label{fig:name-graph}
 \end{figure}
 
-Node \textit{7:t} and \textit{6:t} originate from the source program but reference a synthesized declaration. Node \textit{5:t} shadows the original declaration \textit{2:t}. \textit{\vfix} adds node \textit{5:t} to the list of declarations to be renamed. After the entire name graph is analyzed/generated all declarations from this list are rebound under free names (i.e. names not yet bound in the target program). Since \textit{7:t} and \textit{6:t} are not correct references of \textit{5:t} they are not renamed. The resulting name graph and target program are presented in figure \ref{fig:name-graph-fixed}
+Node \textit{7:tmp} and \textit{6:tmp} originate from the source program but reference a synthesized declaration. Node \textit{5:tmp} shadows the original declaration \textit{2:tmp}. \textit{\vfix} adds node \textit{5:tmp} to the list of declarations to be renamed. After the entire name graph is analyzed/generated all declarations from this list are renamed to free names (i.e. names not yet bound in the target program). Since \textit{7:tmp} and \textit{6:tmp} are not correct references of \textit{5:tmp} they are not renamed. The resulting name graph and target program are presented in figure \ref{fig:name-graph-fixed}
 
 \begin{figure}[h]
 \centering
@@ -240,12 +281,12 @@ synthesized/.style={circle, draw=black, fill=gray!60, very thick, minimum size=1
 \end{tikzpicture}
 \end{minipage}
 
-\caption{Target program and name graph after \textit{\vfix} algorithm} \label{fig:name-graph-fixed}
+\caption{Target program and name graph after \textit{\vfix} algorithm; where \textit{t} stands for \textit{tmp} and \textit{t'} for \textit{tmp\$0}} \label{fig:name-graph-fixed}
 \end{figure}
 
-\textit{\vfix} does apply a \textit{"closed-world assumption to infer that all unbound variables are indeed free, and thus can be renamed at will."}~\cite{Erdweg2014}. This means that global variables defined by the user (or a third-party library) that are included within the same run-time as our target program, could possibly be shadowed by the renamed bindings. However there is no way for \textit{\vfix} to know what bindings will be taken by other bindings than those bound in the source program.
+\textit{\vfix} does apply a \textit{``closed-world assumption to infer that all unbound variables are indeed free, and thus can be renamed at will.''}~\cite{Erdweg2014}. This means that global variables defined by the user (or a third-party library) that are included within the same run-time as our target program, could possibly be shadowed by the renamed bindings. However there is no way for \textit{\vfix} to know what names will be taken by other bindings than those bound in the source program.
 
-A second form of variable capture is introduced when the user shadows a global variable on which a target program relies. \textit{\vfix} is also able to solve this form of variable capture, to illustrate this we use the example of the \lstinline$log$ language extensions. The name-graph for the target program of our example (see section \ref{hygiene}) shows a reference from an identifier introduced by our transformation to a source binding (see figure \ref{fig:vfix2}).
+A second form of variable capture is introduced when the user shadows a global variable on which a target program relies. \textit{\vfix} is also able to solve this form of variable capture, to illustrate this we use the example of the \lstinline$log$ language extension. The name-graph for the target program of our example (see section \ref{hygiene}) shows a reference from an identifier introduced by our transformation to a source binding (see figure \ref{fig:vfix2}).
 
 \begin{figure}[h]
 \centering
@@ -271,7 +312,7 @@ synthesized/.style={circle, draw=black, fill=gray!60, very thick, minimum size=1
 \draw[->] (console_ref_2.north) -- (console_dec.south);
 \end{tikzpicture}
 \end{minipage}
-\caption{Target program generated by log language extension and corresponding name-graph} \label{fig:vfix2}
+\caption{Target program generated by log language extension and corresponding name-graph; where \textit{c} stands for \textit{console}} \label{fig:vfix2}
 \end{figure}
 
 This reference is identified as variable capture and declaration \lstinline$console$ is marked to be renamed (see figure \ref{fig:vfix2}. 
@@ -291,19 +332,22 @@ This reference is identified as variable capture and declaration \lstinline$cons
 source/.style={circle, draw=black, fill=white, very thick, minimum size=10mm},
 synthesized/.style={circle, draw=black, fill=gray!60, very thick, minimum size=10mm}
 ]
-\node[source](console_dec){1:c};
+\node[source](console_dec){1:c'};
 
 \node[synthesized](console_ref)[below=of console_dec,xshift=-7mm]{2:c};
-\node[source](console_ref_2)[below=of console_dec,xshift=7mm]{3:c};
+\node[source](console_ref_2)[below=of console_dec,xshift=7mm]{3:c'};
 
 \draw[->] (console_ref_2.north) -- (console_dec.south);
 \end{tikzpicture}
 \end{minipage}
-\caption{Target program and name-graph after application of \textit{\vfix} algorithm} \label{fig:vfix2_fixed}
+\caption{Target program and name-graph after application of \textit{\vfix} algorithm; where \textit{c} stands for \textit{console} and \textit{c'} for \textit{console\$0}} \label{fig:vfix2_fixed}
 \end{figure}
 
-\subsection{Block binding}
-To desugar the new block binding introduced in ES6 (see appendix \ref{let-const}) there are two approaches. First, replace all block binding by a \textit{try catch} block where we throw the binding inside of try and catch the binding in the catch block.
+Notice that the \textit{\vfix} algorithm in the example of the \lstinline$swap$ language extension (see figure \ref{fig:name-graph-fixed}) renames a synthesized binding. Whereas in case of the \lstinline$log$ language extension (see figure \ref{fig:vfix2_fixed}) the \textit{\vfix} algorithm renames an identifier originating from the source program. When identifiers from the source program are renamed external scripts relying on these bindings will no longer function correctly.
+
+\subsection{Block scoping}
+
+As described in section \ref{javascript-scoping} JavaScript's bindings are function scoped, i.e. they are accessible throughout the entire lexical scope of the function they are defined in. ES6 introduces a new binding mechanism through which identifiers can be bound in a block scope (see appendix \ref{let-const}). Block bound identifiers are only available after declaration within the lexical enclosing block scope they are defined in. Where normal declarations can be redeclared without errors, redeclration of block bound bindings is illegal and results in a parse error. To desugar the new block binding introduced in ES6  there are two approaches. First, replace all block binding by a \textit{try catch} block where we throw the binding inside of the try block and catch the binding in the catch block.
 
 \begin{minipage}{0.45\linewidth}
 \begin{lstlisting}
@@ -322,7 +366,7 @@ try {
 \end{lstlisting}
 \end{minipage}
 
-The problem with this implementation is that \textit{try catch} blocks can not be optimized by the interpreter and thus the performance of transformed code could be much worse than that of the source program. Second, the block binding could be achieved through the renaming of bindings to avoid reference of \textit{let} defined bindings outside of their block scope.
+The problem with this implementation is that \textit{try catch} blocks are not optimized by interpreters\footnote{\url{http://ryanmorr.com/reinventing-the-try-catch-block/}} and thus the performance of transformed code would be much worse than that of the source program. Second, the block binding could be achieved through the renaming of bindings to avoid reference of \textit{let} or \textit{const} defined bindings outside of their block scope.
 
 \begin{minipage}{0.45\linewidth}
 \begin{lstlisting}
@@ -344,7 +388,7 @@ x;
 \end{lstlisting}
 \end{minipage}
 
-To resolve the naming needed for the emulation of block scope in ES5 we also use a \textit{name-graph} as described in the previous section. To identify illegal references in the name graph we compare a name graph with block binding against a name graph without block binding, the two graphs for the example are depicted below:
+To resolve the naming needed for the emulation of block scope in ES5 we also use a \textit{name-graph} as described in the previous section. To identify illegal references in the name graph we compare a name graph with block binding against a name graph without block binding, the two graphs for the example are depicted below.
 
 \begin{figure}
 \begin{subfigure}{.45\textwidth}
@@ -385,9 +429,9 @@ synthesized/.style={circle, draw=black, fill=gray!60, very thick, minimum size=1
 \end{subfigure}
 \end{figure}
 
-The first name graph is that created using a block binding mechanism where \textit{const} and \textit{let} declarations are block bound. In the second name graph all declarations are bound in their lexical enclosing function's scope. Now we identify the reference from \textit{5:x} to the declaration \textit{2:x} as illegal, because it exists in our function scoped name graph but does not occur in the block bound name graph. Declaration \textit{2:x} is marked to be renamed. After the entire name graph is build and all illegal references are identified, all declarations and their references according to the block bound name graph are renamed.
+The first name graph is the one created using a block binding mechanism where \textit{const} and \textit{let} declarations are block bound. In the second name graph all declarations are bound in their lexical enclosing function's scope. Now we identify the reference from \textit{5:x} to the declaration \textit{2:x} as illegal, because it exists in our function scoped name graph but does not occur in the block bound name graph. Declaration \textit{2:x} is marked to be renamed. After the entire name graph is build and all illegal references are identified, all declarations and their references according to the block bound name graph are renamed.
 
-\paragraph{implementation}
+\paragraph{Implementation}
 For the implementation of the block binding resolver we use a special type of scope graph, consisting of three types of nodes. First, a root node created for the root (or global) scope of an input parse tree. This node contains an environment consisting of names with the location of their declaration. Second, each function scope is identified by a closure node. This node consists of an \lstinline$Env$ containing all function scoped definitions (i.e. declarations of functions or using \lstinline$var$ declarator). It also contains a \lstinline$LEnv$ which is the name-graph created where all bindings are function scoped (i.e. also declarations using \lstinline$let$ or \lstinline$const$ declarators). Third, a node block is created for each block of statements, containing all block-scoped declarations in an environment.
 
 \begin{lstlisting}[caption=Data structure for scope graph,language=rascal]

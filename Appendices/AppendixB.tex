@@ -7,19 +7,19 @@
 
 \lhead{Appendix B. \emph{Language feature categorization}} % This is for the header on each page - perhaps a shortened title
 
-The following appendix contains a categorization of ECMAScript 6 language features according to the taxonomy established in section \ref{taxonomy}
+The following appendix contains a categorization of ECMAScript 6 language features according to the taxonomy established in chapter \ref{taxonomy}
 
 \section{Arrow Functions} \label{arrow}
-Arrow functions\cite[14.2]{SpecJS} are the new lambda-like function definitions inspired by the Coffeescript\footnote{\url{http://coffeescript.org/}} and C\# notation. The functions body knows no lexical this binding (see section \ref{javascript-scoping} for more on JavaScript's this binding) but instead uses the binding of its parent lexical scope.
+Arrow functions\cite[14.2]{SpecJS} are the new lambda-like function definitions inspired by the Coffeescript\footnote{\url{http://coffeescript.org/}} and C\# notation. The functions body knows no lexical this binding (see section \ref{javascript-scoping}) but instead uses the binding of its parent lexical scope.
 
 \paragraph{Category}
-The arrow function construct is eliminated by translating them into the core function construct. Thus we speak of a syntactic sugar and a desugaring.
+The arrow function is eliminated through transformation to a normal JavaScript function expression wrapped in a IIFE to bind \textit{this} and \textit{arguments} from the enclosing lexical scope. Arrow functions thus categorize as syntactic sugar.
 
 \paragraph{Scope}
-To avoid a \textit{ReferenceError} when an arrow function is used outside of the lexical scope of a function, the \textit{\_arguments} identifier should reference \textit{undefined}. This is not the case when an arrow function is used inside the lexical scope of a function, then \textit{\_arguments} references the value of \textit{arguments} in its containing lexical function. This implies that the transformation of an arrow function requires context information of this arrow function, thus the transformations scope is global-to-local.
+To avoid a \textit{ReferenceError} when an arrow function is used outside of the lexical scope of a function, the \textit{\_arguments} identifier should reference \textit{undefined}. This is not the case when an arrow function is used inside the lexical scope of a function, then \textit{\_arguments} references the value of \textit{arguments} in its containing lexical function. This implies that the transformation of an arrow function requires context information of the placement of this arrow function, thus the transformations scope is global-to-local.
 
 \paragraph{Analysis of sub-terms}
-References to the \textit{arguments}, \textit{super} and \textit{this} keyword have to be identified in the body of an arrow function and renamed.
+References to the \textit{arguments} and \textit{this} keyword have to be identified in the body of an arrow function and renamed.
 \\
 \\
 \blockquote[{\cite[14.2.16]{SpecJS}}]{An ArrowFunction does not define local bindings for \textbf{arguments}, \textbf{super}, \textbf{this}, or new.target. Any reference to arguments, super, or this within an ArrowFunction must resolve to a binding in a lexically enclosing environment.}
@@ -37,10 +37,10 @@ var f = (function(_arguments,_this) {
 \end{lstlisting}
 
 \paragraph{Constraints on sub-terms}
-Use of the \textbf{yield} keyword is not allowed in an arrow functions body. Arrow functions can not be generators (see section \ref{generators}) and deep continuations are avoided (i.e. yielding from inside an arrow function to the lexical enclosing generator).
+Use of the \textbf{yield} keyword is not allowed in an arrow functions body. Arrow functions can not be generators (see appendix \ref{generators}) and deep continuations are avoided (i.e. yielding from inside an arrow function to the lexical enclosing generator).
 
 \paragraph{Preconditions}
-Before an arrow function can be transformed its body should have been transformed. This to prevent the incorrect renaming of sub-terms (\textbf{super},\textbf{arguments},\textbf{this}), because they still fall in the same scope depth. When visiting the body of an arrow function to rename sub-terms, the visitor breaks a path once a ES5 function is found, it does not break a path once it finds an arrow function. The following example illustrates how a desugaring would fail to correctly rename sub-terms if the body is not already desugared.
+Before an arrow function can be transformed its body should have been transformed. This to prevent the incorrect renaming of sub-terms (\textbf{super}, \textbf{arguments}, \textbf{this}), because they still fall in the same scope depth. When visiting the body of an arrow function to rename sub-terms the visitor breaks a path once an ES5 function is found, it does not break a path once it finds an arrow function. The following example illustrates how a desugaring would fail to correctly rename sub-terms if the body is not already desugared.
 
 \begin{lstlisting}
 var f = () => {
@@ -57,7 +57,7 @@ var f = (function(_this,_arguments) {
 \end{lstlisting}
 
 \section{Classes}
-Class definitions\cite[14.5]{SpecJS} are introduced in ECMAScript 6 as a new feature to standardize the inheritance model.
+Class definitions~\cite[14.5]{SpecJS} are introduced in ECMAScript 6 as a new feature to standardize the inheritance model.
 This new style of inheritance is still based on the prototypal inheritance (see section \ref{javascript-inheritance}).
 
 \paragraph{Category}
@@ -86,7 +86,7 @@ No.
 Bodies of constructor and class methods should have been transformed before the class declaration itself is transformed. This to prevent incorrect transformation of the sub-term \textbf{super}. (See preconditions of arrow functions, this is the same problem)
 
 \section{Destructuring} \label{destructuring}
-Destructuring\cite[12.14.5]{SpecJS} is a new language construct to extract values from object or arrays with a single assignment. It can be used in multiple places among which parameters, variable declaration, and expression assignment.
+Destructuring~\cite[12.14.5]{SpecJS} is a new language construct to extract values from object or arrays with a single assignment. It can be used in multiple places among which parameters, variable declaration, and expression assignment.
 
 \paragraph{Category}
 The destructuring language feature is eliminated by translating it into core language concepts such as member access on objects and array member selection.
@@ -108,10 +108,10 @@ Destructuring thus has a dependency on extended object literal notation for this
 This language features consists of two types of destructuring, object destructurings, and array destructurings. These two different features can be transformed separately.
 
 \section{Extended object literals} \label{object-literals}
-Literal object notation receives three new features in the ECMAScript 6 standard\cite[12.2.5]{SpecJS}. Shorthand property notation, shorthand method notation, and computed property names.
+Literal object notation receives three new features in the ECMAScript 6 standard~\cite[12.2.5]{SpecJS}. Shorthand property notation, shorthand method notation, and computed property names.
 
 \paragraph{Category}
-The extended object literals are syntactic sugar in the purest form. There are direct rules to eliminate the introduced concepts to core concepts of the ECMAScript 5 language. (e.g. shorthand property notation translate to \textit{property: value} notation)
+The extended object literals are syntactic sugar. There are direct rules to eliminate the introduced concepts to core concepts of the ECMAScript 5 language. (e.g. shorthand property notation translate to \textit{property: value} notation)
 
 \paragraph{Introducing bindings}
 One run-time function is used by the transformation suite, to set properties with computed property names. This method is a wrapper for \textit{Object.defineProperty}\footnotemark method. By using this run-time function instead of \textit{Object.defineProperty} directly we avoid unnecessary "noise".
@@ -120,8 +120,8 @@ One run-time function is used by the transformation suite, to set properties wit
 \paragraph{Decomposable}
 All three extensions of the object literal can be transformed separately.
 
-\section{For of loop}
-The ECMAScript 6 standard introduces iterators, and a shorthand \textit{for-loop} notation to loop over these iterators. This loop is called the \textit{for of} loop\cite[13.6.4]{SpecJS}. Previous versions of the ECMAScript standard had default for loops, and \textit{for in} loops (which iterate over all enumerable properties of an object and those inherited from its constructor's prototype).
+\section{For of loop} \label{for-of}
+The ECMAScript 6 standard introduces iterators, and a shorthand \textit{for-loop} notation to loop over these iterators. This loop is called the \textit{for of} loop~\cite[13.6.4]{SpecJS}. Previous versions of the ECMAScript standard had default for loops, and \textit{for in} loops (which iterate over all enumerable properties of an object and those inherited from its constructor's prototype).
 
 \paragraph{Category}
 This construct can be eliminated by transformation to a \textit{for-loop} using an iterator variable, and selecting the bound variable for the current index from the array using this iterator variable.
@@ -129,7 +129,7 @@ This construct can be eliminated by transformation to a \textit{for-loop} using 
 \paragraph{Constraints on sub-terms}
 No constraints any $<Statement>$ can be used within the body of a for-of loop.
 
-\begin{lstlisting}{language=Java}
+\begin{lstlisting}{language=rascal}
 syntax Statement
 	= "for" "(" Declarator ForBinding "of" Expression ")" Statement;
 \end{lstlisting}
@@ -141,6 +141,11 @@ The for-of loop binding can be declared with the let declarator (see Appendix \r
 for( let x of arr ) <Statement>
 \end{lstlisting}
 
+Destructuring assignment can be used as a for-of loop binding (see Appendix \ref{destructuring}):
+
+\begin{lstlisting}
+for( [a,b] of arr ) <Statement>
+\end{lstlisting}
 
 \section{Spread operator}
 ECMAScript 6 introduces a new unary operator named spread\cite[12.3.6.1]{SpecJS}. This operator is used to expand an expression in places where multiple arguments (i.e. function calls) or multiple elements (i.e. array literals) are expected.
@@ -209,13 +214,13 @@ This introduces a new binding (\textit{\_b\$a}).
 For correct specification compliance the argument of the spread operator has to be transformed to a consumable array. This behavior can be simulated through a run-time function.
 
 \paragraph{Analysis of sub-terms} \label{spread-analysis-sub-terms}
-When the pattern $<Expression e>(<{ArgExpression ","}* args>)$ is matched $e$ has to be analyzed to detect whether it is a function, or object property function. (See Appendix \ref{spread-intoducing-bindings})
+When the pattern \lstinline$<Expression e>(<{ArgExpression ","}* args>)$ is matched \lstinline$e$ has to be analyzed to detect whether it is a function, or object property function. (See Appendix \ref{spread-intoducing-bindings})
 
 \paragraph{Decomposable}
 The operator can be used in two places (places of multiple arguments, and multiple elements), which can be transformed separately.
 
 \section{Default parameter}
-The ECMAScript 6 spec defines a way to give parameters default values\cite[9.2.12]{SpecJS}. These values are used if the caller does not supply any value on the position of this argument. Any default value is evaluated in the scope of the function (i.e. $this$ will resolve to the run-time context of the function the default parameter value is defined on).
+The ECMAScript 6 spec defines a way to give parameters default values~\cite[9.2.12]{SpecJS}. These values are used if the caller does not supply any value on the position of this argument. Any default value is evaluated in the scope of the function (i.e. $this$ will resolve to the run-time context of the function the default parameter value is defined on).
 
 \paragraph{Category}
 This language feature can be eliminated by transformation to a core concept of the ECMAScript 5 language. By binding the variable in the function body to either the default value (in case the parameter equals $undefined$) or to the value supplied by the parameter.
@@ -235,7 +240,7 @@ Rest parameter is eliminated to core ECMAScript 5 language construct, this featu
 $<Function>$ to $<Function>$
 
 \section{Template Literal}
-Standard string literals in JavaScript have some limitations. The ECMAScript 6 specification introduces a template literal to overcome some of these limitations\cite[12.2.8]{SpecJS}. Template literals are delimited by the ` quotation mark, can span multiple lines and be interpolated by expressions: \lstinline{$<Expression>}
+Standard string literals in JavaScript have some limitations. The ECMAScript 6 specification introduces a template literal to overcome some of these limitations~\cite[12.2.8]{SpecJS}. Template literals are delimited by the ` quotation mark, can span multiple lines and be interpolated by expressions: \lstinline{$<Expression>}
 
 \paragraph{Category}
 Template strings are syntactic sugar for Strings concatenated with expressions and new-line characters.
@@ -244,7 +249,7 @@ Template strings are syntactic sugar for Strings concatenated with expressions a
 \lstinline$<Expression <TemplateLiteral>>$ to \lstinline$<Expression <StringLiteral>>$
 
 \section{Tail call optimization} \label{tail-call-optimization}
-JavaScript knows no optimization for recursive calls in the tail of a function, this results in the stack increasing with each new recursive call overflowing the stack as a result.  The ECMAScript 6 specification introduces tail call optimization to overcome this problem\cite[14.6]{SpecJS}
+JavaScript knows no optimization for recursive calls in the tail of a function, this results in the stack increasing with each new recursive call overflowing the stack as a result.  The ECMAScript 6 specification introduces tail call optimization to overcome this problem~\cite[14.6]{SpecJS}
 
 \paragraph{Category}
 Optimization, this transformation improves the space performance of a program.
@@ -252,8 +257,8 @@ Optimization, this transformation improves the space performance of a program.
 \paragraph{Abstraction level}
 Tail call optimization is a semantic based transformation. To identify if the expression of a return statement is a recursive call to the current function we need name binding information.
 
-\paragraph{Pure semantics}
-This extension is purely semantic, no new syntax is introduced. To transform this extension to work in older JavaScript interpreters the tail call has to be removed and replaced by a \lstinline$while$ loop, to prevent the call stack from overflowing.
+\paragraph{Program modification}
+This extension is purely semantic, no new syntax is introduced, thus a program modification and not extension. To transform this extension to work in older JavaScript interpreters the tail call has to be removed and replaced by a \lstinline$while$ loop, to prevent the call stack from overflowing.
 
 \begin{lstlisting}[caption={Function with tail recursion},label={lst:tail-call}]
 function fib(n,nn,res) {
@@ -277,14 +282,14 @@ function fib(arg0,arg1,arg2) {
 
 Figure \ref{lst:transformed-tail-call} illustrates how a function with tail recursion can be transformed to a function with an infinite loop. Not filling the call stack with new return positions and thus executing correctly even when our upper limit (100) is increased.
 
-\section{Generators}
-The ECMAScript 6 standard introduces a new function type, generators\cite[14.4]{SpecJS}. These are functions that can be exited and later re-entered, when leaving the function through $yielding$ their context (i.e. variable bindings) is saved and restored upon re-entering the function. A generator function is declared through \lstinline$function*$ and returns a Generator object (which inherits from $Iterator$)
+\section{Generators} \label{generators}
+The ECMAScript 6 standard introduces a new function type, generators~\cite[14.4]{SpecJS}. These are functions that can be exited and later re-entered, when leaving the function through $yielding$ their context (i.e. variable bindings) is saved and restored upon re-entering the function. A generator function is declared through \lstinline$function*$ and returns a Generator object (which inherits from $Iterator$)
 
 \paragraph{Category}
 A generator can be implemented as a state machine function wrapped in a little run-time returning a Generator object. It does categorize as syntactic sugar, however the transformation is complex (because of identification of control flow of body statement, see Analysis of sub-terms).
 
 \paragraph{Scope}
-Including a run-time the transformation can be managed local-to-local.
+The transformation can be managed local-to-local.
 
 \paragraph{Syntactically type preserving} \mbox{}\\
 \lstinline$<Statement>$ to \lstinline$<Statement>$ \\
@@ -331,6 +336,8 @@ x == 0; // false
 
 Thus $let$ declarations can be desugared if every block is transformed to a \lstinline$closure$ with the help of IIFE's. This does however imply a serious performance overhead on the transformed program (instead of normal block execution the interpreter has to create a closure for every block). This also breaks the standard control-flow of our program when the block uses any control-flow statement keywords (e.g. \lstinline$return$).
 
+A second way to emulate block binding in ECMAscript 6 is with the help of a \textit{try catch} statement, the introduced binding can be thrown in the try block and caught by the catch block. Making the binding available only to the remaining statements enclosed in the catch block. The issue with this solution is performance overhead imposed by \textit{try catch} blocks, because these are not optimized by the interpreter of the JavaScript code.
+
 There is another way to transform \lstinline$let$ declarations, for this implementation we need full name analysis of a program. The previous example can also be transformed by renaming the rebinding of \lstinline$x$:
 
 \begin{lstlisting}
@@ -364,7 +371,7 @@ The transformation of \lstinline$let$ (or \lstinline$const$) bindings is not com
 Once these \lstinline$let$ bindings are transformed to \lstinline$var$ bindings without renaming they would be declared in the same lexical scope. Whereas they are not at the moment. For a transformation to \lstinline$var$ bindings to work one of these bindings and its uses has to be renamed.
 
 \paragraph{Introducing bindings}
-The transformation introduces no new bindings, it converts \lstinline$let$ and \lstinline$const$ bindings to \lstinline$var$ bindings, and renames these bindings (and their references) where necessary.
+The transformation introduces new bindings, it converts \lstinline$let$ and \lstinline$const$ bindings to \lstinline$var$ bindings, and renames these bindings (and their references) where necessary.
 
 \paragraph{Preconditions}
 Other transformations need to be performed before the let const extension is transformed. To prevent this extension to have dependencies on other extensions. For example the for-of extension has a dependency on the let-const extension:
