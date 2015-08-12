@@ -7,7 +7,7 @@
 
 \lhead{Appendix C. \emph{ES6 Test Examples}} % This is for the header on each page - perhaps a shortened title
 
-\begin{lstlisting}[caption=Arrow function]
+\begin{lstlisting}[caption=Arrow function,label{lst:arrowfunction}]
 var evens = [2,4,6,8,10],
     fives = [];
 
@@ -34,7 +34,7 @@ function args() {
 args('arg1','arg2')();
 \end{lstlisting}
 
-\begin{lstlisting}[caption=Destructuring]
+\begin{lstlisting}[caption=Destructuring,,label{lst:destructuring}]
 var [a,b,c] = [1,2,3];
 
 function fun( [a,b] ) {
@@ -48,7 +48,7 @@ var { d = '100' } = {b:0};
 var [e,f,g = '100'] = [0,1];
 \end{lstlisting}
 
-\begin{lstlisting}[caption=Object literals]
+\begin{lstlisting}[caption=Object literals,label{lst:objectliterals}]
 var handler;
 var obj = {
     handler,

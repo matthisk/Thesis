@@ -39,6 +39,7 @@
 \usepackage{tikz}
 \usepackage{calc}
 \usepackage{enumitem}
+\usepackage{pifont}
 \usetikzlibrary{positioning}
 \usepackage[square, numbers, comma, sort&compress]{natbib} % Use the natbib reference package - read up on this to edit the reference style; if you want text (e.g. Smith et al., 2012) for the in-text references (instead of numbers), remove 'numbers' 
 \hypersetup{urlcolor=blue, colorlinks=true} % Colors hyperlinks in blue - change to black if annoying
@@ -149,7 +150,7 @@ Master Software Engineering\\
 
 \abstract{\addtocontents{toc}{\vspace{1em}} % Add a gap in the Contents, for aesthetics
 
-Extending programming languages is an activity undertaken by many programmers, mostly through the use of syntax macros but there exist different manners through which to achieve extensible programming languages. Language extensions are dedicated modular grammars including an elimination step to the base language and relieve us from some of the restrictions of other forms of extensible programming languages. They enable programmers to create their own syntax on top of a base language and embed domain specific knowledge not just in semantic but also in syntax. For implementation of language extensions a tool called a language workbench can be used. Language workbenches promise to provide an environment which improves the efficiency of language oriented programming. To evaluate this promise of the language workbench we implement the latest JavaScript specification (ECMAScript 6) as a set of language extensions on top of current JavaScript and compare our implementation against tools created without the help of a language workbench.
+Extending programming languages is an activity undertaken by many programmers, mostly through the use of syntax macros but there exist different manners through which to achieve extensible programming languages.  Extension enables any programmer to introduce new language constructs, not just the creators of a language. Language extensions are dedicated modular grammars including a transformation step to the base language. They enable programmers to create their own syntax on top of a base language and embed domain specific knowledge not just in semantics but also in syntax. For implementation of language extensions a tool called a language workbench can be used. Language workbenches promise to provide an environment which improves the efficiency of language oriented programming. To evaluate this promise of the language workbench we implement the latest JavaScript specification (ECMAScript 6) as a set of language extensions on top of current JavaScript and compare our implementation against tools created without the help of a language workbench.
 
 \clearpage % Start a new page
 

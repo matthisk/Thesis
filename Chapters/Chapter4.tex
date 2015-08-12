@@ -11,22 +11,39 @@ Every language extension has several properties which can be identified and cate
 
 \section{Structure}
 
-The several dimensions of the taxonomy give insight in the answer to three questions specific to a language extension.
+The several dimensions of the taxonomy give insight in the answers to three questions specific to a language extension.
 
-\textit{How can the language extension be implemented?}\\1
+\textit{How can the language extension be implemented?}\\
 There are multiple ways to implement a language extension (e.g. a program transformation or a compiler extension). Sometimes one solution is preferable over another, the following dimensions help in selecting an implementation type for a language extensions:
 
-Category, abstraction level, extension or modification, dependencies, and decomposable.
+\begin{itemize}
+	\item Category
+	\item Abstraction level
+	\item Extension or modification
+	\item Dependencies
+	\item Decomposable
+\end{itemize}
 
 \textit{What information does transformation of a language extension require?}\\
 Transformations rely on information in the source program to be able to perform transformations. Some require more information than others, this additional information required can make implementation of the language extension more complex. The following dimensions help in identifying the amount of context needed for a language extension to be transformed:
 
-Category, compositionality, analysis of subterms, and scope.
+\begin{itemize}
+	\setlength\itemsep{0.4em}
+	\item Category
+	\item Compositionality
+	\item Analysis of subterms
+	\item Scope
+\end{itemize}
 
 \textit{What are guarantees can we give of the target program produced by a language extension?}\\
 Transformation of a language extension produces a target program different from the source program. The following dimensions help identifying to what extend target and source program differ from each other, giving insight into the inner working of a transformation:
 
-Syntactically type preserving, Introduction of bindings, depending on bindings, backwards compatible.
+\begin{itemize}
+	\item Syntactically type preserving
+	\item Introduction of bindings
+	\item Depending on bindings
+	\item Backwards compatible
+\end{itemize}
 
 \section{Dimensions}
 The following dimensions are identified and used to categorize every language extension. Each of the following paragraphs investigates a relevant question to language extensions and provides insight into answering these question with the use of examples.
@@ -105,9 +122,7 @@ Are the non-terminals of our language extension analyzed by the transformation r
 Can the language extensions be performed stand-alone or is there a dependency on one of the other extensions.
 
 \paragraph{Backwards compatible}
-Will the API of a transformed language extension work correctly as source program for our extended programming language. 
-
-Take for example the generator language extension (see appendix \ref{generators}), this extension introduces a new type of function the generator function. If we transform a generator function (called \textit{g}) to ES5 JavaScript code and then use this code as a source program. In this source program we create a second generator called \textit{h} which delegates a yield to the generator \textit{g} through the \lstinline$yield*$ keyword\footnote{\url{https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/yield*}}. If \lstinline$yield*$ can be correctly used on a previously transformed generator than the transformation is backwards compatible otherwise it is not.
+Is all valid base language code also valid inside an environment where the base language is extended with this language extension. For example the \textit{let-const} (see appendix \ref{let-const}) language extension introduces a new keyword \lstinline$let$, because of this code written in the base language could break when parsed with the \textit{let-const} language extension enabled. For instance \lstinline$let[x] = 10;$ would be correct ES5 JavaScript code in ES6 this is however not allowed because \lstinline$let$ is a reserved keyword.
 
 \paragraph{Decomposable}
 Is it possible to identify smaller transformation rules inside this language extension, that can be performed independently from one another.
@@ -133,7 +148,7 @@ Is it possible to identify smaller transformation rules inside this language ext
 {\bf Constraints on subterms} & $\circ$ & $\circ$ & $\circ$ & $\circ$ & $\circ$ & $\circ$   \\
 {\bf Preconditions} & $\bullet$ & $\bullet$ & $\circ$ & $\circ$ & $\circ$ & $\circ$   \\
 {\bf Dependencies}  & $\circ$ & $\circ$ & $\bullet$ & $\circ$ & $\bullet$ & $\circ$   \\
-{\bf Backwards compatible} & $\bullet$ & $\bullet$ & $\bullet$ & $\bullet$ & $\bullet$ & $\bullet$  \\
+{\bf Backwards compatible} & $\bullet$ & $\circ$ & $\bullet$ & $\bullet$ & $\bullet$ & $\bullet$  \\
 {\bf Decomposable} & $\circ$ & $\circ$ & $\bullet$ & $\bullet$ & $\bullet$ & $\bullet$  \\ \hline
 \end{tabular}
 \vspace*{0.5cm}

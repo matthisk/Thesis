@@ -4,7 +4,7 @@
 
 \lhead{Chapter 5. \emph{Implementation} {\projectname}}
 
-Each transformation is defined as one or more rewrite rules. It has a concrete syntax pattern which matches part of a parse-tree. The result is a concrete piece of syntax, using only constructs from the core syntax definition (i.e. ES 5).
+Each transformation of a language extension is defined as one or more rewrite rules. It has a concrete syntax pattern which matches part of a parse-tree. The result is a concrete piece of syntax, using only constructs from the core syntax definition (i.e. ES 5).
 The rewrite rules are exhaustively applied on the input parse-tree until no more rewrite rules match any sub-trees of the input. Application of rewrite rules to the parse-tree is done bottom-up because several rewrite rules (e.g. arrow function) demand their sub-terms to be transformed to guarantee successful completion.
 
 \section{Basics}
@@ -44,6 +44,8 @@ To desugar the new syntax construct to JavaScript code we overload the previousl
 
 % \CAT{Keyword}{syntax} Statement = \CAT{Constant}{"swap"} Id Id;
 
+\begin{figure}
+\caption{}
 \begin{rascal}
 Statement desugar( (Statement)`\CAT{Keyword}{swap} \CAT{MetaVariable}{\textless{}Id x\textgreater{}} \CAT{MetaVariable}{\textless{}Id y\textgreater{}}` )
     = (Statement)
@@ -53,14 +55,43 @@ Statement desugar( (Statement)`\CAT{Keyword}{swap} \CAT{MetaVariable}{\textless{
             	\CAT{MetaVariable}{\textless{}Id y\textgreater{}} = tmp;
             \}{})();`;
 \end{rascal}
+\end{figure}
 
 The argument of desugar is a pattern match on parse-tree nodes of the type \lstinline$Statement$ matching on \lstinline$swap$ statements, if a match is found the identifiers supplied to the statement are bound respectively to \lstinline$x$ and \lstinline$y$. The function returns a piece of concrete syntax which in turn is of the type \lstinline$Statement$ where the supplied identifiers are rebound to each other. Remember that the supplied identifiers to the \lstinline$swap$ statement could have any name, what would happen if one of the identifiers was name \lstinline$tmp$?
 
 \section{\projectname}
 In \textit{\projectname} we implement a large subset of ES6 features as language extensions on top of a core syntax describing ES5. Here we discuss several parts of interest from our implementation. Everything with the exception of let-const is based on the simple example described in the previous section. 
 
-\subsection{Visitor}
-In our basic example we used a function \lstinline$runDesugar$, this is the visitor of the parse-tree and is in principle how the visitor of {\projectname} works. Differences are we also match on expressions, functions, and the source node (root node) this final match can be used by transformations that are performed global-to-local or global-to-global. If we have multiple language extensions performing a global-to-local or global-to-global transformation or if a language extension's transformation introduces a language construct that should be desugared either by itself or another language extension, one pass over the parse tree is not enough. For extensions with these kind of transformations we need to revisit the tree until no more changes are applied by desugar functions. The final desugar visitor and default desugar functions are as follows, where \textit{solve} will ensure we revisit the tree until no more desugarings are performed:
+\subsection{Visitor} \label{sec:visitor}
+In our basic example we used a function \lstinline$runDesugar$, this is the visitor of the parse-tree and is in principle how the visitor of {\projectname} works. Differences are we also match on expressions, functions, and the source node (root node) this final match can be used by transformations that are performed global-to-local or global-to-global. If we have multiple language extensions performing a global-to-local or global-to-global transformation or if a language extension's transformation introduces a language construct that should be desugared either by itself or another language extension, one pass over the parse tree is not enough. For extensions with these kind of transformations we need to revisit the tree until no more changes are applied by desugar functions. For example the use of a destructuring assignment pattern inside a \textit{for-of} loop's binding will be desugared to a variable declaration inside the loop's body (see section \ref{par:combined-extensions}), relying on a second pass over the parse tree to desugar the assignment pattern inside the variable declaration:
+
+\begin{minipage}[t]{0.4\textwidth}
+\begin{lstlisting}
+for(var [a,b] of arr) {
+	<Statement* body>
+}
+\end{lstlisting}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.55\textwidth}
+\begin{lstlisting}
+for(var i = 0; i <= arr.length; i++) {
+	var [a,b] = arr[i];	
+	<Statement* body>
+}
+\end{lstlisting}
+\end{minipage}
+\begin{lstlisting}
+for(var i = 0; i <= arr.length; i++) {
+	var _ref = arr[i],
+		  a = _ref[0],
+		  b = _ref[1];
+	<Statement* body>
+}
+\end{lstlisting}
+
+
+The final desugar visitor and default desugar functions are as follows, where \textit{solve} will ensure we revisit the tree until no more desugarings are performed:
 
 \begin{lstlisting}[caption=Identity desugar functions, language=rascal]
 default Source desugar( Source s ) = s;
@@ -87,13 +118,13 @@ An example of a language extension that relies on a global-to-local transformati
 \subsection{Introducing bindings}
 Some language extensions need to introduce new bindings in the target program to work properly. There are multiple ways for a transformation to introduce bindings in JavaScript. When a transformation is performed on an expression an IIFE can be used to introduce new bindings only accesible in the scope of this expression.
 
-\begin{minipage}{0.45\linewidth}
+\begin{minipage}[t]{0.45\linewidth}
 \begin{lstlisting}
 <Expression e>
 \end{lstlisting}
 \end{minipage}
 \hfill
-\begin{minipage}{0.45\linewidth}
+\begin{minipage}[t]{0.45\linewidth}
 \begin{lstlisting}
 (function(x, y, ...) {
 	return <Expression e>;
@@ -101,15 +132,15 @@ Some language extensions need to introduce new bindings in the target program to
 \end{lstlisting}
 \end{minipage}
 
-When a transformation is performed on a statement a block statement can be used in combination with variables declared through the \textit{let} declarator, to introduce variables only accessible in the scope of the statement. \textit{Let} declarations are however not part of ES5 JavaScript but introduced by ES6, this assumes there is a language extension for \textit{let} present (see appendix \ref{let-const}).
+When a transformation is performed on a statement a block statement can be used in combination with variables declared through the \textit{let} declarator, to introduce variables only accessible in the scope of the statement. \textit{Let} declarations are however not part of ES5 JavaScript but introduced by ES6, this assumes there is a language extension for \textit{let} present in the current set of enabled language extensions (see appendix \ref{let-const}).
 
-\begin{minipage}{0.45\linewidth}
+\begin{minipage}[t]{0.45\linewidth}
 \begin{lstlisting}
 <Statement s>
 \end{lstlisting}
 \end{minipage}
 \hfill
-\begin{minipage}{0.45\linewidth}
+\begin{minipage}[t]{0.45\linewidth}
 \begin{lstlisting}
 {
 	let x = xd,
@@ -123,9 +154,9 @@ When a transformation is performed on a statement a block statement can be used 
 In the case of a statement an IIFE can not be used to introduce new bindings because the control flow of the target program would break if the desugared statement contains a non-local control flow construct, such as \lstinline$return$ or \lstinline$break$. 
 
 \subsection{Mutually dependent language extensions} \label{par:combined-extensions}
-Language extensions can depend upon other language extensions to work correctly, this dependency makes a collection of language extensions less modular because the dependent extension always needs to be used in combination with its dependency. It would be preferable if the two extensions could be used in separation where functionality which relies on both extensions working together is only enabled in a situation where the two language extensions are used.
+Language extensions can depend upon other language extensions to work correctly, this dependency makes a collection of language extensions less modular because the dependent extension always needs to be used in combination with its dependency. It would be preferable if the two extensions could be used in separation where functionality which relies on both extensions working together is only enabled in a situation where the two language extensions are enabled.
 
-An example of language extension with mutually dependent functionality in the ES 6 specification is that of destructuring assignment (see appendix \ref{destructuring}) inside for-of loops (see appendix \ref{for-of}).
+An example of language extension with mutually dependent functionality in the ES 6 specification is that of destructuring assignment (see appendix \ref{destructuring}) inside for-of loop's binding (see appendix \ref{for-of}).
 
 \begin{lstlisting}
 for(var [a,b] of [ [1,2], [3,4] ]) {
@@ -158,7 +189,7 @@ syntax ForBinding
 
 How are the transformations of both extensions affected by the fact that they are mutually dependent on each other? Before this question can be answered we need insight in how a \textit{for-of} loop is desugared, this is explained in appendix \ref{for-of}. For this example we just assume a \textit{for-of} loop is desugared to a traditional \textit{for} loop over the length property of the input array (ignoring some of the intricacies of \textit{for-of} loop language extension). The following example presents the wanted desugaring where the assignment pattern binding is moved to the body of the loop. 
 
-\begin{minipage}{0.45\linewidth}
+\begin{minipage}[t]{0.45\linewidth}
 \begin{lstlisting}
 for(var [a,b] of arr) {
 	<Statement* body>
@@ -166,7 +197,7 @@ for(var [a,b] of arr) {
 \end{lstlisting}
 \end{minipage}
 \hfill
-\begin{minipage}{0.5\linewidth}
+\begin{minipage}[t]{0.5\linewidth}
 \begin{lstlisting}
 for(var i = 0; i < arr.length; i++) 
 {	
@@ -176,19 +207,25 @@ for(var i = 0; i < arr.length; i++)
 \end{lstlisting}
 \end{minipage}
 
-The complexity in the desugar function of a \textit{for-of} loop lies in the fact that the \lstinline$ForBinding$ non-terminal can consist either of an \lstinline$Identifier$ or an \lstinline$AssignmentPattern$ non-terminal. The \textit{for-of} loop language extension is however unaware of the existence of the second option, because it is created by the \textit{destructuring} language extension, and thus unable to correctly desugar in this case. To solve this issue we introduce a function that can be overloaded in the \textit{destructuring} language extension to help transform the \lstinline$ForBinding$ to a \lstinline$VariableDeclaration$, this function is named \textit{declareBinding}.
+The \lstinline$ForBinding$ non-terminal can consist either of an \lstinline$Identifier$ or an \lstinline$AssignmentPattern$ non-terminal. The \textit{for-of} loop language extension is however unaware of the existence of the second option, because it is created by the \textit{destructuring} language extension, and thus unable to correctly desugar in this case. To solve this issue we introduce a function that can be overloaded in the \textit{destructuring} language extension to help transform the \lstinline$ForBinding$ to a \lstinline$VariableDeclaration$, this function is named \textit{declareBinding}.
 
-\begin{lstlisting}[caption=default \textit{declareBinding} function from \textit{for-of} language extension,language=rascal]
-VariableDeclaration declareBinding( (ForBinding)`<Id id>`, Expression e )
-	= (VariableDeclaration)`<Id id> = <Expression e>`;
-\end{lstlisting}
+\begin{figure}
+\caption{default \textit{declareBinding} function from \textit{for-of} language extension}
+\begin{rascal}
+VariableDeclaration declareBinding( (ForBinding)`\CAT{MetaVariable}{\textless{}Id id\textgreater{}}`, Expression e )
+    = (VariableDeclaration)`\CAT{MetaVariable}{\textless{}Id id\textgreater{}} = \CAT{MetaVariable}{\textless{}Expression e\textgreater{}}`;
+\end{rascal}
+\end{figure}
 
-\begin{lstlisting}[caption=overloaded \textit{declareBinding} function from \textit{destructuring} language extension,language=rascal]
-VariableDeclaration declareBinding( (ForBinding)`<AssignmentPattern p>`, Expression e )
-	= (VariableDeclaration)`<AssignmentPattern p> = <Expression e>`;
-\end{lstlisting}
+\begin{figure}
+\caption{overloaded \textit{declareBinding} function from \textit{destructuring} language extension}
+\begin{rascal}
+VariableDeclaration declareBinding( (ForBinding)`\CAT{MetaVariable}{\textless{}Id id\textgreater{}}`, Expression e )
+    = (VariableDeclaration)`\CAT{MetaVariable}{\textless{}Id id\textgreater{}} = \CAT{MetaVariable}{\textless{}Expression e\textgreater{}}`;
+\end{rascal}
+\end{figure}
 
-Designing language extensions in this way makes the entire suite of language extensions more modular. Language extensions can be mutually dependent instead of having explicit dependencies on one another. This presents the possibility of selecting only the needed language extensions without being required to depend on unneeded language extensions. And at the same time it reduces the amount of code needed for the implementation of language extensions that are mutually dependent. In case of our example above if we had an explicit dependency from \textit{destructuring} to \textit{for-of} the desugaring function for \textit{for-of} loops had to be overridden in the \textit{destructuring} language extension.
+Designing language extensions in this way makes the entire suite of language extensions more modular. Language extensions can be mutually dependent instead of having explicit dependencies on one another. This presents the possibility of selecting only the needed language extensions without being required to depend on unneeded language extensions. And at the same time it reduces the amount of code needed for the implementation of language extensions that are mutually dependent. In case of our example above if we had an explicit dependency from \textit{destructuring} to \textit{for-of} the desugaring function for \textit{for-of} loops had to be overridden in the \textit{destructuring} language extension.	
 
 \subsection{Variable capture}
 In section \ref{hygiene} we have described the problem of variable capture in the context of program transformations. 

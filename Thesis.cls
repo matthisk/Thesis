@@ -177,8 +177,8 @@
 \newcommand*{\subject}[1]{\def\subjectname{#1}}
 \newcommand*{\keywords}[1]{\def\keywordnames{#1}}
 \newcommand*{\host}[1]{\def\host{#1}}
-\newcommand*{\theprojectname}[1]{\def\projectname{#1}}
-\newcommand*{\thevfix}[1]{\def\vfix{#1}}
+\newcommand{\projectname}{RMonia}
+\newcommand{\vfix}{v-fix}
 
 %----------------------------------------------------------------------------------------
 %	DOCUMENT VARIABLES
@@ -222,8 +222,6 @@
 %-------------------------------------------------                
 \FACULTY{FACULTEIT DER NATUURWETENSCHAPPEN, WISKUNDE en INFORMATICA}
 %----------------------------------------------------------------------------------------    
-\theprojectname{RMonia}
-\thevfix{v-fix}
 %----------------------------------------------------------------------------------------    
 
 % The default title page, this is not used in this www.latextemplates.com version            

@@ -43,7 +43,7 @@ To evaluate our implementation of the transformation suite we validate against t
 \footnotetext[5]{\url{http://esprima.org/}}
 
 
-\paragraph{Coverage}
+\paragraph{Coverage} \label{sec:coverage}
 In appendix \ref{AppendixA} we give an overview of ES6 features implemented by our transformation suite, with argumentation why several features are not implemented. Babel JS is them most feature complete with the exception of \textit{new.target} property (not implemented by any of the transpilers). Generators are transformed by Babel JS but the needed transformation is not implemented by the Babel JS developers (they use the \textit{regenerator} transformation suite to transform generators). Traceur lacks support for proper tail-calls and the \textit{new.target} property they do have their own implementation of generator transformations. ES6 Transpiler implements \textit{for of} loops in a variant too basic to categorize it as implemented (i.e. \textit{for of} loops can only iterate over lists, not strings, or iterables). ES6 transpiler also lacks support for generators, the \textit{new.target} property, and proper tail-calls.
 
 \begin{table}[h!]
@@ -131,7 +131,7 @@ Our implementation does not score as high as the big open-source projects, mainl
 }
 \end{table}
 
-As discussed in section \ref{hygiene}, hygiene is an important aspect to determine the correctness of program transformations. We will present one example where we try to shadow an introduced binding by the transpiler and detect whether or not the transpiler resolves the shadowed binding. For variable capture to happen we need to test a language extension that introduces bindings. In this example we use the arrow function extension and try to introduce variable capture because this extension has to bind \textit{this} from the lexical scope of the parent function (see appendix \ref{arrow}).
+As discussed in section \ref{hygiene} hygiene is an important aspect of the correctness of program transformations. We will present one example where we try to shadow an introduced binding by the transpiler and detect whether or not the transpiler resolves the shadowed binding. For variable capture to happen we need to test a language extension that either introduces bindings or depends on source bindings. In this example we use the arrow function extension and try to introduce variable capture because this extension has to bind \textit{this} from the lexical scope of the parent function (see appendix \ref{arrow}).
 
 \begin{lstlisting}[label=traceur-capture, caption=Example input to Traceur\protect\footnotemark]
 function f() {
@@ -142,9 +142,9 @@ function f() {
 
 we replace \lstinline$<Id>$ with the variable name \textit{this} is bound to by the transpiler:
 
-Both ES6 Transpiler and Babel JS correctly resolve the shadowed variable (see appendix \ref{AppendixC} for examples). Traceur fails to correctly identify variable capture in this example:
+Both ES6 Transpiler and Babel JS correctly resolve the shadowed variable (see appendix \ref{AppendixC} for examples). Traceur fails to correctly identify variable capture in this example (see listing \ref{lst:traceurhygiene}). Because \lstinline$this$ is still bound to \lstinline{$__0} and then we redeclare \lstinline{$__0} and bind \lstinline$null$ to it, the resulting target program will not behave as expected.
 
-\begin{lstlisting}[caption=Variable capture in Traceur transpiler]
+\begin{lstlisting}[caption=Variable capture in Traceur transpiler,label=lst:traceurhygiene]
 function f() {
     var $__0 = this;
     var $__0 = null;
@@ -158,16 +158,18 @@ function f() {
 \paragraph{Size}
 In table \ref{tab:loc} we compare the size of all projects in lines of code, where our own artifact is named Rascal. Lines of code are measured using the \textit{cloc} tool\footnote{\url{http://cloc.sourceforge.net/}}, because \textit{cloc} has no built in support to measure lines of code of Rascal programs we forced \textit{cloc} to measure Rascal programs as if they where \textit{Java} code (Rascal comments are similar to those of Java).
 
-Our artifact is about five times smaller in size, compared to other implementations.
+To compare the total size of all transpilers based on lines of code used we should normalize according to the amount of features implemented by each transpiler. There are a total of 19 features that an ES6 to ES5 transformer can implement (see section \ref{sec:coverage}), since our project is time-constrained we implemented 12 features completely and one feature partially, making our project about 70\% feature complete. The lines of code used to calculate percentages from are presented in table \ref{tab:loc}.
+
+Babel fully implements 16 features and partially implements 1 feature. Resulting in a feature completeness of 87\% while using 378\% more lines of code. Traceur fully implements 17 features and non partially. Making their implementations 90\% feature complete and using 622\% more lines of code. ES6 Transpiler fully implements 14 features and non partially. Their implementation is thus 74\% feature complete while using 290\% more lines of code.
 
 Our artifact relies on the Rascal parser generator and a Rascal syntax definition to define the ES 5 grammar, and ES 6 language extensions. Other implementations rely on open-source ES parsers implemented in JavaScript, or implement their own parser. The syntax definitions are about eight to ten times smaller in size than any of the JavaScript parsers. Rascal syntax definitions do impose some limitations that made it difficult or impossible to implement certain ES grammar features, in appendix \ref{AppendixA} we elaborate on this.
 
 \begin{table}[h]
-\caption{Lines of code - transformations \& parser} \label{tab:loc}
+\caption{Lines of code --- transformations \& parser} \label{tab:loc}
 \begin{minipage}{0.45\linewidth}
 \begin{tabular}{@{}lrr@{}}
 \toprule
-              & {\bf Files} & \multicolumn{1}{l}{{\bf Lines of code}} \\ \midrule
+              & {\bf Files} & \multicolumn{1}{l}{{\bf SLOC}} \\ \midrule
 {\bf Babel}   & 76          & 6547                                    \\
 {\bf Traceur} & 19          & 9881                                    \\
 {\bf ES6 Transpiler} & 22    & 5341
@@ -179,7 +181,7 @@ Our artifact relies on the Rascal parser generator and a Rascal syntax definitio
 \begin{minipage}{0.45\linewidth}
 \begin{tabular}{@{}lrr@{}}
 \toprule
-              & {\bf Files} & \multicolumn{1}{l}{{\bf Lines of code}} \\ \midrule
+              & {\bf Files} & \multicolumn{1}{l}{{\bf SLOC}} \\ \midrule
 {\bf Acorn}   & 22          & 3583                                    \\
 {\bf Traceur} & 15          & 6681                                    \\
 {\bf ESprima} & 1           & 4323
@@ -189,30 +191,51 @@ Our artifact relies on the Rascal parser generator and a Rascal syntax definitio
 \end{minipage}
 \end{table}
 
-In table \ref{tab:loc-feature} we analyze the size of each transpiler on a feature basis, where only the size of actual transformation code for an extension is measured. Rascal's implementation and that of Babel JS have simlilar sizes for transformations. Traceur and ES6 transpiler's size difference as compared to Rascal's implementation are similar to that of the size different of the projects as a whole.
+In table \ref{tab:loc-feature} we analyze the size of each transpiler on a feature basis, where only the size of actual transformation code for an extension is measured. \projectname and that of Babel JS have simlilar sizes for transformations. Traceur and ES6 Transpiler differ in size per feature compared to \projectname, the differences are inline with the size differences of projects as a whole.
 
-The main reason why Babel JS is able to reduce the size of their transformations is because of the architecture of the project. Many concerns are extracted from transformation code and solved separately in different modules/files. Some examples: creating new bindings (\textit{src/babel/traversal/scope/binding.js}), pattern matching on parse tree nodes (\textit{src/babel/traversal} LOC: 2456), creating new abstract syntax (\textit{src/babel/transformations/templates} LOC: 456).
+Traceur and ES6 transpiler's size difference as compared to Rascal's implementation are similar to that of the size different of the projects as a whole.
 
-\begin{table}[h!]
+The main reason why Babel JS is so small is because of the architecture of the project. Many concerns are extracted from transformation code and solved separately in different modules/files. Some examples: creating new bindings (\textit{src/babel/traversal/scope/binding.js}), pattern matching on parse tree nodes (\textit{src/babel/traversal} SLOC: 2456), creating new abstract syntax (\textit{src/babel/transformations/templates} SLOC: 456).
+
+
+\begin{table}[h]
 \centering
-\caption{BabelJS - Lines of code per transformation} \label{tab:loc-feature}
-\begin{tabular}{@{}lrrrr@{}}
+\caption{Source lines of code per transformation} \label{tab:sloc-feature}
+
+\makebox[\textwidth][c]{
+\begin{tabular}{lcccc}
 \toprule
-                           & \textbf{Babel JS} & \textbf{Traceur} & \textbf{ES6 transpiler} & \textbf{\projectname} \\ \midrule
-\textbf{Arrow functions}   & 7                 & 144              & 277\footnotemark[1]     & 40 \\
-\textbf{Classes}           & 390               & 286              & 498                     & 215 \\
-\textbf{Destructuring}     & 349               & 403              & 303                     & 261 \\
-\textbf{For of loop}       & 127               & 90               & 529                     & 159 \\
-\textbf{Binding}           & 513               & 651              & 219                     & 221 \\
-\textbf{Parameters}        & 192               & 554              & 277\footnotemark[1]     & 58 \\
-\textbf{Object literals}   & 74                & 248              & 204                     & 74 \\
-\textbf{Spread}            & 93                & 117              & 460                     & 57 \\
-\textbf{Template literals} & 64                & 203              & -\footnotemark          & 89 \\
-\textbf{Numeric literals}  & -                 & 31               & 22                      & - \\ \bottomrule
+ & \multicolumn{4}{c}{Transpiler} \\
+ \cmidrule(r){2-5}
+ & \multicolumn{1}{l}{{\bf Babel}} & \multicolumn{1}{l}{{\bf Traceur}} & \multicolumn{1}{l}{{\bf ES6 Transpiler}} & \multicolumn{1}{l}{{\bf \projectname}} \\ \midrule
+{\bf Syntax} & & & & \\
+
+\multicolumn{1}{r}{default function parameters}   & 92               & 66              & 277\footnotemark[1]     & 58 \\
+\multicolumn{1}{r}{rest parameters} & 146 & 41 & \ding{121} & \ding{54} \\
+\multicolumn{1}{r}{spread (...) operator} & 93                & 117              & 460                     & 57 \\
+\multicolumn{1}{r}{object literal extension} & 74                & 248              & 204                     & 74 \\
+\multicolumn{1}{r}{for..of loops} & 127               & 90               & 529                     & 159 \\
+\multicolumn{1}{r}{octal and binary literals} & \ding{121}               & 31               & 22                      & \ding{54} \\
+\multicolumn{1}{r}{template strings} & 64                & 203              & 179          & 89 \\
+\multicolumn{1}{r}{RegExp ``y'' and ``u'' flags} & \textbf{\textquestiondown} & 45 & 300 & \ding{54} \\
+\multicolumn{1}{r}{destructuring} & 349               & 403              & 303                     & 261 \\
+\multicolumn{1}{r}{Unicode code point escapes} & \ding{54} & 41 & 82 & \ding{121} \\
+
+
+{\bf Bindings}  & 513               & 651              & 219                     & 221 \\
+{\bf Functions} & & & & \\
+
+\multicolumn{1}{r}{arrow functions} & 58                 & 144              & 277\footnotemark[1]     & 40 \\
+\multicolumn{1}{r}{class} & 390               & 286              & 498                     & 215 \\
+\multicolumn{1}{r}{super} & 246 & 287 & \ding{121} & \ding{121} \\
+\multicolumn{1}{r}{generators} & \textbf{\textquestiondown}                & 203              & \ding{54}          & \ding{54} \\ \bottomrule
 \end{tabular}
+} \\
+\ding{54} -- extension not implemented by transpiler. \\
+\ding{121} -- extension not implemented in separate source file. \\
+\textbf{\textquestiondown} -- feature implemented using heavy dependency on external modules. \\
+\footnotetext[1]{ES6 transpiler does not have separate files for arrow function and paramater transformation, these both reside in \textit{functions.js}. This number is the size (in source lines of code) of this file.}
 \end{table}
-\footnotetext[1]{ES6 transpiler does not have separate files for arrow function and paramater transformation, these both reside in \textit{functions.js}. This number is the size (in lines of code) of this file.}
-\footnotetext{Not implemented by ES6 transpiler}
 
 \paragraph{Modularity}
 
@@ -222,49 +245,119 @@ The extending of language extensions or creating new extensions on top of the ba
 
 Babel JS supports selection of enabled extensions through the \textit{--exclude} command line parameter through which language extensions can be disabled. Traceur allows enabling/disabling of extensions through a command line parameter per feature (i.e. \textit{--arrow-functions=false} disables the arrow functions language extension). ES6 Transpiler does not support the enabling/disabling of extensions, the transformer always enables all language extensions.
 
-In our implementation all new language features are fully modularized, making it possible to only enable certain language extensions. Even when extensions rely on each other it is possible to use them in separation. For instance the destructuring language extension can use computed property names (see appendix \ref{object-literals}) to destructure an objects property. The computed property names are part of the object literal language extension, if both extensions are enabled then it is possible to use computed property names inside object destructurings, if only destructurings are enabled computed property names are not enabled.
+In our implementation all new language features are fully modularized, making it possible to only enable certain language extensions. Even when extensions rely on each other it is possible to use them in separation. For instance the destructuring language extension can use computed property names (see appendix \ref{object-literals} and listing \ref{lst:destructuring-c-object-keys}) to destructure an objects property. The computed property names are part of the object literal language extension, if both extensions are enabled then it is possible to use computed property names inside object destructurings, if only destructurings are enabled computed property names are not enabled (for explanation of mutually dependent language extension see section \ref{par:combined-extensions}).
 
-\begin{lstlisting}[caption=Example of computed property names inside object destructurings]
+\begin{lstlisting}[caption=Example of computed property names inside object destructurings,label={lst:destructuring-c-object-keys}]
 function key() { return "k"; }
 
 var { [key()] : value } = obj;
 \end{lstlisting}
 
 \paragraph{Output ``noise''}
-To measure the amount of noise a transpiler produces we will compare the size of the input program (in characters) against the size of the output program. We use several example files given in Appendix \ref{AppendixC}.
+To measure the amount of noise a transpiler produces we will compare the size of the input program (in characters) against the size of the output program. We use several example files given in Appendix \ref{AppendixC} the results are presented in table \ref{tab:noise1}. The table reveals that there are large differences in output size, measured in amount of characters, between transpilers when using the same input file. Traceur uses more characters then any of the other transpilers. This is the result of Traceur's relience on a large runtime system.
 
 \begin{table}
-\caption{Size (in characters) of transformed JavaScript per transpiler} \label{tab:noise1}
+\caption{Size (in characters) of transformed JavaScript per transpiler (source files in appendix \ref{AppendixC})} \label{tab:noise1}
 \begin{tabular}{@{}lrrrrr@{}}
 \toprule
+ & & \multicolumn{4}{c}{Transpiler} \\ \cmidrule(r){3-6}
 {}                         & \textbf{Input} & \textbf{Babel JS} & \textbf{Traceur} & \textbf{ES6 transpiler} & \textbf{\projectname} \\ \midrule
-\textbf{Arrow functions}   & 409            & 580               & 688              & 498 & - \\
-\textbf{Destructuring}     & 188            & 455               & 1134             & 294 & - \\
-\textbf{Object literals}   & 116            & 193               & 607              & 251 & - \\
+\textbf{Arrow functions}   & 409            & 580               & 688              & 498 & 651 \\
+\textbf{Destructuring}     & 188            & 455               & 1134             & 294 & -- \\
+\textbf{Object literals}   & 116            & 193               & 607              & 251 & 213 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Apart from a quantative measure for the amount of noise introduced, we can also inspect target programs generated by the transpilers and notice if we can detect large differences from the source program.
+Apart from a quantative measure for the amount of noise introduced, we also inspect target programs generated by the transpilers and notice if we can detect large differences from the source program.
 
-Traceur gives every binding introduced by a transformation an undescriptive name (e.g. \$\_\_0) to avoid variable capture. This additional noise makes it harder for the programmer to debug the target program. Babel JS will bind to a descriptive name (e.g. \_this to bind the this keyword for later use). 
+Traceur gives every binding introduced by a transformation non descriptive name (e.g. \$\_\_0) to avoid variable capture. This additional noise makes it harder for the programmer to debug the target program. Babel JS will bind to a descriptive name (e.g. \_this to bind the this keyword for later use). In figure \ref{fig:noise} we present an example program where an arrow function that uses its lexical enclosing \lstinline$this$ binding has to be desugared. Babel, ES6 Transpiler, and \projectname bind to descriptive variable names, where Traceur uses non descriptive identifiers.
+
+\begin{figure}
+\caption{Synthesized binding descriptive naming example} \label{fig:noise}
+\begin{lstlisting}
+function getScope() {
+	return () => this;
+}
+\end{lstlisting}
+
+\begin{minipage}[t]{0.45\textwidth}
+\begin{lstlisting}[caption=Babel JS]
+var _this = this;
+
+return function () {
+	return _this;
+};
+\end{lstlisting}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.45\textwidth}
+\begin{lstlisting}[caption=Traceur]
+var $__0 = this;
+return (function() {
+	return $__0;
+});
+\end{lstlisting}
+\end{minipage}
+
+\begin{minipage}[t]{0.45\textwidth}
+\begin{lstlisting}[caption=ES6 Transpiler]
+function getScope() {
+	var this$0 = this;
+    return function()  {
+    	return this$0
+    };
+}
+\end{lstlisting}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.45\textwidth}
+\begin{lstlisting}[caption=\projectname]
+return 
+(function(_this, _arguments) {
+	return function() {
+		return _this;
+	};
+})(this, arguments);
+\end{lstlisting}
+\end{minipage}
+\end{figure}
 
 \paragraph{Performance}
-This dimension is not measured in our comparison of \projectname to other transpilers. The differences are to great to make a worthwhile statement about the performance differences. First, all other transpilers are implemented in JavaScript where \projectname is implemented in Rascal which has to be integrated with an IDE. Second, \projectname does not implement ES6 modules which are needed to transform a large ES6 project. To transform modules Babel can integrate with programs that package front-end dependencies (e.g. Browserify or Webpack), because Rascal is integrated in an IDE it is not as trivial to integrate with such packages as when you implement your solution in JavaScript. 
+This dimension is not measured in our comparison of \projectname to other transpilers. There are major differences between the technology on which \projectname is implemented (i.e. Rascal) and all of the other transpilers. First, all other transpilers are implemented in JavaScript where \projectname is implemented in Rascal which has to be integrated with an IDE. Second, \projectname does not implement ES6 modules which are needed to transform a large ES6 project. To transform modules Babel can integrate with programs that package front-end dependencies (e.g. Browserify or Webpack), because Rascal is integrated in an IDE it is not as trivial to integrate with such packages as when you implement your solution in JavaScript. 
 
 \section{On the expressive power of ECMAScript 6}
 Matthias Felleisen presents a rigorous mathematical framework to define the expressiveness of programming languages (as compared to each other) in his paper "On the expressive power of programming languages"\cite{Felleisen1990}.
 
-The formal specification presented by Felleisen falls outside of the scope of this thesis. But we can summaries his findings informally: If a construct in language $A$ can be expressed in a construct in language $B$ by only performing local transformations (\textit{local-to-local}), then language $A$ is no more expressive than language $B$. And \textit{"By the definition of an expressible construct, programs in a less expressive language generally have a globally different structure from functionally equivalent programs in a more expressive language."}\cite{Felleisen1990}
+The formal specification presented by Felleisen falls outside of the scope of this thesis. But we can summarize his findings informally: If a construct in language $A$ can be expressed in a construct in language $B$ by only performing local transformations (\textit{local-to-local}), then language $A$ is no more expressive than language $B$. And \textit{"By the definition of an expressible construct, programs in a less expressive language generally have a globally different structure from functionally equivalent programs in a more expressive language."}\cite{Felleisen1990}
 
-This implies that every language extension transformed through a \textit{local-to-local} scoped transformation (see section \ref{taxonomy}), creates a language that is no more expressive than the original (core) language. In table \ref{full-table} the categorization of ECMAScript 6 language extensions is displayed. Ten of the twelve extensions can be transformed with the use of a \textit{local-to-local} transformation, the two exceptions are, the extension of binding constructs (see appendix \ref{let-const}). This extension requires a \textit{global-to-global} transformation. And the arrow function (see appendix \ref{arrow}) which requires a \textit{global-to-local} transformation, because the transformation depends on the context in which the arrow function is used (i.e. either the global scope or inside a function).
+This implies that every language extension transformed through a \textit{local-to-local} scoped transformation (see section \ref{taxonomy}), creates a language that is no more expressive than the original (core) language. In table \ref{full-table} the categorization of ECMAScript 6 language extensions is displayed. Ten of the twelve extensions can be transformed with the use of a \textit{local-to-local} transformation, the two exceptions are, the extension of let/const binding constructs (see appendix \ref{let-const}). This extension requires a \textit{global-to-global} transformation. And the arrow function (see appendix \ref{arrow}) which requires a \textit{global-to-local} transformation, because the transformation depends on the context in which the arrow function is used (i.e. either the global scope or inside a function).
 
-\textit{"Intuitively, a programming language is less expressive than another if the latter can express all the facilities the former can express in the language universe."}~\cite{Felleisen1990}. Thus ES6 is more expressive than ES5.
+%\textit{"Intuitively, a programming language is less expressive than another if the latter can %express all the facilities the former can express in the language universe."}~%\cite{Felleisen1990}. Thus ES6 is more expressive than ES5.
 
 \section{Reflecting on the taxonomy}
-With an implementation, evaluation, and categorization of ES6 language features, we reflect on the taxonomy and what predictions we can make about the implementation of language extensions given their categorization.
+In chapter \ref{Chapter4} we have presented a taxonomy for language extensions and in appendix \ref{AppendixB} we have created a categorization of ES6 language extensions according to this taxonomy. Together with the taxonomy we presented several questions underlying the structure of the taxonomy. With an implementation of a subset of ES6 language extensions and a categorization of these language extensions we can now reflect on the usefulness of this taxonomy to make predictions about implementation details of language extensions.
 
-First, any transformation that introduces new bindings is exposed to the possibility of introducing variable capture. This implies that any transformation not introducing new bindings is also safe from variable capture. Second language extensions that have to analyze sub-terms are more complex to implement than transformations that do not have to perform such an analysis. 
+\textit{How can the language extension be implemented?}
+
+\begin{description}[font=\normalfont,align=right,leftmargin=!, labelwidth=\widthof{Introduction of bindings},labelsep=2em]
+	\item[Category] All language extensions implemented in this thesis are categorized as desugarings. Drawing conclusions for other categories is thus not possible. We can conclude that program transformations are well suited for implementing language extensions that categorize as desugarings.
+	\item[Dependencies] This dimension can give insight into the possibility of mutual dependent language extension (see section \ref{par:combined-extensions}) in a set of language extensions.
+\end{description}
+
+\textit{What information does transformation of a language extension require?}
+
+\begin{description}[font=\normalfont,align=right,leftmargin=!, labelwidth=\widthof{Introduction of bindings},labelsep=2em]
+	\item[Scope] The scope dimension gives insight into the element matched by the parse tree visitor (see section \ref{sec:visitor}) for program transformation of a language extension. For instance a \textit{global-to-local} or a \textit{global-to-global} transformation will have to match on the root element of the parse tree to have the correct context information for their program transformation.
+	\item[Analysis of subterms] Language extensions that have to analyze sub-terms are more complex to implement then transformations that do not have to perform such an analysis. 
+\end{description}
+
+\textit{What are guarantees can we give of the target program produced by a language extension?}
+
+\begin{description}[font=\normalfont,align=right,leftmargin=!, labelwidth=\widthof{Introduction of bindings},labelsep=2em]
+	\item[Introduction of bindings] Any transformation that introduces new bindings is exposed to the possibility of introducing variable capture. This implies that any transformation not introducing new bindings is also safe from variable capture.
+	\item[Depending on bindings] As shown in section \ref{hygiene} there are two forms of variable capture one occuring because of introduced bindings by the transformation. The second because the target program depends on bindings from the source program or global scope. This dimension helps identifying whether a transformation can introduce the second form of variable capture.
+\end{description}
 
 \section{Engineering trade-offs}
 
@@ -273,7 +366,7 @@ With an implementation of ES6 inside a language workbench and a comparison to ot
 \subsection{Benefits}
 
 \paragraph{Increased productivity}
-With the data we gathered it seems that implementation of the transformation suite inside the language workbench made the meta-programmer more productive. We needed less lines of code to express transformations that are evenly compatible with the specification as other transpilers. 
+With the data we gathered it seems that implementation of the transformation suite inside the language workbench made the meta-programmer more productive. We needed fewer lines of code to express transformations that are evenly compatible with the specification as the other transpilers. 
 
 \paragraph{IDE integration}
 Building language extensions inside the language workbench allows meta-programmers to immediately implement IDE features to help programmers while creating language extensions. Transpilers implemented outside of the language workbench will always need additional programming to integrate their solution with IDEs and deliver additional support to programmers using their transpiler. The language workbench made it possible to integrate, hyperlink referenced bindings, displaying errors for use of undeclared variables and illegal redeclarations, and previewing parts of target program. 
@@ -293,9 +386,9 @@ The language workbench allows us to define a base grammar and extend this gramma
 The syntax definition of a language workbench can make the implementation of language extensions significantly easier/faster. It also imposes a limitation on our expressiveness, a meta-programmer can only work with the tools for solving ambiguity, defining syntax, supplied by the syntax definition of the language workbench. Some grammars do not lend themselves very well to be defined within these constraints (e.g. the automatic inference of semi-colons of a JavaScript grammar).
 
 \paragraph{Portability}
-By using a language workbench \projectname is bound to be used inside the IDE of the language workbench. Where on one hand this is an advantage for easier integration with the tools of a developer. It can be a limitation in the build step of a project using language extensions. Other transpilers can integrate with known build-pipelines for front-end technology. But \projectname is only available from inside the Eclipse IDE. 
+By using a language workbench \projectname is bound to be used inside the IDE of the language workbench. Where on one hand this is an advantage for easier integration with the tools of a developer. It can be a limitation in the build step of a project using language extensions. Other transpilers can integrate with known build-pipelines for front-end technology. But \projectname is tied to a Rascal runtime, which is currently integrated with the Eclipse IDE.
 
 \subsection{Problems}
 
 \paragraph{Hygiene of program transformations}
-Hygiene is identified as a problem of program transformations and a solution to solve this issue is reused. The case study reveals that other transformation suites do not always solve such issues.
+Hygiene is identified as a problem of program transformations and a solution to solve this issue is reused. The case study reveals that other transformation suites do not always solve such issues (see listing \ref{lst:traceurhygiene}).
