@@ -87,12 +87,11 @@ In table \ref{tab:compatibility} results of the compatibility tests. Four catego
 
 Not all tests can be satisfied by a transformation suite alone, some tests use the \textit{eval} function to evaluate a string as JavaScript in the current run-time. A transformation suite only has access to the static semantics during transformation it can not resolve the \textit{string} that is going to be evaluated during run-time. Because other transformation suites face the same issue we do not remove these tests from the set of tests.
 
-Our implementation does not score as high as the big open-source projects, mainly because we do not implement generators and automatically fail twenty-two tests related to generators. ES6-transpiler scores lower than our implementation. The compatibility score indicates that our artifact could be used in a \textit{real-world} environment, as long as unimplemented features are avoided.
+Our implementation does not score as high as the big open-source projects, mainly because we do not implement generators and fail twenty-two tests related to these. ES6-transpiler scores lower than our implementation. All compatibility tests relying on \lstinline$eval$ to evaluate a string as JavaScript code are removed from the test set. Transformers are unable to transform dynamically evaluated JavaScript code because code is transformed before and not during run-time.
 
 \begin{table}[h]
 \centering
 \caption{Compatibility tests} \label{tab:compatibility}
-
 
 \makebox[\textwidth][c]{
 \begin{tabular}{@{}lccccc@{}}
@@ -141,7 +140,7 @@ Our implementation does not score as high as the big open-source projects, mainl
 {\bf Total} & 170 & 148 (87\%) & 140 (82\%) & 92 (54\%) & 115 (68\%) \\ \bottomrule
 \end{tabular}
 }
-Tests from ES6 compatibility table at \href{https://github.com/kangax/compat-table/tree/58a790d5b9d4366ea43f75ece7e7f869096227d5}{commit}
+Compatibility tests originate from the ES6 compatibility table at commit: \href{https://github.com/kangax/compat-table/tree/58a790d5b9d4366ea43f75ece7e7f869096227d5}{58a790d5} 
 \end{table}
 
 As discussed in section \ref{hygiene} hygiene is an important aspect of the correctness of program transformations. We will present one example where we try to shadow an introduced binding by the transpiler and detect whether or not the transpiler resolves the shadowed binding. For variable capture to happen we need to test a language extension that either introduces bindings or depends on source bindings. In this example we use the arrow function extension and try to introduce variable capture because this extension has to bind \textit{this} from the lexical scope of the parent function (see appendix \ref{arrow}).
@@ -400,8 +399,3 @@ The syntax definition of a language workbench can make the implementation of lan
 
 \paragraph{Portability}
 By using a language workbench \projectname is bound to be used inside the IDE of the language workbench. Where on one hand this is an advantage for easier integration with the tools of a developer. It can be a limitation in the build step of a project using language extensions. Other transpilers can integrate with known build-pipelines for front-end technology. But \projectname is tied to a Rascal runtime, which is currently integrated with the Eclipse IDE.
-
-\subsection{Problems}
-
-\paragraph{Hygiene of program transformations}
-Hygiene is identified as a problem of program transformations and a solution to solve this issue is reused. The case study reveals that other transformation suites do not always solve such issues (see listing \ref{lst:traceurhygiene}).
