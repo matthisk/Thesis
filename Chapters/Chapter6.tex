@@ -100,35 +100,48 @@ Our implementation does not score as high as the big open-source projects, mainl
  & & \multicolumn{4}{c}{Transpiler} \\
  \cmidrule(r){3-6}
  & {\bf Total} & \multicolumn{1}{l}{{\bf Babel}} & \multicolumn{1}{l}{{\bf Traceur}} & \multicolumn{1}{l}{{\bf ES6 Transpiler}} & \multicolumn{1}{l}{{\bf \projectname}} \\ \midrule
-{\bf Syntax}    & 76          & 76                              & 60                     & 46           & 64                               \\
 
-\multicolumn{1}{r}{default function parameters} & 6 & 5 & 3 & & \\
-\multicolumn{1}{r}{rest parameters} & 5 & 4 & 4 & & \\
-\multicolumn{1}{r}{spread (...) operator} & 12 & 12 & 12 & & \\
-\multicolumn{1}{r}{object literal extension} & 6 & 6 & 6 & & \\
-\multicolumn{1}{r}{for..of loops} & 8 & 8 & 8 & & \\
-\multicolumn{1}{r}{octal and binary literals} & 4 & 4 & 2 & & \\
-\multicolumn{1}{r}{template strings} & 3 & 3 & 3 & & \\
-\multicolumn{1}{r}{RegExp "y" and "u" flags} & 2 & 1 & 1 & & \\
-\multicolumn{1}{r}{destructuring} & 32 & 29 & 26 & & \\
-\multicolumn{1}{r}{Unicode code point escapes} & 2 & 1 & 1 & & \\
-\multicolumn{1}{r}{new.target} & 2 & 0 & 0 & & \\
+\multicolumn{6}{c}{} \\
 
+{\bf Syntax}                                    & 84 & 77 & 72 & 52 & 66 \\
 
-{\bf Bindings}  & 19          & 15                              & 15                     & 10           & 16                               \\
-\multicolumn{1}{r}{const} & 8 & 6 & 6 & & \\
-\multicolumn{1}{r}{let} & 10 & 8 & 8 & & \\
-\multicolumn{1}{r}{block-level function declaration} & 1 & 1 & 1 & & \\
-{\bf Functions} & 62          & 54                              & 50                     & 43           & 35                               \\
+\multicolumn{1}{r}{default function parameters} & 5 & 5 & 3 & 3 & 4 \\
+\multicolumn{1}{r}{rest parameters}             & 4 & 4 & 4 & 2 & 4 \\
+\multicolumn{1}{r}{spread (...) operator}       & 15 & 13 & 15 & 8 & 10 \\
+\multicolumn{1}{r}{object literal extension}    & 6 & 6 & 6 & 6 & 6 \\
+\multicolumn{1}{r}{for..of loops}               & 9 & 9 & 9 & 4 & 7 \\
+\multicolumn{1}{r}{octal and binary literals}   & 4 & 4 & 2 & 2 & 4 \\
+\multicolumn{1}{r}{template strings}            & 3 & 2 & 2 & 2 & 2 \\
+\multicolumn{1}{r}{RegExp "y" and "u" flags}    & 2 & 1 & 1 & 0 & 0 \\
+\multicolumn{1}{r}{destructuring}               & 32 & 32 & 29 & 24 & 29 \\
+\multicolumn{1}{r}{Unicode code point escapes}  & 2 & 1 & 1 & 1 & 0 \\
+\multicolumn{1}{r}{new.target}                  & 2 & 0 & 0 & 0 & 0 \\
 
-\multicolumn{1}{r}{arrow functions} & 12 & 9 & 10 & & \\
-\multicolumn{1}{r}{class} & 23 & 19 & 16 & & \\
-\multicolumn{1}{r}{super} & 7 & 6 & 6 & & \\
-\multicolumn{1}{r}{generators} & 22 & 21 & 20 & & \\
+\multicolumn{6}{c}{} \\
 
-{\bf Total}     & 157         & 136 (87\%)                      & 125 (80\%)             & 99 (63\%)    & 115 (73\%)                        \\ \bottomrule
+{\bf Bindings}                                       & 18 & 14 & 14 & 11 & 14 \\
+\multicolumn{1}{r}{const}                            & 7 & 5 & 5 & 5 & 5 \\
+\multicolumn{1}{r}{let}                              & 10 & 8 & 8 & 6 & 8 \\
+\multicolumn{1}{r}{block-level function declaration} & 1 & 1 & 1 & 0 & 1 \\
+
+\multicolumn{6}{c}{} \\
+
+{\bf Functions}                     & 66 & 56 & 54 & 29 & 35 \\
+\multicolumn{1}{r}{arrow functions} & 12 & 9 & 10 & 7 & 9 \\
+\multicolumn{1}{r}{class}           & 23 & 19 & 16 & 16 & 20 \\
+\multicolumn{1}{r}{super}           & 7 & 6 & 6 & 6 & 6 \\
+\multicolumn{1}{r}{generators}      & 24 & 22 & 22 & 0 & 0 \\
+
+\multicolumn{6}{c}{} \\
+
+{\bf Optimisation}    & 2 & 1 & 0 & 0 & 0                               
+\\
+\multicolumn{1}{r}{proper tail calls} 2 & 1 & 0 & 0 & 0 & 0 \\
+
+{\bf Total} & 170 & 148 (87\%) & 140 (82\%) & 92 (54\%) & 115 (68\%) \\ \bottomrule
 \end{tabular}
 }
+Tests from ES6 compatibility table at \href{https://github.com/kangax/compat-table/tree/58a790d5b9d4366ea43f75ece7e7f869096227d5}{commit}
 \end{table}
 
 As discussed in section \ref{hygiene} hygiene is an important aspect of the correctness of program transformations. We will present one example where we try to shadow an introduced binding by the transpiler and detect whether or not the transpiler resolves the shadowed binding. For variable capture to happen we need to test a language extension that either introduces bindings or depends on source bindings. In this example we use the arrow function extension and try to introduce variable capture because this extension has to bind \textit{this} from the lexical scope of the parent function (see appendix \ref{arrow}).
@@ -263,7 +276,7 @@ To measure the amount of noise a transpiler produces we will compare the size of
  & & \multicolumn{4}{c}{Transpiler} \\ \cmidrule(r){3-6}
 {}                         & \textbf{Input} & \textbf{Babel JS} & \textbf{Traceur} & \textbf{ES6 transpiler} & \textbf{\projectname} \\ \midrule
 \textbf{Arrow functions}   & 409            & 580               & 688              & 498 & 651 \\
-\textbf{Destructuring}     & 188            & 455               & 1134             & 294 & -- \\
+\textbf{Destructuring}     & 188            & 455               & 1134             & 294 & 477 \\
 \textbf{Object literals}   & 116            & 193               & 607              & 251 & 213 \\
 \bottomrule
 \end{tabular}
